@@ -1,0 +1,4 @@
+export const JWT_SECRET = 'your_jwt_secret_key';
+export const MONGODB_URI = 'your_mongodb_connection_string';
+export const REDIS_HOST = 'localhost';
+export const REDIS_PORT = 6379;

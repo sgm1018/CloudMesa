@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/cloudmesa
+      - REDIS_HOST=redis
+      - JWT_SECRET=your_jwt_secret
+      - OTHER_ENV_VARIABLES=your_other_values
+    depends_on:
+      - mongo
+      - redis
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+
+volumes:
+  mongo_data:
