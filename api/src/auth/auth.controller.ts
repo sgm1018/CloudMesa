@@ -6,6 +6,7 @@ import { LoginGuard } from './guards/login.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/roles.decorator';
+import { ApiBody } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -19,6 +20,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @ApiBody({ type: LoginDto })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }

@@ -6,7 +6,7 @@ import { Item } from './entities/item.entity';
 import { BaseService } from 'src/base/base.service';
 
 @Injectable()
-export class FilesService extends BaseService<Item> {
+export class ItemsService extends BaseService<Item> {
   constructor(@InjectModel(Item.name) private readonly ItemModel: Model<Item>) {
     super(ItemModel);
   }

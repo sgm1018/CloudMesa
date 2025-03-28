@@ -1,13 +1,13 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
-import { FilesService } from './item.service';
+import { ItemsService } from './item.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { LoginGuard } from 'src/auth/guards/login.guard';
 
-@Controller('files')
-export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+@Controller('items')
+export class ItemsController {
+  constructor(private readonly itemsService: ItemsService) {}
 
   // @Public()
   // @Post()
