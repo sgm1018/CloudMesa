@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/user.dto';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { LoginGuard } from '../auth/guards/login.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -17,13 +17,13 @@ export class UsersController {
     return this.usersService.create(userDto);
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(LoginGuard, RolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne({id: id});
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(LoginGuard, RolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);

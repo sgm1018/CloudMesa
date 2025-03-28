@@ -4,12 +4,23 @@ import { UsersModule } from './users/users.module';
 import { FilesModule } from './item/item.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-
+import { RolesGuard } from './auth/guards/roles.guard';
+import { LoginGuard } from './auth/guards/login.guard';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    JwtModule.registerAsync({
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: configService.get<string>('JWT_EXPIRATION') },
+      }),
+      inject: [ConfigService],
+      global: true, // Hace que JwtModule sea global
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -21,6 +32,16 @@ import { MongooseModule } from '@nestjs/mongoose';
     AuthModule,
     UsersModule,
     FilesModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: LoginGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
   ],
 })
 export class AppModule {}

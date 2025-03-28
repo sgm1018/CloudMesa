@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/c
 import { FilesService } from './item.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
-import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { LoginGuard } from 'src/auth/guards/login.guard';
 
 @Controller('files')
 export class FilesController {
@@ -15,14 +15,14 @@ export class FilesController {
 
   // }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
   @Get(':id')
   findOne(@Param('id') id: string) {
 
   }
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(LoginGuard, RolesGuard)
   @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
