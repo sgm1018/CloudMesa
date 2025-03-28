@@ -43,17 +43,18 @@ export class BaseService<T extends Entity> {
   }
 
   async update(entidad : T): Promise<T> {
-    try{
-
-        const find = await this.model.findById(entidad).exec();
-        if (!find){
-            throw new NotFoundException(`Entity with ID "${entidad}" not found`);
-        }
-        await this.model.updateOne(entidad).exec();
-        return entidad;
-    }catch (error){
-        throw new BadRequestException(`Error updating entity: ${error.message}`);
+    const entity = this.findOne({ _id: entidad._id });
+    if (!entity) {
+      throw new NotFoundException(`Entity with ID "${entidad._id}" not found`);
     }
+    try {
+      await this.model.updateOne({ _id: entidad._id }, { $set: entidad }).exec();
+      return entity;
+    } catch (error) {
+      throw new BadRequestException(`Error updating entity: ${error.message}`);
+    }
+
+
   }
 
   async remove(id: string): Promise<T> {

@@ -5,6 +5,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 export class UsersController {
@@ -12,14 +13,14 @@ export class UsersController {
 
   @Public()
   @Post()
-  create(@Body() userDto: UserDto) {
+  create(@Body() userDto: User) {
     return this.usersService.create(userDto);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+    return this.usersService.findOne({id: id});
   }
 
   @UseGuards(AuthGuard, RolesGuard)

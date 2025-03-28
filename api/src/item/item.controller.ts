@@ -9,11 +9,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
-  @Public()
-  @Post()
-  create(@Body() fileDto: ) {
+  // @Public()
+  // @Post()
+  // create(@Body() fileDto: ) {
 
-  }
+  // }
 
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('user')
