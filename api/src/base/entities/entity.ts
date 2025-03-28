@@ -4,7 +4,8 @@ import { Document } from 'mongoose';
 export type UserDocument = Entity & Document;
 
 @Schema()
-export class Entity {
+export class Entity extends Document {
+
   @Prop({ default: Date.now })
   createdAt: Date;
 
