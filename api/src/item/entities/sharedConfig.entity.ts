@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Permission } from './permission.entity';
-import { EncryptionKey } from './encryptionKey.entity';
+import { Encryption } from './encryption.entity';
 
 
 @Schema()
@@ -23,8 +23,8 @@ export class SharedConfig {
     @Prop()
     link?: string;
     
-    @Prop({ required: true, type: Object })
-    encryptinKey: EncryptionKey;
+    @Prop({ required: true, default: ''})
+    encryptedKey: string;  // Clave de cifrado simétrico en base64
 }
 
 export const SharedConfigSchema = SchemaFactory.createForClass(SharedConfig);

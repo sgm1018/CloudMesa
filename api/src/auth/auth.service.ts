@@ -25,7 +25,10 @@ export class AuthService {
     user.passwordHash = passwordHash;
     user.maxSize = 1000000; // 1MB
     const userCreado = await this.usersService.create(user);
-    return new LoginTokenDto().createFromUser(userCreado, this.jwtService.sign({ email: user.email, sub: user._id }));
+    if (!userCreado.isSuccess()) {
+      throw new Error('Error creating user');
+    }
+    return new LoginTokenDto().createFromUser(userCreado.value!, this.jwtService.sign({ email: user.email, sub: user._id }));
   }
 
 
@@ -42,8 +45,11 @@ export class AuthService {
 
   private async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findOne({ email: email });
-    if (user && (await bcrypt.compare(password, user.passwordHash))) {
-      const { passwordHash, ...result } = user;
+    if (!user.isSuccess()){
+      throw new Error('Error finding user');
+    }
+    if ( await bcrypt.compare(password, user.value!.passwordHash)) {
+      const { passwordHash, ...result } = user.value!;
       return result;
     }
     return null;

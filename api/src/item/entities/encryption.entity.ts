@@ -8,6 +8,8 @@ export class Encryption {
     iv: string;  // Vector de inicialización para AES-256-GCM
     @Prop({ required: true, default: ''})
     algorithm: string;
+    @Prop({ required: true, default: ''})
+    encryptedKey: string;  // Clave de cifrado simétrico en base64
 
 }
 

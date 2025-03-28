@@ -13,19 +13,31 @@ export class UsersController {
 
   @Public()
   @Post()
-  create(@Body() userDto: User) {
-    return this.usersService.create(userDto);
+  async create(@Body() userDto: User) {
+    const result = await this.usersService.create(userDto);
+    if (!result.isSuccess()) {
+      throw new Error('Error creating user');
+    }
+    return result.value;
   }
 
   @UseGuards(LoginGuard, RolesGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne({id: id});
+  async findOne(@Param('id') id: string) {
+     const result = await this.usersService.findOne({id: id});
+     if (!result.isSuccess()) {
+        throw new Error('User not found');
+      }
+      return result.value;
   }
 
   @UseGuards(LoginGuard, RolesGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  async remove(@Param('id') id: string) {
+    const result = await this.usersService.remove(id);
+    if (!result.isSuccess()) {
+      throw new Error('Error deleting user');
+    }
+    return result.value;
   }
 }

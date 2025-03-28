@@ -18,14 +18,23 @@ export class ItemsController {
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
+    const result = await this.itemsService.findOne({id: id});
+    if (!result.isSuccess()) {
+      throw new Error('Item not found');
+    }
+    return result.value;
 
   }
 
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('admin')
   @Delete(':id')
-  remove(@Param('id') id: string) {
-
+  async remove(@Param('id') id: string) {
+    const result = await this.itemsService.remove(id);
+    if (!result.isSuccess()) {
+      throw new Error('Error deleting item');
+    }
+    return result.value;
   }
 }
