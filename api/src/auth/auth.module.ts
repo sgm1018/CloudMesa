@@ -10,13 +10,14 @@ import { Reflector } from '@nestjs/core';
 import { LoginGuard } from './guards/login.guard';
 import { UsersModule } from 'src/users/users.module';
 import { PassportModule } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [ 
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, ConfigService],
   exports: [AuthService],
 })
 export class AuthModule {}

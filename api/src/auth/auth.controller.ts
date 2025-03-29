@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -22,12 +23,12 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
+
     return this.authService.login(loginDto);
   }
 
   @UseGuards(LoginGuard, RolesGuard)
   @Post('protected')
-  @Roles('user') // Example role
   async protectedRoute() {
     return { message: 'This route is protected' };
   }

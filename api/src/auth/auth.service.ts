@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from 'src/users/entities/user.entity';
 import { LoginTokenDto } from './dto/loginToken.dto';
 import { UserGetDto } from 'src/users/dto/user.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {

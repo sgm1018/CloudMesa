@@ -8,6 +8,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { LoginGuard } from './auth/guards/login.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
+import { config } from 'process';
 
 @Module({
   imports: [
@@ -17,10 +18,10 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: configService.get<string>('JWT_EXPIRATION') },
+        signOptions: { expiresIn: configService.get<string>('JWT_EXPIRATION_TIME') },
       }),
       inject: [ConfigService],
-      global: true, // Hace que JwtModule sea global
+      global: true,
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
