@@ -1,3 +1,4 @@
+import { Document } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
@@ -6,6 +7,7 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/users/entities/user.entity';
 import { LoginTokenDto } from './dto/loginToken.dto';
+import { UserGetDto } from 'src/users/dto/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,18 +19,28 @@ export class AuthService {
 
 
   async register(registerDto: RegisterDto) {
-    if (await this.usersService.findOne({email : registerDto.email})) {
+    const userExist =  await this.usersService.findOne({email : registerDto.email})
+    if (userExist.isSuccess()){
       throw new Error('User already exists');
     }
+  
     const passwordHash = await this.hashPassword(registerDto.password);
-    const user : User = registerDto.toEntidad();
+    const user : User = new User();
+    user.name = registerDto.name;
+    user.surname = registerDto.surname;
+    user.email = registerDto.email;
+    user.publicKey = registerDto.publicKey; 
     user.passwordHash = passwordHash;
     user.maxSize = 1000000; // 1MB
+    user.isActive = true;
+    user.isVerified = false;
+    user.roles = ['user']; // Default role
+    user.avatar = ''; // Default avatar
     const userCreado = await this.usersService.create(user);
     if (!userCreado.isSuccess()) {
       throw new Error('Error creating user');
     }
-    return new LoginTokenDto().createFromUser(userCreado.value!, this.jwtService.sign({ email: user.email, sub: user._id }));
+    return new LoginTokenDto().createFromUser(userCreado.value!, this.jwtService.sign({ email: user.email, sub: userCreado.value!._id }));
   }
 
 
@@ -36,21 +48,18 @@ export class AuthService {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (user) {
       const payload = { email: user.email, sub: user._id };
-      return {
-        access_token: this.jwtService.sign(payload),
-      };
+      return new LoginTokenDto().createFromUser(user, this.jwtService.sign(payload));
     }
     throw new Error('Invalid credentials');
   }
 
-  private async validateUser(email: string, password: string): Promise<any> {
+  private async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.usersService.findOne({ email: email });
     if (!user.isSuccess()){
       throw new Error('Error finding user');
     }
     if ( await bcrypt.compare(password, user.value!.passwordHash)) {
-      const { passwordHash, ...result } = user.value!;
-      return result;
+      return user.value!;
     }
     return null;
   }

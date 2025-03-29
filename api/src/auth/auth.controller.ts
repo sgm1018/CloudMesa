@@ -6,9 +6,10 @@ import { LoginGuard } from './guards/login.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/roles.decorator';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiBearerAuth('JWT-auth')  // El mismo nombre que usaste en main.ts
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -20,7 +21,6 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  @ApiBody({ type: LoginDto })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }

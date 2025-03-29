@@ -7,28 +7,39 @@ export type UserDocument = User & Document;
 @Schema()
 export class User extends Entity {
   @Prop({ required: true })
-  name: string = "";
+  name: string = '';
 
   @Prop({ required: true })
-  surname: string = "";
+  surname: string = '';
 
   @Prop({ required: true, unique: true })
-  email: string = "";
+  email: string = '';
 
   @Prop({ required: true })
-  passwordHash: string = "";
+  passwordHash: string = '';
 
   @Prop()
-  avatar?: string = "";
+  avatar?: string = '';
 
   @Prop({ required: true })
-  publicKey: string = "";
+  publicKey: string = '';
 
   @Prop({ required: true })
   maxSize: number = 0;
 
   @Prop({ required: true })
   roles: string[] = [];
+
+  @Prop({ required: true })
+  isActive: boolean = true;
+  @Prop({ required: true })
+  isVerified: boolean = false;
+
+
+  constructor() {
+    super();
+  }
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

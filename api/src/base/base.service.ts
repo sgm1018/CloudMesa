@@ -14,8 +14,8 @@ export class BaseService<T extends Entity> {
 
   async create(entity: T): Promise<ApiResponse<T>> {
     try {
-      await this.model.create(entity);
-      return ApiResponse.item(entity);
+      const creado = await this.model.create(entity);
+      return ApiResponse.item(creado);
     } catch (error) {
       throw new BadRequestException(`Error creating entity: ${error.message}`);
     }

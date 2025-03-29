@@ -1,16 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type UserDocument = Entity & Document;
 
 @Schema()
-export class Entity extends Document{
+export class Entity {
+  // Declara el _id como propiedad opcional
+  _id?: Types.ObjectId;
+  
+  @Prop({ default: Date.now })
+  createdAt: Date = new Date(Date.now());
 
   @Prop({ default: Date.now })
-  createdAt: Date;
-
-  @Prop({ default: Date.now })
-  updatedAt: Date;
+  updatedAt: Date = new Date(Date.now());
 
   @Prop()
   userCreator?: string;
@@ -19,4 +21,3 @@ export class Entity extends Document{
   userUpdater?: string;
 }
 
-export const UserSchema = SchemaFactory.createForClass(Entity);

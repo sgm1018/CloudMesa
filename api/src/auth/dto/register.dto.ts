@@ -46,13 +46,5 @@ export class RegisterDto {
 
   constructor() {}
 
-
-  toEntidad() : User{
-    const user : User = new User();
-    user.email = this.email;
-    user.name = this.name;
-    user.surname = this.surname;
-    user.publicKey = this.publicKey;
-    return user
-  }
+  
 }
