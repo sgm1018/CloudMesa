@@ -1,3 +1,4 @@
+import { Roles } from './../decorators/roles.decorator';
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
@@ -15,12 +16,12 @@ export class RolesGuard implements CanActivate {
     if (!roles) {
       return true;
     }
-    if (this.matchRoles(roles, ['admin'])) {
+    const request = context.switchToHttp().getRequest();
+    const userRoles : string[] = request.user.roles;
+    if (this.matchRoles(['admin'], userRoles)) {
       return true;
     }
-    const request = context.switchToHttp().getRequest();
-    const user : User = request.user;
-    return user && user.roles && this.matchRoles(roles, user.roles);
+    return userRoles && this.matchRoles(roles, userRoles);
   }
 
   private matchRoles(roles: string[], userRoles: string[]): boolean {

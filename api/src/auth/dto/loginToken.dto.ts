@@ -5,6 +5,7 @@ export class LoginTokenDto{
     email: string;
     publicKey: string;
     maxSize: number;
+    roles: string[];
     token: string;
 
     constructor() {}
@@ -15,6 +16,7 @@ export class LoginTokenDto{
         this.email = User.email;
         this.publicKey = User.publicKey;
         this.maxSize = User.maxSize;
+        this.roles = User.roles;
         this.token = token;
         return this;
     }

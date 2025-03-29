@@ -29,6 +29,7 @@ export class AuthController {
 
   @UseGuards(LoginGuard, RolesGuard)
   @Post('protected')
+  @Roles('user')
   async protectedRoute() {
     return { message: 'This route is protected' };
   }

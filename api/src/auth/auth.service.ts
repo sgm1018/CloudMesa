@@ -41,14 +41,32 @@ export class AuthService {
     if (!userCreado.isSuccess()) {
       throw new Error('Error creating user');
     }
-    return new LoginTokenDto().createFromUser(userCreado.value!, this.jwtService.sign({ email: user.email, sub: userCreado.value!._id }));
+    const payload = { 
+      email: userCreado.value!.email, 
+      sub: userCreado.value!._id,
+      roles: userCreado.value!.roles,
+      name: userCreado.value!.name,
+      isVerified: userCreado.value!.isVerified,
+      isActive: userCreado.value!.isActive
+    };
+    return new LoginTokenDto().createFromUser(
+      userCreado.value!, 
+      this.jwtService.sign(payload)
+    );
   }
 
 
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (user) {
-      const payload = { email: user.email, sub: user._id };
+      const payload = { 
+        email: user.email, 
+        sub: user._id,
+        roles: user.roles,
+        name: user.name,
+        isVerified: user.isVerified,
+        isActive: user.isActive
+      };
       return new LoginTokenDto().createFromUser(user, this.jwtService.sign(payload));
     }
     throw new Error('Invalid credentials');
