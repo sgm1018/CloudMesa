@@ -6,9 +6,9 @@ export class UserGetDto extends Entity {
     surname: string;
     email: string;
     avatar?: string;
-    publicKey: string;  // Clave pública del usuario (KP)
+    publicKey: string;
     maxSize: number;
-
+    roles: string[];
     constructor(){
         super();
     }
@@ -22,6 +22,7 @@ export class UserGetDto extends Entity {
         userGetDto.avatar = user.avatar;
         userGetDto.publicKey = user.publicKey;
         userGetDto.maxSize = user.maxSize;
+        userGetDto.roles = user.roles;
         return userGetDto;
     }
 

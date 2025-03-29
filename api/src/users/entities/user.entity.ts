@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { Entity } from 'src/base/entities/entity';
+import { RefreshToken } from './RefreshToken.entity';
 
 export type UserDocument = User & Document;
 
@@ -34,12 +35,12 @@ export class User extends Entity {
   isActive: boolean = true;
   @Prop({ required: true })
   isVerified: boolean = false;
-
+  @Prop()
+  refreshToken?: RefreshToken;
 
   constructor() {
     super();
   }
-
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

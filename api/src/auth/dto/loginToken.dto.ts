@@ -1,23 +1,17 @@
+import { RefreshToken } from './../../users/entities/RefreshToken.entity';
+import { UserGetDto } from 'src/users/dto/user.dto';
 import { User } from './../../users/entities/user.entity';
 export class LoginTokenDto{
-    name: string;
-    surname: string;
-    email: string;
-    publicKey: string;
-    maxSize: number;
-    roles: string[];
-    token: string;
+    accesToken : string;
+    refreshToken : string;
+    user : UserGetDto;  
 
     constructor() {}
 
-    createFromUser(User : User, token: string) : LoginTokenDto{
-        this.name = User.name;
-        this.surname = User.surname;
-        this.email = User.email;
-        this.publicKey = User.publicKey;
-        this.maxSize = User.maxSize;
-        this.roles = User.roles;
-        this.token = token;
+    createFromUser(User : User, AccesToken: string, RefreshToken : string) : LoginTokenDto{
+        this.user = UserGetDto.fromUser(User);
+        this.accesToken = AccesToken;
+        this.refreshToken = RefreshToken;
         return this;
     }
 }

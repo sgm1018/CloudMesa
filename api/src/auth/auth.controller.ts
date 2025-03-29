@@ -7,7 +7,8 @@ import { LoginGuard } from './guards/login.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/roles.decorator';
-import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation } from '@nestjs/swagger';
+import { RefreshTokenDto } from './dto/refreshToken.dto';
 
 @Controller('auth')
 @ApiBearerAuth('JWT-auth')  // El mismo nombre que usaste en main.ts
@@ -26,6 +27,21 @@ export class AuthController {
 
     return this.authService.login(loginDto);
   }
+
+  @Public()
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token' })
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshTokens(refreshTokenDto.refreshToken);
+  }
+
+  @Post('logout')
+  @ApiOperation({ summary: 'Logout user' })
+  @ApiBody({ type: RefreshTokenDto })
+  async logout(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.logout(refreshTokenDto.refreshToken);
+  }
+
 
   @UseGuards(LoginGuard, RolesGuard)
   @Post('protected')
