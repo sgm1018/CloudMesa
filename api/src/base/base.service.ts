@@ -46,6 +46,20 @@ export class BaseService<T extends Entity> {
     return ApiResponse.item(entity);
   }
 
+  async findPaginated(
+    filter: FilterQuery<T> = {},
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<ApiResponse<T>> {
+    const total = await this.model.countDocuments(filter).exec();
+    const items = await this.model
+      .find(filter)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .exec();
+    return ApiResponse.paginated(items, total, page, limit);
+  }
+
   async update(entidad : T): Promise<ApiResponse<T>> {
     const entity = this.findOne({ _id: entidad._id });
     if (!entity) {

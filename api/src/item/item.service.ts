@@ -21,8 +21,15 @@ export class ItemsService extends BaseService<Item> {
     return ApiResponse.item(item.value!);
   } 
 
-  async findItemwByUserByParentIdPagination (userId : string, parentId : string, page: number, limit: number) : Promise<ApiResponse<Item[]>>{
-
+  async findItemwByUserByParentIdPagination (userId : string, parentId : string, page: number, limit: number) : Promise<ApiResponse<Item>>{
+    const items = await this.findPaginated({ userId: userId, parentId: parentId }, page, limit);
+    if (!items.isSuccess()){
+      return ApiResponse.error(-1, `Items with parentId "${parentId}" not found for user "${userId}"`);
+    }
+    if (items.total === 0){
+      return ApiResponse.empty(`Items with parentId "${parentId}" not found for user "${userId}"`);
+    }
+    return ApiResponse.list(items.list!);
   }
 
 }

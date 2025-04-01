@@ -5,6 +5,8 @@ export class ApiResponse<T = any> {
   value?: T;
   list?: T[];
   total?: number;
+  page?: number;
+  limit?: number;
 
   private constructor(options: {
     result?: number;
@@ -12,12 +14,16 @@ export class ApiResponse<T = any> {
     value?: T;
     list?: T[];
     total?: number;
+    page?: number;
+    limit?: number;
   }) {
     this.result = options.result ?? 0;
     this.message = options.message ?? 'Ok';
     this.value = options.value;
     this.list = options.list;
     this.total = options.list?.length || 0;
+    this.page = options.page;
+    this.limit = options.limit;
   }
 
 
@@ -36,6 +42,23 @@ export class ApiResponse<T = any> {
 
   static error(code: number = -1, message: string = 'Error'): ApiResponse {
     return new ApiResponse({ result: code, message });
+  }
+
+  static paginated<T>(
+    list: T[],
+    total: number,
+    page: number,
+    limit: number,
+    message: string = 'Ok',
+  ): ApiResponse<T> {
+    return new ApiResponse<T>({
+      list,
+      total,
+      page,
+      limit,
+      message,
+      result: 0,
+    });
   }
 
   isSuccess(): boolean {
