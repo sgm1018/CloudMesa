@@ -48,15 +48,6 @@ export class AuthService {
       throw new Error('Error generating tokens');
     }
 
-    const payload = {
-      email: userCreado.value!.email,
-      sub: userCreado.value!._id,
-      roles: userCreado.value!.roles,
-      name: userCreado.value!.name,
-      isVerified: userCreado.value!.isVerified,
-      isActive: userCreado.value!.isActive,
-    };
-
     return new LoginTokenDto().createFromUser(
       userCreado.value!,
       tokens.accessToken,
@@ -102,14 +93,7 @@ export class AuthService {
   async generateTokens(
     user: User,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload = {
-      email: user.email,
-      sub: user._id,
-      roles: user.roles,
-      name: user.name,
-      isVerified: user.isVerified,
-      isActive: user.isActive,
-    };
+    const payload = this.generatePayload(user);
 
     // Crear access token (corta duración)
     const accessToken = this.jwtService.sign(
@@ -209,5 +193,17 @@ export class AuthService {
     await this.usersService.revokeRefreshToken(user._id?.toString()!);
 
     return { message: 'Logout successful' };
+  }
+
+  public async generatePayload(user: User): Promise<any> {
+    return {
+      userId: user._id,
+      email: user.email,
+      sub: user._id,
+      roles: user.roles,
+      name: user.name,
+      isVerified: user.isVerified,
+      isActive: user.isActive,
+    };
   }
 }

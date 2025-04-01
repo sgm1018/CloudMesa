@@ -78,4 +78,7 @@ export class BaseService<T extends Entity> {
     const count = await this.model.countDocuments(filter).limit(1).exec();
     return ApiResponse.item(count > 0);
   }
+
+
+  getRequest
 }
