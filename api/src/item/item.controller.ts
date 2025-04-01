@@ -4,8 +4,10 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { LoginGuard } from 'src/auth/guards/login.guard';
-
+import { User } from 'src/auth/decorators/user.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @Controller('items')
+@ApiBearerAuth('JWT-auth')  
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
@@ -18,7 +20,7 @@ export class ItemsController {
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string, @User() user: string) {
     const result = await this.itemsService.findOne({id: id});
     if (!result.isSuccess()) {
       throw new Error('Item not found');

@@ -11,7 +11,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation } from '@nestjs/swagger';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
 
 @Controller('auth')
-@ApiBearerAuth('JWT-auth')  // El mismo nombre que usaste en main.ts
+@ApiBearerAuth('JWT-auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

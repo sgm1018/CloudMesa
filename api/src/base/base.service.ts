@@ -80,5 +80,5 @@ export class BaseService<T extends Entity> {
   }
 
 
-  getRequest
+
 }

@@ -195,7 +195,7 @@ export class AuthService {
     return { message: 'Logout successful' };
   }
 
-  public async generatePayload(user: User): Promise<any> {
+  public generatePayload(user: User): any {
     return {
       userId: user._id,
       email: user.email,
