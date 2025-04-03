@@ -1,3 +1,4 @@
+import { PaginationParams } from './../shared/responses/paginationParams';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Document, FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { Entity } from './entities/entity';
@@ -48,16 +49,15 @@ export class BaseService<T extends Entity> {
 
   async findPaginated(
     filter: FilterQuery<T> = {},
-    page: number = 1,
-    limit: number = 10,
+    paginationParams: PaginationParams
   ): Promise<ApiResponse<T>> {
     const total = await this.model.countDocuments(filter).exec();
     const items = await this.model
       .find(filter)
-      .skip((page - 1) * limit)
-      .limit(limit)
+      .skip((paginationParams.page - 1) * paginationParams.limit)
+      .limit(paginationParams.limit)
       .exec();
-    return ApiResponse.paginated(items, total, page, limit);
+    return ApiResponse.paginated(items, total, paginationParams);
   }
 
   async update(entidad : T): Promise<ApiResponse<T>> {

@@ -5,6 +5,7 @@ import { Item } from './entities/item.entity';
 
 import { BaseService } from 'src/base/base.service';
 import { ApiResponse } from 'src/shared/responses/ApiResponse';
+import { PaginationParams } from 'src/shared/responses/paginationParams';
 
 @Injectable()
 export class ItemsService extends BaseService<Item> {
@@ -21,8 +22,8 @@ export class ItemsService extends BaseService<Item> {
     return ApiResponse.item(item.value!);
   } 
 
-  async findItemwByUserByParentIdPagination (userId : string, parentId : string, page: number, limit: number) : Promise<ApiResponse<Item>>{
-    const items = await this.findPaginated({ userId: userId, parentId: parentId }, page, limit);
+  async findItemwByUserByParentIdPagination (userId : string, parentId : string, paginationParams: PaginationParams) : Promise<ApiResponse<Item>>{
+    const items = await this.findPaginated({ userId: userId, parentId: parentId }, paginationParams);
     if (!items.isSuccess()){
       return ApiResponse.error(-1, `Items with parentId "${parentId}" not found for user "${userId}"`);
     }

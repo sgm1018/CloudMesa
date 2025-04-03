@@ -1,3 +1,4 @@
+import { PaginationParams } from './paginationParams';
 
 export class ApiResponse<T = any> {
   result: number;
@@ -5,8 +6,7 @@ export class ApiResponse<T = any> {
   value?: T;
   list?: T[];
   total?: number;
-  page?: number;
-  limit?: number;
+  paginationParams: PaginationParams;
 
   private constructor(options: {
     result?: number;
@@ -14,16 +14,14 @@ export class ApiResponse<T = any> {
     value?: T;
     list?: T[];
     total?: number;
-    page?: number;
-    limit?: number;
+    paginationParams?: PaginationParams;
   }) {
     this.result = options.result ?? 0;
     this.message = options.message ?? 'Ok';
     this.value = options.value;
     this.list = options.list;
     this.total = options.list?.length || 0;
-    this.page = options.page;
-    this.limit = options.limit;
+    this.paginationParams = this.paginationParams;
   }
 
 
@@ -47,15 +45,13 @@ export class ApiResponse<T = any> {
   static paginated<T>(
     list: T[],
     total: number,
-    page: number,
-    limit: number,
+    paginationParams: PaginationParams,
     message: string = 'Ok',
   ): ApiResponse<T> {
     return new ApiResponse<T>({
       list,
       total,
-      page,
-      limit,
+      paginationParams,
       message,
       result: 0,
     });
