@@ -1,5 +1,3 @@
-import { RolesGuard } from './../auth/guards/roles.guard';
-import { LoginGuard } from './../auth/guards/login.guard';
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, BadRequestException } from '@nestjs/common';
 import { ItemsService } from './item.service';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -47,7 +45,7 @@ export class ItemsController {
   @Roles('user')
   @Get('user/:id')
   async getItemsByIdPaginated(@User() user: string, @Param('id') id: string, PaginationParams : PaginationParams) {
-    const result = await this.itemsService.findItemwByUserByParentIdPagination(user,id, PaginationParams)
+    const result = await this.itemsService.findItemwByUserByParentIdPagination(user, id, PaginationParams)
     if (!result.isSuccess()){
       throw new BadRequestException('Error getting items');
     }
