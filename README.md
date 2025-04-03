@@ -1,5 +1,5 @@
+![logo-no-background](https://github.com/user-attachments/assets/50bff183-9aa7-4560-b3c8-ff0741f7715c)
 <div align="center">
-    <img src="https://via.placeholder.com/200x200?text=CloudMesa" alt="CloudMesa Logo" width="200"/>
     <h1>CloudMesa</h1>
     <p><strong>Secure Cloud File/Password Storage with End-to-End Encryption</strong></p>
     
