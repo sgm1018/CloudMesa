@@ -15,6 +15,16 @@ async function bootstrap() {
   //   transform: false,            // Transforma automáticamente al tipo del DTO
   // }));
 
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true, // Cambia a true para transformar a la clase DTO
+    transformOptions: {
+      enableImplicitConversion: true, // Permite la conversión implícita de tipos
+    },
+  }));
+  
+
   app.setGlobalPrefix('api');
   const configService = app.get(ConfigService);
     // Configuración de Swagger

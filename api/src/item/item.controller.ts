@@ -7,6 +7,7 @@ import { LoginGuard } from 'src/auth/guards/login.guard';
 import { User } from 'src/auth/decorators/user.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { PaginationParams } from 'src/shared/responses/paginationParams';
+import { CreateItemDto } from './dto/create-item.dto';
 @Controller('items')
 @ApiBearerAuth('JWT-auth')  
 export class ItemsController {
@@ -22,7 +23,7 @@ export class ItemsController {
   @Roles('user')
   @Get(':id')
   async findOne(@Param('id') id: string, @User() user: string) {
-    const result = await this.itemsService.findOne({id: id});
+    const result = await this.itemsService.findOne({userId: id});
     if (!result.isSuccess()) {
       throw new BadRequestException(`Item with ID "${id}" not found for user "${user}"`);
     }
@@ -51,4 +52,16 @@ export class ItemsController {
     }
     return result.value;
   }
+
+  @Public()
+  @UseGuards(LoginGuard)
+  @Post('random')
+  async createRandom(@Body() createItem: CreateItemDto ) {
+    const result = await this.itemsService.create(createItem.toClass());
+    if (!result.isSuccess()) {
+      throw new BadRequestException('Error creating item');
+    }
+    return result.value;
+  }
+
 }
