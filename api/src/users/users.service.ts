@@ -34,7 +34,7 @@ export class UsersService extends BaseService<User> {
       );
     }
   }
-
+  //TODO check this refresh toke, dont work correctly
   async findOneByRefreshToken(token: string): Promise<ApiResponse<User>> {
     return this.findOne({
       'refreshToken.token': token,

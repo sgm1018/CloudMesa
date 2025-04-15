@@ -38,6 +38,7 @@ export class AuthController {
   @Post('logout')
   @ApiOperation({ summary: 'Logout user' })
   @ApiBody({ type: RefreshTokenDto })
+  @UseGuards(LoginGuard)
   async logout(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.logout(refreshTokenDto.refreshToken);
   }
