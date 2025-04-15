@@ -14,13 +14,13 @@ export class ItemsService extends BaseService<Item> {
   }
 
 
-  async findItemByUser(userId : string, itemId : string) : Promise<ApiResponse<Item>>{
-    const item = await this.findOne({ _id: itemId, userId: userId });
-    if (!item.isSuccess()){
-      return ApiResponse.error(-1, `Item with ID "${itemId}" not found for user "${userId}"`);
-    }
-    return ApiResponse.item(item.value!);
-  } 
+  // async findItemByUser(userId : string, itemId : string) : Promise<ApiResponse<Item>>{
+  //   const item = await this.findOne({ _id: itemId, userId: userId });
+  //   if (!item.isSuccess()){
+  //     return ApiResponse.error(-1, `Item with ID "${itemId}" not found for user "${userId}"`);
+  //   }
+  //   return ApiResponse.item(item.value!);
+  // } 
 
   async findItemwByUserByParentIdPagination (userId : string, parentId : string, paginationParams: PaginationParams) : Promise<ApiResponse<Item>>{
     const items = await this.findPaginated({ userId: userId, parentId: parentId }, paginationParams);

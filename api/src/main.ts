@@ -15,14 +15,14 @@ async function bootstrap() {
   //   transform: false,            // Transforma automáticamente al tipo del DTO
   // }));
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true, // Cambia a true para transformar a la clase DTO
-    transformOptions: {
-      enableImplicitConversion: true, // Permite la conversión implícita de tipos
-    },
-  }));
+  // app.useGlobalPipes(new ValidationPipe({
+  //   whitelist: true,
+  //   forbidNonWhitelisted: true,
+  //   transform: true, // Cambia a true para transformar a la clase DTO
+  //   transformOptions: {
+  //     enableImplicitConversion: true, // Permite la conversión implícita de tipos
+  //   },
+  // }));
   
 
   app.setGlobalPrefix('api');
@@ -44,7 +44,14 @@ async function bootstrap() {
   const port = configService.get<number>('PORT') || 3000;
   console.log(`Running at: http://localhost:${port}`);
   console.log(`swagger at: http://localhost:${port}/swagger`);
-  
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,           // Elimina propiedades que no están en el DTO
+    forbidNonWhitelisted: true, // Rechaza peticiones con propiedades extra
+    transform: true, // Cambia a true para transformar a la clase DTO
+    transformOptions: { 
+      enableImplicitConversion: true, // Permite la conversión implícita de tipos
+    },
+  }));
   await app.listen(port);
 }
 
