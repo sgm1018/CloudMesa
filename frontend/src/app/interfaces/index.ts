@@ -55,14 +55,14 @@ export interface FileOperation {
 
 export interface PasswordGroup {
   id: string;
-  name: string;
+  name?: string;
   description?: string;
   color?: string;
   icon?: string;
-  isPrivate: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  ownerId: string;
+  isPrivate?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  ownerId?: string;
   sharedWith?: PasswordShare[];
 }
 

@@ -23,7 +23,7 @@ import { SearchResult } from '../../interfaces';
               }
               <div>
                 <div class="text-[var(--text-primary)] font-medium">{{ result.item.name }}</div>
-                <div class="text-[var(--text-secondary)] text-sm">{{ result.item.path }}</div>
+                <!-- <div class="text-[var(--text-secondary)] text-sm">{{ result.item.path }}</div> -->
               </div>
             </div>
           </div>

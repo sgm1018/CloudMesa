@@ -60,25 +60,25 @@ export class SidebarComponent {
       id: 'files',
       label: 'My Files',
       icon: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z',
-      route: '/files'
+      route: '/main/files'
     },
     {
       id: 'shared',
       label: 'Shared with me',
       icon: 'M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z',
-      route: '/shared'
+      route: '/main/shared'
     },
     {
       id: 'passwords',
       label: 'Passwords',
       icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
-      route: '/passwords'
+      route: '/main/passwords'
     },
     {
       id: 'trash',
       label: 'Trash',
       icon: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16',
-      route: '/trash'
+      route: '/main/trash'
     }
   ];
 

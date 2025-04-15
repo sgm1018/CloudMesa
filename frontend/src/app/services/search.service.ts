@@ -20,30 +20,30 @@ export class SearchService {
     this.searchQuery.next(query);
   }
 
-  search(query: string): Observable<SearchResult[]> {
-    const normalizedQuery = query.toLowerCase().trim();
+  // search(query: string): Observable<SearchResult[]> {
+  //   const normalizedQuery = query.toLowerCase().trim();
     
-    if (!normalizedQuery) {
-      return of([]);
-    }
+  //   if (!normalizedQuery) {
+  //     return of([]);
+  //   }
 
-    return of(this.allFiles).pipe(
-      map(files => files
-        .filter(file => {
-          const matchesName = file.name.toLowerCase().includes(normalizedQuery);
-          const matchesType = file.type.toLowerCase().includes(normalizedQuery);
-          const matchesPath = file.path.toLowerCase().includes(normalizedQuery);
-          return matchesName || matchesType || matchesPath;
-        })
-        .map(item => ({
-          type: item.type,
-          item,
-          matchScore: this.calculateMatchScore(item, normalizedQuery)
-        }))
-        .sort((a, b) => b.matchScore - a.matchScore)
-      )
-    );
-  }
+  //   return of(this.allFiles).pipe(
+  //     map(files => files
+  //       .filter(file => {
+  //         const matchesName = file.name.toLowerCase().includes(normalizedQuery);
+  //         const matchesType = file.type.toLowerCase().includes(normalizedQuery);
+  //         const matchesPath = file.path.toLowerCase().includes(normalizedQuery);
+  //         return matchesName || matchesType || matchesPath;
+  //       })
+  //       .map(item => ({
+  //         type: item.type,
+  //         item,
+  //         matchScore: this.calculateMatchScore(item, normalizedQuery)
+  //       }))
+  //       .sort((a, b) => b.matchScore - a.matchScore)
+  //     )
+  //   );
+  // }
 
   private calculateMatchScore(item: FileItem, query: string): number {
     let score = 0;

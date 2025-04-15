@@ -172,7 +172,8 @@ export class PasswordListComponent implements OnInit {
         id: '1',
         name: 'Personal',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        
       },
       {
         id: '2',
@@ -190,7 +191,8 @@ export class PasswordListComponent implements OnInit {
         username: 'user@gmail.com',
         password: 'encrypted-password-1',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        ownerId: 'user-id-1'
       },
       {
         id: '2',
@@ -199,7 +201,8 @@ export class PasswordListComponent implements OnInit {
         username: 'user@facebook.com',
         password: 'encrypted-password-2',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        ownerId: 'user-id-1'
       }
     ];
   }

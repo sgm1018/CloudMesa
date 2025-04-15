@@ -83,14 +83,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.searchInputSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(query => this.searchService.search(query)),
-      takeUntil(this.destroy$)
-    ).subscribe(results => {
-      this.searchResults = results;
-    });
+    // this.searchInputSubject.pipe(
+    //   debounceTime(300),
+    //   distinctUntilChanged(),
+    //   switchMap(query => this.searchService.search(query)),
+    //   takeUntil(this.destroy$)
+    // ).subscribe(results => {
+    //   this.searchResults = results;
+    // });
   }
 
   ngOnDestroy(): void {
