@@ -1,12 +1,13 @@
 // ... (imports and @Component decorator remain unchanged)
 
 import { CommonModule } from "@angular/common";
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { LoginBackground } from "../../components/backgrounds/login/login-background.component";
 import { LoginDto } from "../../shared/dto/auth/Login";
 import { RegisterDto } from "../../shared/dto/auth/Register";
 import { AuthService } from "../../services/auth.service";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-auth-page",
@@ -247,7 +248,7 @@ import { AuthService } from "../../services/auth.service";
     </div>
   `,
 })
-export class AuthPageComponent {
+export class AuthPageComponent implements OnInit {
   // Component class remains unchanged
   public loginDto: LoginDto = {
     email: "",
@@ -264,16 +265,32 @@ export class AuthPageComponent {
   public logoRoute: string = "/assets/logos/png/logo-no-background.png";
   public isLoginMode: boolean = true;
 
+  constructor(private authService: AuthService, private router: Router){}
 
-  constructor(private authService: AuthService){}
+  ngOnInit(): void {
+      if(this.authService.isLoggedIn()){
+        this.authService.goMainPage();
+      }
+  }
+
   login() {
-    console.log("Logging in with", this.loginDto);
+    this.authService.login(this.loginDto.email, this.loginDto.password).subscribe({
+      next: (response) => {
+        this.authService.setSessionStorage(response);
+        this.router.navigate(['/main']);
+        console.log("Login successful", response);
+      },
+      error: (error) => {
+        console.error("Login failed", error);
+      },
+    });
   }
 
   register() {
     this.authService.register(this.registerDto).subscribe({
       next: (response) => {
         this.authService.setSessionStorage(response);
+        this.authService.goMainPage();
         console.log("Registration successful", response);
       },
       error: (error) => {
@@ -281,4 +298,5 @@ export class AuthPageComponent {
       },
     }); 
   }
+
 }

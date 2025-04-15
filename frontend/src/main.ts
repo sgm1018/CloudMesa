@@ -9,6 +9,7 @@ import { ShareModalComponent } from './app/components/share-modal/share-modal.co
 import { AuthPageComponent } from './app/pages/auth-page/auth-page.component';
 import { MainPageComponent } from './app/pages/main-page/main-page.component';
 import { provideHttpClient } from '@angular/common/http';
+import { AuthGuard } from './app/guards/auth.guard';
 
 const routes: Routes = [
   { path: '', redirectTo: '/main/files', pathMatch: 'full' },
@@ -17,6 +18,7 @@ const routes: Routes = [
   { 
     path: 'main', 
     component: MainPageComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: 'files', pathMatch: 'full' },
       { path: 'files', component: FileListComponent },

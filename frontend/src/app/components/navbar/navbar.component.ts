@@ -1,3 +1,4 @@
+import { AuthService } from './../../services/auth.service';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../../services/theme.service';
@@ -56,7 +57,7 @@ import { Subject, debounceTime, distinctUntilChanged, switchMap, takeUntil } fro
             <div class="absolute right-0 mt-2 w-48 bg-[var(--card-bg)] rounded-lg shadow-lg border border-[var(--border-color)]">
               <a href="#" class="block px-4 py-2 text-[var(--text-primary)] hover:bg-[var(--secondary-bg)]">Profile</a>
               <a href="#" class="block px-4 py-2 text-[var(--text-primary)] hover:bg-[var(--secondary-bg)]">Settings</a>
-              <a href="#" class="block px-4 py-2 text-[var(--text-primary)] hover:bg-[var(--secondary-bg)]">Sign out</a>
+              <a (click)="getAuthService().logout().subscribe()" class="block px-4 py-2 text-[var(--text-primary)] hover:bg-[var(--secondary-bg)]">Sign out</a>
             </div>
           }
         </div>
@@ -79,7 +80,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   constructor(
     private themeService: ThemeService,
-    private searchService: SearchService
+    private searchService: SearchService,
+    private authService : AuthService
   ) {}
 
   ngOnInit(): void {
@@ -114,4 +116,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   toggleSidebar(): void {
     // Implement sidebar toggle logic
   }
+
+  getAuthService(): AuthService {
+    return this.authService;
+  }
+
+
 }
