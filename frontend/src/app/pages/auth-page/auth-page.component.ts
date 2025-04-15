@@ -1,3 +1,4 @@
+import { UrlTree } from '@angular/router';
 // ... (imports and @Component decorator remain unchanged)
 
 import { CommonModule } from "@angular/common";
@@ -8,6 +9,7 @@ import { LoginDto } from "../../shared/dto/auth/Login";
 import { RegisterDto } from "../../shared/dto/auth/Register";
 import { AuthService } from "../../services/auth.service";
 import { Router } from "@angular/router";
+import { ThemeService } from "../../services/theme.service";
 
 @Component({
   selector: "app-auth-page",
@@ -26,9 +28,9 @@ import { Router } from "@angular/router";
           class="max-w-md w-full space-y-8 bg-[var(--card-bg)] p-8 shadow-lg rounded-xl border border-[var(--border-color)]"
         >
           <div class="text-center">
-            <img class="mx-auto h-16  w-auto" [src]="logoRoute" alt="Logo" />
+            <img class="mx-auto h-16  w-auto" [src]="getThemeService().logoUrl" alt="Logo" />
             <!-- <h2
-              class="mt-6 text-center text-3xl font-extrabold text-[var(--text-primary)]"
+              class="mt-6 text-center text-3xl font-extrabold text-text-primary"
             >
               {{ isLoginMode ? "Log In" : "Create account" }}
             </h2> -->
@@ -39,7 +41,7 @@ import { Router } from "@angular/router";
             <button
               [ngClass]="{
                 'border-[var(--accent)] text-[var(--accent)]': isLoginMode,
-                'border-transparent text-[var(--text-secondary)]': !isLoginMode
+                'border-transparent text-text-secondary': !isLoginMode
               }"
               class="py-4 px-6 font-medium text-sm border-b-2 flex-1 transition-colors duration-200"
               (click)="isLoginMode = true"
@@ -49,7 +51,7 @@ import { Router } from "@angular/router";
             <button
               [ngClass]="{
                 'border-[var(--accent)] text-[var(--accent)]': !isLoginMode,
-                'border-transparent text-[var(--text-secondary)]': isLoginMode
+                'border-transparent text-text-secondary': isLoginMode
               }"
               class="py-4 px-6 font-medium text-sm border-b-2 flex-1 transition-colors duration-200"
               (click)="isLoginMode = false"
@@ -65,7 +67,7 @@ import { Router } from "@angular/router";
                 <div>
                   <label
                     for="email-login"
-                    class="block text-sm font-medium text-[var(--text-secondary)] mb-1"
+                    class="block text-sm font-medium text-text-secondary mb-1"
                     >Email</label
                   >
                   <input
@@ -81,7 +83,7 @@ import { Router } from "@angular/router";
                 <div>
                   <label
                     for="password-login"
-                    class="block text-sm font-medium text-[var(--text-secondary)] mb-1"
+                    class="block text-sm font-medium text-text-secondary mb-1"
                     >Contraseña</label
                   >
                   <input
@@ -103,7 +105,7 @@ import { Router } from "@angular/router";
                     />
                     <label
                       for="remember-me"
-                      class="ml-2 block text-sm text-[var(--text-secondary)]"
+                      class="ml-2 block text-sm text-text-secondary"
                       >Recordarme</label
                     >
                   </div>
@@ -132,7 +134,7 @@ import { Router } from "@angular/router";
                   <div>
                     <label
                       for="name"
-                      class="block text-sm font-medium text-[var(--text-secondary)] mb-1"
+                      class="block text-sm font-medium text-text-secondary mb-1"
                       >Nombre</label
                     >
                     <input
@@ -147,7 +149,7 @@ import { Router } from "@angular/router";
                   <div>
                     <label
                       for="surname"
-                      class="block text-sm font-medium text-[var(--text-secondary)] mb-1"
+                      class="block text-sm font-medium text-text-secondary mb-1"
                       >Apellido</label
                     >
                     <input
@@ -164,7 +166,7 @@ import { Router } from "@angular/router";
                 <div>
                   <label
                     for="email-register"
-                    class="block text-sm font-medium text-[var(--text-secondary)] mb-1"
+                    class="block text-sm font-medium text-text-secondary mb-1"
                     >Email</label
                   >
                   <input
@@ -180,7 +182,7 @@ import { Router } from "@angular/router";
                 <div>
                   <label
                     for="publicKey"
-                    class="block text-sm font-medium text-[var(--text-secondary)] mb-1"
+                    class="block text-sm font-medium text-text-secondary mb-1"
                     >Clave pública</label
                   >
                   <input
@@ -195,7 +197,7 @@ import { Router } from "@angular/router";
                 <div>
                   <label
                     for="password-register"
-                    class="block text-sm font-medium text-[var(--text-secondary)] mb-1"
+                    class="block text-sm font-medium text-text-secondary mb-1"
                     >Contraseña</label
                   >
                   <input
@@ -211,7 +213,7 @@ import { Router } from "@angular/router";
                 <div>
                   <label
                     for="confirm-password"
-                    class="block text-sm font-medium text-[var(--text-secondary)] mb-1"
+                    class="block text-sm font-medium text-text-secondary mb-1"
                     >Confirmar contraseña</label
                   >
                   <input
@@ -262,10 +264,9 @@ export class AuthPageComponent implements OnInit {
     surname: "",
   };
   public confirmPassword: string = "";
-  public logoRoute: string = "/assets/logos/png/logo-no-background.png";
   public isLoginMode: boolean = true;
 
-  constructor(private authService: AuthService, private router: Router){}
+  constructor(private authService: AuthService, private themeService : ThemeService,  private router: Router){}
 
   ngOnInit(): void {
       if(this.authService.isLoggedIn()){
@@ -298,5 +299,10 @@ export class AuthPageComponent implements OnInit {
       },
     }); 
   }
+
+  getThemeService(){
+    return this.themeService;
+  }
+
 
 }

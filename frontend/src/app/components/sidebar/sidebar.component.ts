@@ -1,29 +1,35 @@
+import { ThemeService } from './../../services/theme.service';
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StorageQuota } from '../../interfaces';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <aside class="bg-[var(--secondary-bg)] w-64 h-screen p-4 flex flex-col gap-4 lg:block" [class.hidden]="!isOpen">
-      <div class="mb-6">
-        <button class="btn-primary w-full flex items-center justify-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <aside class="bg-secondary-bg flex-1 flex flex-col shadow-lg transition-all duration-300 h-screen" [class.hidden]="!isOpen">
+      <!-- <div class="p-5 border-b border-[var(--border-color)]">
+        <h2 class="text-lg font-semibold mb-4 text-text-primary">Cloud Mesa</h2>
+        <button class="btn-primary w-full flex items-center justify-center gap-2 rounded-md py-2.5 transition-all hover:shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          New Folder
+          <span>New Folder</span>
         </button>
-      </div>
-
-      <nav class="space-y-2">
+      </div> -->
+      <nav class="flex-grow py-4 px-3">
+        <div class="flex items-center justify-center mb-4">
+          <img class="h-9 w-auto rounded" [src]="getThemeService().logoUrl" alt="Logo" />  
+        </div>
+        <p class="text-xs uppercase font-medium text-accent mb-3 px-3">Main Navigation</p>
         @for (item of menuItems; track item.id) {
           <a 
             [routerLink]="item.route"
-            routerLinkActive="bg-[var(--primary-bg)]"
-            class="flex items-center gap-2 px-4 py-2 rounded-lg text-[var(--text-primary)] hover:bg-[var(--primary-bg)]"
+            routerLinkActive="bg-primary-bg text-blue-500 font-medium shadow-sm"
+            class="flex items-center gap-3 px-4 py-3 mb-1 rounded-lg text-text-primary hover:bg-primary-bg transition-all duration-200"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="item.icon" />
@@ -33,19 +39,22 @@ import { StorageQuota } from '../../interfaces';
         }
       </nav>
 
-      <div class="mt-auto">
-        <div class="p-4 bg-[var(--primary-bg)] rounded-lg">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-[var(--text-primary)]">Storage</span>
-            <span class="text-[var(--text-secondary)]">
+      <div class="p-4 mt-auto border-t border-[var(--border-color)]">
+        <div class="p-4 bg-primary-bg rounded-lg hover:shadow-md transition-all">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-text-primary font-medium">Storage</span>
+            <span class="text-text-secondary text-sm bg-secondary-bg py-1 px-2 rounded-full">
               {{ storageQuota.used }}{{ storageQuota.unit }} / {{ storageQuota.total }}{{ storageQuota.unit }}
             </span>
           </div>
-          <div class="w-full bg-[var(--secondary-bg)] rounded-full h-2">
+          <div class="w-full bg-secondary-bg rounded-full h-2.5">
             <div 
-              class="bg-[var(--accent)] h-2 rounded-full" 
+              class="bg-[var(--accent)] h-2.5 rounded-full transition-all duration-300" 
               [style.width.%]="(storageQuota.used / storageQuota.total) * 100"
             ></div>
+          </div>
+          <div class="text-xs text-text-secondary mt-2 text-right">
+            {{ Math.round((storageQuota.used / storageQuota.total) * 100) }}% used
           </div>
         </div>
       </div>
@@ -54,6 +63,7 @@ import { StorageQuota } from '../../interfaces';
 })
 export class SidebarComponent {
   isOpen = true;
+  Math = Math; // Expose Math for percentage calculation
   
   menuItems = [
     {
@@ -87,4 +97,12 @@ export class SidebarComponent {
     total: 10,
     unit: 'GB'
   };
+
+
+  constructor(private themeService : ThemeService) {
+  }
+
+  getThemeService() {
+    return this.themeService;
+  }
 }

@@ -10,34 +10,34 @@ import { ShareSettings, User } from '../../interfaces';
   template: `
     @if (isOpen) {
       <div class="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
-        <div class="bg-[var(--primary-bg)] p-6 rounded-lg w-full max-w-md">
-          <h2 class="text-xl font-semibold text-[var(--text-primary)] mb-4">Share {{ itemType }}</h2>
+        <div class="bg-primary-bg p-6 rounded-lg w-full max-w-md">
+          <h2 class="text-xl font-semibold text-text-primary mb-4">Share {{ itemType }}</h2>
           
           <div class="space-y-6">
             <!-- Share with Users -->
             <div>
-              <h3 class="text-lg font-medium text-[var(--text-primary)] mb-2">Share with Users</h3>
+              <h3 class="text-lg font-medium text-text-primary mb-2">Share with Users</h3>
               <div class="space-y-4">
                 <div>
                   <input
                     type="text"
                     [(ngModel)]="userSearchQuery"
                     placeholder="Search users..."
-                    class="w-full px-4 py-2 bg-[var(--secondary-bg)] text-[var(--text-primary)] rounded-lg border border-[var(--border-color)]"
+                    class="w-full px-4 py-2 bg-secondary-bg text-text-primary rounded-lg border border-[var(--border-color)]"
                   />
                   @if (filteredUsers.length > 0) {
                     <div class="mt-2 bg-[var(--card-bg)] rounded-lg border border-[var(--border-color)] max-h-48 overflow-y-auto">
                       @for (user of filteredUsers; track user.id) {
                         <button
-                          class="w-full px-4 py-2 flex items-center gap-3 hover:bg-[var(--secondary-bg)]"
+                          class="w-full px-4 py-2 flex items-center gap-3 hover:bg-secondary-bg"
                           (click)="selectUser(user)"
                         >
                           <div class="w-8 h-8 rounded-full bg-[var(--accent)] text-white flex items-center justify-center">
                             {{ user.name[0].toUpperCase() }}
                           </div>
                           <div class="text-left">
-                            <p class="text-[var(--text-primary)]">{{ user.name }}</p>
-                            <p class="text-sm text-[var(--text-secondary)]">{{ user.email }}</p>
+                            <p class="text-text-primary">{{ user.name }}</p>
+                            <p class="text-sm text-text-secondary">{{ user.email }}</p>
                           </div>
                         </button>
                       }
@@ -48,12 +48,12 @@ import { ShareSettings, User } from '../../interfaces';
                 @if (selectedUsers.length > 0) {
                   <div class="space-y-2">
                     @for (user of selectedUsers; track user.id) {
-                      <div class="flex items-center justify-between p-2 bg-[var(--secondary-bg)] rounded-lg">
+                      <div class="flex items-center justify-between p-2 bg-secondary-bg rounded-lg">
                         <div class="flex items-center gap-2">
                           <div class="w-8 h-8 rounded-full bg-[var(--accent)] text-white flex items-center justify-center">
                             {{ user.name[0].toUpperCase() }}
                           </div>
-                          <span class="text-[var(--text-primary)]">{{ user.name }}</span>
+                          <span class="text-text-primary">{{ user.name }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                           <select
@@ -83,14 +83,14 @@ import { ShareSettings, User } from '../../interfaces';
                     [(ngModel)]="shareSettings.notifyByEmail"
                     class="rounded border-[var(--border-color)]"
                   />
-                  <span class="text-[var(--text-primary)]">Notify users by email</span>
+                  <span class="text-text-primary">Notify users by email</span>
                 </label>
               </div>
             </div>
 
             <!-- Share via Link -->
             <div>
-              <h3 class="text-lg font-medium text-[var(--text-primary)] mb-2">Share via Link</h3>
+              <h3 class="text-lg font-medium text-text-primary mb-2">Share via Link</h3>
               <div class="space-y-4">
                 @if (shareSettings.link) {
                   <div class="flex gap-2">
@@ -98,7 +98,7 @@ import { ShareSettings, User } from '../../interfaces';
                       type="text"
                       [value]="shareSettings.link"
                       readonly
-                      class="flex-1 px-4 py-2 bg-[var(--secondary-bg)] text-[var(--text-primary)] rounded-lg border border-[var(--border-color)]"
+                      class="flex-1 px-4 py-2 bg-secondary-bg text-text-primary rounded-lg border border-[var(--border-color)]"
                     />
                     <button class="btn-secondary" (click)="copyLink()">Copy</button>
                   </div>
@@ -109,10 +109,10 @@ import { ShareSettings, User } from '../../interfaces';
                 @if (shareSettings.link) {
                   <div class="space-y-2">
                     <div>
-                      <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Link Expiration</label>
+                      <label class="block text-sm font-medium text-text-secondary mb-1">Link Expiration</label>
                       <select
                         [(ngModel)]="linkExpiration"
-                        class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                        class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
                         (change)="updateLinkExpiration()"
                       >
                         <option value="never">Never</option>
@@ -127,7 +127,7 @@ import { ShareSettings, User } from '../../interfaces';
                       <input
                         type="date"
                         [(ngModel)]="customExpirationDate"
-                        class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                        class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
                         (change)="updateLinkExpiration()"
                       />
                     }

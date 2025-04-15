@@ -11,7 +11,7 @@ import { AddPasswordModalComponent } from './add-password-modal.component';
   template: `
     <div class="p-4">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-[var(--text-primary)]">Password Manager</h2>
+        <h2 class="text-2xl font-bold text-text-primary">Password Manager</h2>
         <div class="flex gap-3">
           <button class="btn-secondary flex items-center gap-2 hover:scale-105 transition-transform" (click)="showPasswordGenerator = true">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -33,26 +33,26 @@ import { AddPasswordModalComponent } from './add-password-modal.component';
         @for (group of passwordGroups; track group.id) {
           <div class="bg-[var(--card-bg)] p-4 rounded-lg border border-[var(--border-color)]">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ group.name }}</h3>
+              <h3 class="text-lg font-semibold text-text-primary">{{ group.name }}</h3>
               <button class="btn-secondary" (click)="addPasswordToGroup(group)">Add Password</button>
             </div>
             
             <!-- Passwords in group -->
             <div class="space-y-3">
               @for (entry of getPasswordsForGroup(group.id); track entry.id) {
-                <div class="flex items-center justify-between p-3 bg-[var(--secondary-bg)] rounded-lg">
+                <div class="flex items-center justify-between p-3 bg-secondary-bg rounded-lg">
                   <div>
-                    <p class="font-medium text-[var(--text-primary)]">{{ entry.name }}</p>
-                    <p class="text-sm text-[var(--text-secondary)]">{{ entry.username }}</p>
+                    <p class="font-medium text-text-primary">{{ entry.name }}</p>
+                    <p class="text-sm text-text-secondary">{{ entry.username }}</p>
                   </div>
                   <div class="flex items-center gap-2">
-                    <button class="p-2 hover:bg-[var(--primary-bg)] rounded-lg transition-colors" (click)="copyPassword(entry)">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button class="p-2 hover:bg-primary-bg rounded-lg transition-colors" (click)="copyPassword(entry)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                       </svg>
                     </button>
-                    <button class="p-2 hover:bg-[var(--primary-bg)] rounded-lg transition-colors" (click)="editPassword(entry)">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button class="p-2 hover:bg-primary-bg rounded-lg transition-colors" (click)="editPassword(entry)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
@@ -67,16 +67,16 @@ import { AddPasswordModalComponent } from './add-password-modal.component';
       <!-- Password Generator Modal -->
       @if (showPasswordGenerator) {
         <div class="fixed inset-0 bg-gray-900/50 flex items-center justify-center">
-          <div class="bg-[var(--primary-bg)] p-6 rounded-lg w-full max-w-md">
-            <h3 class="text-xl font-semibold text-[var(--text-primary)] mb-4">Password Generator</h3>
+          <div class="bg-primary-bg border border-[var(--border-color)] p-6 rounded-lg w-full max-w-md">
+            <h3 class="text-xl font-semibold text-text-primary mb-4">Password Generator</h3>
             
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Length</label>
+                <label class="block text-sm font-medium text-text-secondary mb-1">Length</label>
                 <input
                   type="number"
                   [(ngModel)]="generatorOptions.length"
-                  class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                  class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
                   min="8"
                   max="64"
                 />
@@ -89,7 +89,7 @@ import { AddPasswordModalComponent } from './add-password-modal.component';
                     [(ngModel)]="generatorOptions.includeUppercase"
                     class="rounded border-[var(--border-color)]"
                   />
-                  <span class="text-[var(--text-primary)]">Uppercase letters</span>
+                  <span class="text-text-primary">Uppercase letters</span>
                 </label>
                 <label class="flex items-center gap-2">
                   <input
@@ -97,7 +97,7 @@ import { AddPasswordModalComponent } from './add-password-modal.component';
                     [(ngModel)]="generatorOptions.includeLowercase"
                     class="rounded border-[var(--border-color)]"
                   />
-                  <span class="text-[var(--text-primary)]">Lowercase letters</span>
+                  <span class="text-text-primary">Lowercase letters</span>
                 </label>
                 <label class="flex items-center gap-2">
                   <input
@@ -105,7 +105,7 @@ import { AddPasswordModalComponent } from './add-password-modal.component';
                     [(ngModel)]="generatorOptions.includeNumbers"
                     class="rounded border-[var(--border-color)]"
                   />
-                  <span class="text-[var(--text-primary)]">Numbers</span>
+                  <span class="text-text-primary">Numbers</span>
                 </label>
                 <label class="flex items-center gap-2">
                   <input
@@ -113,7 +113,7 @@ import { AddPasswordModalComponent } from './add-password-modal.component';
                     [(ngModel)]="generatorOptions.includeSymbols"
                     class="rounded border-[var(--border-color)]"
                   />
-                  <span class="text-[var(--text-primary)]">Symbols</span>
+                  <span class="text-text-primary">Symbols</span>
                 </label>
               </div>
 
@@ -122,7 +122,7 @@ import { AddPasswordModalComponent } from './add-password-modal.component';
                   type="text"
                   [value]="generatedPassword"
                   readonly
-                  class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)] mb-2"
+                  class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)] mb-2"
                 />
                 <div class="flex gap-2">
                   <button class="btn-primary flex-1" (click)="generatePassword()">Generate</button>

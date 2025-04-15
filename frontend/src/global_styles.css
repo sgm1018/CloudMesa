@@ -28,36 +28,36 @@
 
 @layer components {
   .h1 {
-    @apply text-3xl font-bold text-[var(--text-primary)] mb-4;
+    @apply text-3xl font-bold text-text-primary mb-4;
   }
   .h2 {
-    @apply text-2xl font-semibold text-[var(--text-primary)] mb-3;
+    @apply text-2xl font-semibold text-text-primary mb-3;
   }
   .h3 {
-    @apply text-xl font-medium text-[var(--text-primary)] mb-2;
+    @apply text-xl font-medium text-text-primary mb-2;
   }
   .h4 {
-    @apply text-lg font-medium text-[var(--text-secondary)] mb-1;
+    @apply text-lg font-medium text-text-secondary mb-1;
   }
   .text-default {
-    @apply text-base text-[var(--text-secondary)];
+    @apply text-base text-text-secondary;
   }
   .text-muted {
-    @apply text-sm text-[var(--text-secondary)] opacity-75;
+    @apply text-sm text-text-secondary opacity-75;
   }
   .btn-primary {
     @apply bg-[var(--button-bg)] text-[var(--button-text)] px-4 py-2 rounded-md hover:bg-opacity-90 transition duration-200;
   }
   .btn-secondary {
-    @apply bg-[var(--secondary-bg)] text-[var(--text-primary)] px-4 py-2 rounded-md border border-[var(--border-color)] hover:bg-opacity-80 transition duration-200;
+    @apply bg-secondary-bg text-text-primary px-4 py-2 rounded-md border border-[var(--border-color)] hover:bg-opacity-80 transition duration-200;
   }
   .btn-danger {
     @apply bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200;
   }
   .card-file {
-    @apply bg-[var(--card-bg)] p-4 rounded-lg border border-[var(--border-color)] flex items-center justify-between hover:bg-[var(--secondary-bg)] transition duration-150;
+    @apply bg-[var(--card-bg)] p-4 rounded-lg border border-[var(--border-color)] flex items-center justify-between hover:bg-secondary-bg transition duration-150;
   }
   .card-folder {
-    @apply bg-[var(--card-bg)] p-4 rounded-lg border border-[var(--border-color)] flex items-center justify-between hover:bg-[var(--secondary-bg)] transition duration-150 font-semibold;
+    @apply bg-[var(--card-bg)] p-4 rounded-lg border border-[var(--border-color)] flex items-center justify-between hover:bg-secondary-bg transition duration-150 font-semibold;
   }
 }

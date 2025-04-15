@@ -9,7 +9,7 @@ import { ShareSettings } from '../../interfaces';
   template: `
     @if (isOpen) {
       <div class="fixed inset-0 bg-gray-900/50 flex items-center justify-center">
-        <div class="bg-[var(--primary-bg)] p-6 rounded-lg w-full max-w-md">
+        <div class="bg-primary-bg p-6 rounded-lg w-full max-w-md">
           <h2 class="h2">Share</h2>
           
           <div class="space-y-4">
@@ -20,7 +20,7 @@ import { ShareSettings } from '../../interfaces';
                   type="text"
                   [value]="shareSettings.link"
                   readonly
-                  class="flex-1 px-4 py-2 bg-[var(--secondary-bg)] text-[var(--text-primary)] rounded-lg border border-[var(--border-color)]"
+                  class="flex-1 px-4 py-2 bg-secondary-bg text-text-primary rounded-lg border border-[var(--border-color)]"
                 />
                 <button class="btn-primary" (click)="copyLink()">Copy</button>
               </div>
@@ -32,7 +32,7 @@ import { ShareSettings } from '../../interfaces';
                 <input
                   type="password"
                   placeholder="Set password"
-                  class="w-full px-4 py-2 bg-[var(--secondary-bg)] text-[var(--text-primary)] rounded-lg border border-[var(--border-color)]"
+                  class="w-full px-4 py-2 bg-secondary-bg text-text-primary rounded-lg border border-[var(--border-color)]"
                 />
                 <button class="btn-secondary w-full">Generate Protected Link</button>
               </div>
@@ -43,7 +43,7 @@ import { ShareSettings } from '../../interfaces';
               <input
                 type="text"
                 placeholder="Search users..."
-                class="w-full px-4 py-2 bg-[var(--secondary-bg)] text-[var(--text-primary)] rounded-lg border border-[var(--border-color)]"
+                class="w-full px-4 py-2 bg-secondary-bg text-text-primary rounded-lg border border-[var(--border-color)]"
               />
             </div>
           </div>

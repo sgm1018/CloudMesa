@@ -16,9 +16,9 @@ export interface FileFilters {
   template: `
     <div class="flex items-center gap-4 mb-4 flex-wrap">
       <div class="flex items-center gap-2">
-        <label class="text-[var(--text-secondary)]">Type:</label>
+        <label class="text-text-secondary">Type:</label>
         <select 
-          class="px-3 py-1.5 bg-[var(--secondary-bg)] text-[var(--text-primary)] rounded-lg border border-[var(--border-color)]"
+          class="px-3 py-1.5 bg-secondary-bg text-text-primary rounded-lg border border-[var(--border-color)]"
           [value]="filters.type"
           (change)="updateFilters('type', $event)"
         >
@@ -29,9 +29,9 @@ export interface FileFilters {
       </div>
 
       <div class="flex items-center gap-2">
-        <label class="text-[var(--text-secondary)]">Show:</label>
+        <label class="text-text-secondary">Show:</label>
         <select 
-          class="px-3 py-1.5 bg-[var(--secondary-bg)] text-[var(--text-primary)] rounded-lg border border-[var(--border-color)]"
+          class="px-3 py-1.5 bg-secondary-bg text-text-primary rounded-lg border border-[var(--border-color)]"
           [value]="filters.shared"
           (change)="updateFilters('shared', $event)"
         >
@@ -42,9 +42,9 @@ export interface FileFilters {
       </div>
 
       <div class="flex items-center gap-2">
-        <label class="text-[var(--text-secondary)]">Sort by:</label>
+        <label class="text-text-secondary">Sort by:</label>
         <select 
-          class="px-3 py-1.5 bg-[var(--secondary-bg)] text-[var(--text-primary)] rounded-lg border border-[var(--border-color)]"
+          class="px-3 py-1.5 bg-secondary-bg text-text-primary rounded-lg border border-[var(--border-color)]"
           [value]="filters.sortBy"
           (change)="updateFilters('sortBy', $event)"
         >

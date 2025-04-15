@@ -10,37 +10,37 @@ import { PasswordEntry, PasswordGeneratorOptions } from '../../interfaces';
   template: `
     @if (isOpen) {
       <div class="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
-        <div class="bg-[var(--primary-bg)] p-6 rounded-lg w-full max-w-md">
-          <h3 class="text-xl font-semibold text-[var(--text-primary)] mb-4">Add Password</h3>
+        <div class="bg-primary-bg p-6 rounded-lg w-full max-w-md">
+          <h3 class="text-xl font-semibold text-text-primary mb-4">Add Password</h3>
           
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Name</label>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Name</label>
               <input
                 type="text"
                 [(ngModel)]="newPassword.name"
                 placeholder="e.g., Gmail Account"
-                class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Username</label>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Username</label>
               <input
                 type="text"
                 [(ngModel)]="newPassword.username"
                 placeholder="e.g., user@example.com"
-                class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Password</label>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Password</label>
               <div class="flex gap-2">
                 <input
                   [type]="showPassword ? 'text' : 'password'"
                   [(ngModel)]="newPassword.password"
-                  class="flex-1 px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                  class="flex-1 px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
                 />
                 <button 
                   class="btn-secondary p-2" 
@@ -71,21 +71,21 @@ import { PasswordEntry, PasswordGeneratorOptions } from '../../interfaces';
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">URL (optional)</label>
+              <label class="block text-sm font-medium text-text-secondary mb-1">URL (optional)</label>
               <input
                 type="url"
                 [(ngModel)]="newPassword.url"
                 placeholder="e.g., https://gmail.com"
-                class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Notes (optional)</label>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Notes (optional)</label>
               <textarea
                 [(ngModel)]="newPassword.notes"
                 rows="3"
-                class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
               ></textarea>
             </div>
           </div>
@@ -99,16 +99,16 @@ import { PasswordEntry, PasswordGeneratorOptions } from '../../interfaces';
 
       @if (showGenerateOptions) {
         <div class="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
-          <div class="bg-[var(--primary-bg)] p-6 rounded-lg w-full max-w-md">
-            <h3 class="text-xl font-semibold text-[var(--text-primary)] mb-4">Generate Password</h3>
+          <div class="bg-primary-bg p-6 rounded-lg w-full max-w-md">
+            <h3 class="text-xl font-semibold text-text-primary mb-4">Generate Password</h3>
             
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Length</label>
+                <label class="block text-sm font-medium text-text-secondary mb-1">Length</label>
                 <input
                   type="number"
                   [(ngModel)]="generatorOptions.length"
-                  class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                  class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
                   min="8"
                   max="64"
                 />
@@ -121,7 +121,7 @@ import { PasswordEntry, PasswordGeneratorOptions } from '../../interfaces';
                     [(ngModel)]="generatorOptions.includeUppercase"
                     class="rounded border-[var(--border-color)]"
                   />
-                  <span class="text-[var(--text-primary)]">Uppercase letters</span>
+                  <span class="text-text-primary">Uppercase letters</span>
                 </label>
                 <label class="flex items-center gap-2">
                   <input
@@ -129,7 +129,7 @@ import { PasswordEntry, PasswordGeneratorOptions } from '../../interfaces';
                     [(ngModel)]="generatorOptions.includeLowercase"
                     class="rounded border-[var(--border-color)]"
                   />
-                  <span class="text-[var(--text-primary)]">Lowercase letters</span>
+                  <span class="text-text-primary">Lowercase letters</span>
                 </label>
                 <label class="flex items-center gap-2">
                   <input
@@ -137,7 +137,7 @@ import { PasswordEntry, PasswordGeneratorOptions } from '../../interfaces';
                     [(ngModel)]="generatorOptions.includeNumbers"
                     class="rounded border-[var(--border-color)]"
                   />
-                  <span class="text-[var(--text-primary)]">Numbers</span>
+                  <span class="text-text-primary">Numbers</span>
                 </label>
                 <label class="flex items-center gap-2">
                   <input
@@ -145,7 +145,7 @@ import { PasswordEntry, PasswordGeneratorOptions } from '../../interfaces';
                     [(ngModel)]="generatorOptions.includeSymbols"
                     class="rounded border-[var(--border-color)]"
                   />
-                  <span class="text-[var(--text-primary)]">Symbols</span>
+                  <span class="text-text-primary">Symbols</span>
                 </label>
               </div>
 
@@ -154,7 +154,7 @@ import { PasswordEntry, PasswordGeneratorOptions } from '../../interfaces';
                   type="text"
                   [value]="generatedPassword"
                   readonly
-                  class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)] mb-2"
+                  class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)] mb-2"
                 />
                 <div class="flex gap-2">
                   <button class="btn-primary flex-1" (click)="generatePassword()">Generate</button>

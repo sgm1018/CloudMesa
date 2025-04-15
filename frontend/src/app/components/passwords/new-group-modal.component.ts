@@ -9,33 +9,33 @@ import { PasswordGroup } from '../../interfaces';
   imports: [CommonModule, FormsModule],
   template: `
     @if (isOpen) {
-      <div class="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
-        <div class="bg-[var(--primary-bg)] p-6 rounded-lg w-full max-w-md">
-          <h3 class="text-xl font-semibold text-[var(--text-primary)] mb-4">New Password Group</h3>
+      <div class="fixed inset-0 bg-gray-900/50  flex items-center justify-center z-50">
+        <div class="bg-primary-bg p-6 rounded-lg w-full max-w-md">
+          <h3 class="text-xl font-semibold text-text-primary mb-4">New Password Group</h3>
           
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Name</label>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Name</label>
               <input
                 type="text"
                 [(ngModel)]="newGroup.name"
                 placeholder="e.g., Personal Accounts"
-                class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Description (optional)</label>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Description (optional)</label>
               <textarea
                 [(ngModel)]="newGroup.description"
                 rows="3"
                 placeholder="Add a description for this group..."
-                class="w-full px-3 py-2 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]"
+                class="w-full px-3 py-2 bg-secondary-bg rounded-lg border border-[var(--border-color)]"
               ></textarea>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Color</label>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Color</label>
               <div class="flex gap-2">
                 @for (color of colors; track color) {
                   <button
@@ -50,7 +50,7 @@ import { PasswordGroup } from '../../interfaces';
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Icon</label>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Icon</label>
               <div class="grid grid-cols-8 gap-2">
                 @for (icon of icons; track icon) {
                   <button
@@ -72,9 +72,9 @@ import { PasswordGroup } from '../../interfaces';
                   [(ngModel)]="newGroup.isPrivate"
                   class="rounded border-[var(--border-color)]"
                 />
-                <span class="text-[var(--text-primary)]">Private group</span>
+                <span class="text-text-primary">Private group</span>
               </label>
-              <p class="text-sm text-[var(--text-secondary)] mt-1">Private groups are only visible to you</p>
+              <p class="text-sm text-text-secondary mt-1">Private groups are only visible to you</p>
             </div>
           </div>
 

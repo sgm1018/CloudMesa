@@ -8,8 +8,9 @@ import { PasswordListComponent } from './app/components/passwords/password-list.
 import { ShareModalComponent } from './app/components/share-modal/share-modal.component';
 import { AuthPageComponent } from './app/pages/auth-page/auth-page.component';
 import { MainPageComponent } from './app/pages/main-page/main-page.component';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { AuthGuard } from './app/guards/auth.guard';
+import { authInterceptor } from './app/interceptors/interceptor';
 
 const routes: Routes = [
   { path: '', redirectTo: '/main/files', pathMatch: 'full' },
@@ -42,6 +43,8 @@ export class App {
 bootstrapApplication(App, {
   providers: [
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
+    
+
   ]
 });

@@ -12,7 +12,7 @@ import { SearchService } from '../../services/search.service';
   template: `
     <div class="p-4">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-[var(--text-primary)]">My Files</h2>
+        <h2 class="text-2xl font-bold text-text-primary">My Files</h2>
         <div class="flex gap-3">
           <button class="btn-secondary flex items-center gap-2 hover:scale-105 transition-transform">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -36,8 +36,8 @@ import { SearchService } from '../../services/search.service';
       />
 
       @if (selectedItems.length > 0) {
-        <div class="mb-6 flex items-center gap-3 p-4 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]">
-          <span class="text-[var(--text-secondary)]">{{ selectedItems.length }} items selected</span>
+        <div class="mb-6 flex items-center gap-3 p-4 bg-secondary-bg rounded-lg border border-[var(--border-color)]">
+          <span class="text-text-secondary">{{ selectedItems.length }} items selected</span>
           <div class="flex gap-3 ml-auto">
             <button class="btn-danger flex items-center gap-2 hover:scale-105 transition-transform" (click)="deleteSelected()">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -63,7 +63,7 @@ import { SearchService } from '../../services/search.service';
 
       <div class="grid gap-4">
         <!-- Header -->
-        <div class="grid grid-cols-12 px-4 py-2 text-sm font-medium text-[var(--text-secondary)]">
+        <div class="grid grid-cols-12 px-4 py-2 text-sm font-medium text-text-secondary">
           <div class="col-span-6">Name</div>
           <div class="col-span-2">Size</div>
           <div class="col-span-3">Modified</div>
@@ -72,7 +72,7 @@ import { SearchService } from '../../services/search.service';
 
         @for (item of filteredItems; track item.id) {
           <div 
-            class="grid grid-cols-12 items-center px-4 py-3 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] hover:bg-[var(--secondary-bg)] transition-colors group"
+            class="grid grid-cols-12 items-center px-4 py-3 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] hover:bg-secondary-bg transition-colors group"
             [class.bg-[var(--accent)]]="item.selected">
             <div class="col-span-6 flex items-center gap-3">
               <div class="flex items-center gap-3">
@@ -89,17 +89,17 @@ import { SearchService } from '../../services/search.service';
                     </svg>
                   </div>
                 } @else {
-                  <div class="p-2 rounded-lg bg-[var(--secondary-bg)]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div class="p-2 rounded-lg bg-secondary-bg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                   </div>
                 }
               </div>
               <div class="min-w-0">
-                <p class="text-[var(--text-primary)] font-medium truncate">{{ item.name }}</p>
+                <p class="text-text-primary font-medium truncate">{{ item.name }}</p>
                 @if (item.type === 'file') {
-                  <p class="text-xs text-[var(--text-secondary)]">{{ item.mimeType }}</p>
+                  <p class="text-xs text-text-secondary">{{ item.mimeType }}</p>
                 }
               </div>
               @if (item.shared) {
@@ -110,15 +110,15 @@ import { SearchService } from '../../services/search.service';
                 </div>
               }
             </div>
-            <div class="col-span-2 text-sm text-[var(--text-secondary)]">
+            <div class="col-span-2 text-sm text-text-secondary">
               {{ item.size || '--' }}
             </div>
-            <div class="col-span-3 text-sm text-[var(--text-secondary)]">
+            <div class="col-span-3 text-sm text-text-secondary">
               {{ item.modifiedDate | date:'medium' }}
             </div>
             <div class="col-span-1 opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-              <button class="p-1 hover:bg-[var(--secondary-bg)] rounded-lg transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <button class="p-1 hover:bg-secondary-bg rounded-lg transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                 </svg>
               </button>
@@ -128,7 +128,7 @@ import { SearchService } from '../../services/search.service';
       </div>
 
       @if (readmeContent) {
-        <div class="mt-8 prose prose-sm text-[var(--text-primary)] max-w-none p-6 bg-[var(--secondary-bg)] rounded-lg border border-[var(--border-color)]" [innerHTML]="readmeContent">
+        <div class="mt-8 prose prose-sm text-text-primary max-w-none p-6 bg-secondary-bg rounded-lg border border-[var(--border-color)]" [innerHTML]="readmeContent">
         </div>
       }
     </div>

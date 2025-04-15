@@ -16,20 +16,19 @@ import { SidebarComponent } from "../../components/sidebar/sidebar.component";
     SidebarComponent,
   ],
   template: `
-    <div class="min-h-screen bg-[var(--primary-bg)]">
-      <app-navbar />
-      <div class="flex">
-        <app-sidebar />
-        <main class="flex-1">
-          <router-outlet />
-        </main>
+    <div class="min-h-screen bg-primary-bg">
+      <div class="flex flex-row">
+        <app-sidebar class="flex h-full" />
+        <div class="flex flex-col flex-1">
+          <app-navbar />
+          <main class="flex-1">
+            <router-outlet />
+          </main>
+        </div>
       </div>
-      <app-share-modal [isOpen]="false" />
     </div>
   `,
 })
 export class MainPageComponent {
-  constructor(){}
-
-
+  constructor() {}
 }

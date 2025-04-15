@@ -10,14 +10,14 @@ import { SearchService } from '../../services/search.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="relative">
+    <!-- <div class="relative">
       <div class="flex items-center gap-2 mb-2">
         <input
           type="search"
           [(ngModel)]="searchQuery"
           (ngModelChange)="onSearchInput($event)"
           placeholder="Search files, passwords, and more..."
-          class="flex-1 px-4 py-2 bg-[var(--secondary-bg)] text-[var(--text-primary)] rounded-lg border border-[var(--border-color)]"
+          class="flex-1 px-4 py-2 bg-secondary-bg text-text-primary rounded-lg border border-[var(--border-color)]"
         />
         <button
           class="btn-secondary p-2"
@@ -33,7 +33,7 @@ import { SearchService } from '../../services/search.service';
 
       @if (showFilters) {
         <div class="absolute right-0 mt-1 w-64 p-4 bg-[var(--card-bg)] rounded-lg shadow-lg border border-[var(--border-color)] z-10">
-          <h4 class="font-medium text-[var(--text-primary)] mb-2">Filter Results</h4>
+          <h4 class="font-medium text-text-primary mb-2">Filter Results</h4>
           <div class="space-y-2">
             @for (type of availableTypes; track type.value) {
               <label class="flex items-center gap-2">
@@ -43,7 +43,7 @@ import { SearchService } from '../../services/search.service';
                   (change)="toggleFilter(type.value)"
                   class="rounded border-[var(--border-color)]"
                 />
-                <span class="text-[var(--text-primary)]">
+                <span class="text-text-primary">
                   {{ type.icon }} {{ type.label }}
                 </span>
               </label>
@@ -57,18 +57,18 @@ import { SearchService } from '../../services/search.service';
           @for (category of categorizedResults; track category.type) {
             @if (category.items.length > 0) {
               <div class="p-2">
-                <h4 class="text-sm font-medium text-[var(--text-secondary)] px-3 py-1">
+                <h4 class="text-sm font-medium text-text-secondary px-3 py-1">
                   {{ getCategoryLabel(category.type) }}
                 </h4>
                 @for (result of category.items; track result.item.id) {
                   <button
-                    class="w-full px-3 py-2 flex items-center gap-3 hover:bg-[var(--secondary-bg)] rounded-lg text-left"
+                    class="w-full px-3 py-2 flex items-center gap-3 hover:bg-secondary-bg rounded-lg text-left"
                     (click)="selectResult(result)"
                   >
                     <span class="text-xl">{{ result.icon }}</span>
                     <div>
-                      <p class="text-[var(--text-primary)]">{{ getName(result) }}</p>
-                      <p class="text-sm text-[var(--text-secondary)]">{{ getDescription(result) }}</p>
+                      <p class="text-text-primary">{{ getName(result) }}</p>
+                      <p class="text-sm text-text-secondary">{{ getDescription(result) }}</p>
                     </div>
                   </button>
                 }
@@ -77,102 +77,102 @@ import { SearchService } from '../../services/search.service';
           }
         </div>
       }
-    </div>
+    </div> -->
   `
 })
 export class UniversalSearchComponent implements OnInit, OnDestroy {
-  searchQuery = '';
-  showFilters = false;
-  results: SearchResult[] = [];
-  private searchSubject = new Subject<string>();
-  private destroy$ = new Subject<void>();
+  // searchQuery = '';
+  // showFilters = false;
+  // results: SearchResult[] = [];
+  // private searchSubject = new Subject<string>();
+  // private destroy$ = new Subject<void>();
 
-  filters: SearchFilters = {
-    types: ['password', 'file', 'folder', 'password-group'],
-    query: ''
-  };
+  // filters: SearchFilters = {
+  //   types: ['password', 'file', 'folder', 'password-group'],
+  //   query: ''
+  // };
 
-  availableTypes = [
-    { value: 'password', label: 'Passwords', icon: '🔑' },
-    { value: 'file', label: 'Files', icon: '📄' },
-    { value: 'folder', label: 'Folders', icon: '📁' },
-    { value: 'password-group', label: 'Password Groups', icon: '👥' }
-  ];
+  // availableTypes = [
+  //   { value: 'password', label: 'Passwords', icon: '🔑' },
+  //   { value: 'file', label: 'Files', icon: '📄' },
+  //   { value: 'folder', label: 'Folders', icon: '📁' },
+  //   { value: 'password-group', label: 'Password Groups', icon: '👥' }
+  // ];
 
-  constructor(private searchService: SearchService) {}
+  // constructor(private searchService: SearchService) {}
 
   ngOnInit(): void {
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(query => {
-      this.filters.query = query;
-      this.search();
-    });
+  //   this.searchSubject.pipe(
+  //     debounceTime(300),
+  //     distinctUntilChanged()
+  //   ).subscribe(query => {
+  //     this.filters.query = query;
+  //     this.search();
+  //   });
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  //   this.destroy$.next();
+  //   this.destroy$.complete();
   }
 
-  onSearchInput(query: string): void {
-    this.searchSubject.next(query);
-  }
+  // onSearchInput(query: string): void {
+  //   this.searchSubject.next(query);
+  // }
 
-  toggleFilter(type: 'password' | 'file' | 'folder' | 'password-group'): void {
-    const index = this.filters.types.indexOf(type);
-    if (index === -1) {
-      this.filters.types.push(type);
-    } else {
-      this.filters.types.splice(index, 1);
-    }
-    this.search();
-  }
+  // toggleFilter(type: 'password' | 'file' | 'folder' | 'password-group'): void {
+  //   const index = this.filters.types.indexOf(type);
+  //   if (index === -1) {
+  //     this.filters.types.push(type);
+  //   } else {
+  //     this.filters.types.splice(index, 1);
+  //   }
+  //   this.search();
+  // }
 
-  get categorizedResults(): { type: string; items: SearchResult[] }[] {
-    const categories = this.filters.types.map(type => ({
-      type,
-      items: this.results.filter(result => result.type === type)
-    }));
-    return categories.filter(category => category.items.length > 0);
-  }
+  // get categorizedResults(): { type: string; items: SearchResult[] }[] {
+  //   const categories = this.filters.types.map(type => ({
+  //     type,
+  //     items: this.results.filter(result => result.type === type)
+  //   }));
+  //   return categories.filter(category => category.items.length > 0);
+  // }
 
-  getCategoryLabel(type: string): string {
-    const typeInfo = this.availableTypes.find(t => t.value === type);
-    return typeInfo ? `${typeInfo.icon} ${typeInfo.label}` : type;
-  }
+  // getCategoryLabel(type: string): string {
+  //   const typeInfo = this.availableTypes.find(t => t.value === type);
+  //   return typeInfo ? `${typeInfo.icon} ${typeInfo.label}` : type;
+  // }
 
-  getName(result: SearchResult): string {
-    const item = result.item as any;
-    return item.name || 'Unnamed item';
-  }
+  // getName(result: SearchResult): string {
+  //   const item = result.item as any;
+  //   return item.name || 'Unnamed item';
+  // }
 
-  getDescription(result: SearchResult): string {
-    const item = result.item as any;
-    switch (result.type) {
-      case 'password':
-        return item.username || '';
-      case 'file':
-      case 'folder':
-        return item.path || '';
-      case 'password-group':
-        return `${item.description || ''} · ${item.isPrivate ? 'Private' : 'Shared'}`;
-      default:
-        return '';
-    }
-  }
+  // getDescription(result: SearchResult): string {
+  //   const item = result.item as any;
+  //   switch (result.type) {
+  //     case 'password':
+  //       return item.username || '';
+  //     case 'file':
+  //     case 'folder':
+  //       return item.path || '';
+  //     case 'password-group':
+  //       return `${item.description || ''} · ${item.isPrivate ? 'Private' : 'Shared'}`;
+  //     default:
+  //       return '';
+  //   }
+  // }
 
-  selectResult(result: SearchResult): void {
-    console.log('Selected:', result);
-    // Implement navigation or action based on selection
-  }
+  // selectResult(result: SearchResult): void {
+  //   console.log('Selected:', result);
+  //   // Implement navigation or action based on selection
+  // }
 
-  private search(): void {
-    this.searchService.search(this.filters.query).subscribe(
-      results => this.results = results.filter(result => 
-        this.filters.types.includes(result.type)
-      )
-    );
-  }
+  // private search(): void {
+  //   this.searchService.search(this.filters.query).subscribe(
+  //     results => this.results = results.filter(result => 
+  //       this.filters.types.includes(result.type)
+  //     )
+  //   );
+  // }
 }

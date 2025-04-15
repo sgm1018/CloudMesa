@@ -7,6 +7,8 @@ import { BehaviorSubject } from 'rxjs';
 export class ThemeService {
   private darkMode = new BehaviorSubject<boolean>(false);
   darkMode$ = this.darkMode.asObservable();
+  logoUrl = 'assets/logos/png/logo-no-background.png'; // Default logo URL
+
 
   constructor() {
     // Check if user has a theme preference

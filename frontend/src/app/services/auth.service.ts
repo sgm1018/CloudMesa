@@ -35,8 +35,6 @@ export class AuthService extends BaseService {
     const refreshTokenDto: RefreshTokenDto = {
       refreshToken: sessionStorage.getItem("refreshToken") || "",
     };
-    this.removeSessionStorage();
-    this.router.navigate(["/auth"]);
     return this.http.post(enviroment.API_URL+ this.apiPath + "/logout", refreshTokenDto );
   }
 
@@ -65,4 +63,8 @@ export class AuthService extends BaseService {
   goMainPage() {
     this.router.navigate(["/main"]);
   }
+
+  goAuthPage() {
+    this.router.navigate(["/auth"]);
+  } 
 }
