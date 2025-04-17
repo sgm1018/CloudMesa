@@ -1,9 +1,12 @@
+import { EncryptedMetadata } from './../../shared/dto/item/item.dto';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { marked } from 'marked';
 import { FileItem } from '../../interfaces';
 import { FileFiltersComponent, FileFilters } from '../file-filters/file-filters.component';
 import { SearchService } from '../../services/search.service';
+import { ItemCls } from '../../shared/dto/item/Item.cls';
+import { ItemService } from '../../services/item.service';
 
 @Component({
   selector: 'app-file-list',
@@ -23,9 +26,9 @@ import { SearchService } from '../../services/search.service';
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 mb-8">
 
       <app-file-filters
-        [filters]="filters"
+        [filters]="getSearchService().getFilters()"
         (filtersChange)="onFiltersChange($event)"
-        class="bg-[var(--card-bg)] rounded-xl p-4]"
+        class="rounded-xl p-4]"
       />
       <div class="flex gap-3">
         <button class="btn-secondary flex items-center gap-2 px-4 py-2.5 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
@@ -47,12 +50,12 @@ import { SearchService } from '../../services/search.service';
 
     </div>
 
-    @if (selectedItems.length > 0) {
+    @if (getItemsService().getSelectedItems()) {
       <div class="mb-8 animate-slide-down">
         <div class="flex items-center gap-4 p-2 bg-[var(--accent)]/5 rounded-xl border border-[var(--accent)]/20 shadow-sm">
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-white font-medium">
-              {{ selectedItems.length }}
+              {{ getItemsService().getSelectedItems().length }}
             </div>
             <span class="text-text-primary font-medium">items selected</span>
           </div>
@@ -96,7 +99,7 @@ import { SearchService } from '../../services/search.service';
       </div>
 
       <div class="divide-y divide-[var(--border-color)]">
-        @for (item of filteredItems; track item.id) {
+        @for (item of filteredItems ; track $index) {
           <div 
             class="grid grid-cols-12 items-center px-6 py-1 hover:bg-secondary-bg/50 transition-colors group"
             [class.bg-[var(--accent)]="item.selected"
@@ -112,20 +115,20 @@ import { SearchService } from '../../services/search.service';
                   class="w-4 h-4 rounded border-[var(--border-color)] text-[var(--accent)] focus:ring-[var(--accent)]"
                 />
                 
-                @if (item.type === 'folder') {
+                @if (item.getDto().type === 'folder') {
                   <div class="p-2.5 rounded-xl bg-[var(--accent)]/10 backdrop-blur-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                     </svg>
                   </div>
-                } @else if (item.mimeType?.includes('pdf')) {
+                } @else if (item.getDto().encryptedMetadata.mimeType!.includes('pdf')) {
                   <div class="p-2.5 rounded-xl bg-red-500/10">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                       <text x="12" y="16" text-anchor="middle" font-size="7" font-weight="bold" fill="currentColor">PDF</text>
                     </svg>
                   </div>
-                } @else if (item.mimeType?.includes('markdown')) {
+                } @else if (item.getDto().encryptedMetadata.mimeType!.includes('markdown')) {
                   <div class="p-2.5 rounded-xl bg-purple-500/10">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -142,20 +145,20 @@ import { SearchService } from '../../services/search.service';
               </div>
               
               <div class="min-w-0 pr-4">
-                <p class="font-medium text-text-primary truncate">{{ item.name }}</p>
-                @if (item.type === 'file') {
+                <p class="font-medium text-text-primary truncate">{{ item.getDto().name }}</p>
+                @if (item.getDto().type === 'file') {
                   <p class="text-xs text-text-secondary mt-0.5 flex items-center gap-2">
-                    <span>{{ item.mimeType }}</span>
-                    @if (item.owner !== 'user1') {
+                    <span>{{ item.getDto().encryptedMetadata.mimeType }}</span>
+                    @if (item.getDto().userId !== 'user1') {
                       <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                        Owned by {{ item.owner }}
+                        Owned by {{ item.getDto().userId }}
                       </span>
                     }
                   </p>
                 }
               </div>
               
-              @if (item.shared) {
+              @if (item.getDto().sharedWith && item.getDto().sharedWith!.length > 0) {
                 <div class="ml-auto flex-shrink-0 tooltip" data-tip="Shared with others">
                   <div class="p-1.5 rounded-full bg-[var(--accent)]/10 group-hover:bg-[var(--accent)]/20 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,7 +174,7 @@ import { SearchService } from '../../services/search.service';
             </div>
             
             <div class="col-span-3 text-text-secondary">
-              {{ item.modifiedDate | date:'MMM d, y, h:mm a' }}
+              {{ item.getDto().updatedAt  | date:'MMM d, y, h:mm a' }}
             </div>
             
             <div class="col-span-1 opacity-0 group-hover:opacity-100 transition-all duration-200 flex justify-end gap-1">
@@ -265,67 +268,22 @@ import { SearchService } from '../../services/search.service';
   `]
 })
 export class FileListComponent implements OnInit {
-  items: FileItem[] = [];
-  filteredItems: FileItem[] = [];
+  filteredItems: ItemCls[] = [];
   readmeContent: string = '';
   
-  filters: FileFilters = {
-    type: 'all',
-    shared: 'all',
-    sortBy: 'name',
-    sortOrder: 'asc'
-  };
 
-  get selectedItems(): FileItem[] {
-    return this.items.filter((item) => item.selected);
-  }
 
-  constructor(private searchService: SearchService) {}
+
+  constructor(private searchService: SearchService, private itemService : ItemService) {}
 
   ngOnInit() {
     // Mock data
-    this.items = [
-      {
-        id: '1',
-        name: 'Documents',
-        type: 'folder',
-        modifiedDate: new Date(),
-        selected: false,
-        shared: true,
-        owner: 'user1',
-        path: '/Documents'
-      },
-      {
-        id: '2',
-        name: 'report.pdf',
-        type: 'file',
-        size: '2.5 MB',
-        modifiedDate: new Date(),
-        selected: false,
-        shared: false,
-        owner: 'user1',
-        mimeType: 'application/pdf',
-        path: '/report.pdf'
-      },
-      {
-        id: '3',
-        name: 'README.md',
-        type: 'file',
-        size: '4 KB',
-        modifiedDate: new Date(),
-        selected: false,
-        shared: false,
-        owner: 'user1',
-        mimeType: 'text/markdown',
-        path: '/README.md'
-      }
-    ];
-
-    // Initialize search service with all files
-    this.searchService.setFiles(this.items);
+    this.itemService.items$.subscribe(items => {
+      this.filteredItems = items;
+    });
     
     // Apply initial filters
-    this.applyFilters();
+    this.searchService.applyFilters();
 
     // Mock README content
     const mockReadme = `
@@ -345,53 +303,19 @@ const example = "Hello World";
   }
 
   onFiltersChange(newFilters: FileFilters): void {
-    this.filters = newFilters;
-    this.applyFilters();
+    this.searchService.setFilters(newFilters);
+    this.searchService.applyFilters();
   }
 
-  applyFilters(): void {
-    let filtered = [...this.items];
+  
 
-    // Apply type filter
-    if (this.filters.type !== 'all') {
-      filtered = filtered.filter(item => 
-        this.filters.type === 'files' ? item.type === 'file' : item.type === 'folder'
-      );
-    }
-
-    // Apply shared filter
-    if (this.filters.shared !== 'all') {
-      filtered = filtered.filter(item =>
-        this.filters.shared === 'shared' ? item.shared : !item.shared
-      );
-    }
-
-    // Apply sorting
-    filtered.sort((a, b) => {
-      let comparison = 0;
-      
-      switch (this.filters.sortBy) {
-        case 'name':
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case 'date':
-          comparison = a.modifiedDate.getTime() - b.modifiedDate.getTime();
-          break;
-        case 'size':
-          const aSize = a.size ? parseFloat(a.size) : 0;
-          const bSize = b.size ? parseFloat(b.size) : 0;
-          comparison = aSize - bSize;
-          break;
-      }
-
-      return this.filters.sortOrder === 'asc' ? comparison : -comparison;
-    });
-
-    this.filteredItems = filtered;
-  }
-
-  toggleSelect(item: FileItem): void {
+  toggleSelect(item: ItemCls): void {
     item.selected = !item.selected;
+    if (item.selected) {
+      this.itemService.addSelectedItem(item);
+    } else {
+      this.itemService.removeSelectedItem(item);
+    } 
   }
 
   uploadFile(): void {
@@ -403,14 +327,21 @@ const example = "Hello World";
   }
 
   deleteSelected(): void {
-    console.log('Delete selected:', this.selectedItems);
+    // console.log('Delete selected:', this.selectedItems);
   }
 
   moveSelected(): void {
-    console.log('Move selected:', this.selectedItems);
+    // console.log('Move selected:', this.selectedItems);
   }
 
   shareSelected(): void {
-    console.log('Share selected:', this.selectedItems);
+    // console.log('Share selected:', this.selectedItems);
+  }
+
+  getItemsService() {
+    return this.itemService;
+  }
+  getSearchService(){
+    return this.searchService;
   }
 }

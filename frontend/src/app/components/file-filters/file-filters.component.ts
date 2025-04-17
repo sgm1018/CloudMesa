@@ -3,10 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FileItem } from '../../interfaces';
 
 export interface FileFilters {
-  type: 'all' | 'files' | 'folders';
+  type: string;
   shared: 'all' | 'shared' | 'private';
-  sortBy: 'name' | 'date' | 'size';
+  sortBy: 'name' | 'date' | 'size' | 'type';
   sortOrder: 'asc' | 'desc';
+  mimeType ?: string;
+  parentId ?: string;
+  userId ?: string;
+  updatedAt ?: Date;
+  createdAt ?: Date;
 }
 
 @Component({
