@@ -76,7 +76,7 @@ export class Item extends Entity {
     example: {
       algorithm: 'aes-256-cbc',
       iv: '1234567890123456',
-      key: 'abcdef1234567890abcdef1234567890'
+      encryptedKey: 'abcdef1234567890abcdef1234567890'
     }
   })
   @ValidateNested()
@@ -109,6 +109,11 @@ export class Item extends Entity {
   @Type(() => SharedConfig)
   @Prop({ type: Array })
   sharedWith?: SharedConfig[];
+
+
+
+  size : number;
+
 }
 
 export const ItemSchema = SchemaFactory.createForClass(Item);

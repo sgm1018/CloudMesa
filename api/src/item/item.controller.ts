@@ -21,6 +21,18 @@ export class ItemsController {
 
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
+  @Get()
+  async getAll() {
+    const result = await this.itemsService.findAll();
+    if (!result.isSuccess()) {
+      throw new BadRequestException(`Error getting items`);
+    }
+    return result.list;
+
+  }
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
   @Get(':id')
   async findOne(@Param('id') id: string, @User() user: string) {
     const result = await this.itemsService.findOne({userId: id});
