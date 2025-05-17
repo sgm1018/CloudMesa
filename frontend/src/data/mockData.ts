@@ -65,41 +65,6 @@ const defaultSharedConfig: SharedConfig = {
   encryptedKey: 'mock_encrypted_key'
 };
 
-// Generate mock file icons based on type
-const getIconForFile = (fileName: string): string => {
-  const extension = fileName.split('.').pop()?.toLowerCase();
-  
-  switch(extension) {
-    case 'pdf':
-      return 'file-pdf';
-    case 'doc':
-    case 'docx':
-      return 'file-text';
-    case 'xls':
-    case 'xlsx':
-      return 'file-spreadsheet';
-    case 'ppt':
-    case 'pptx':
-      return 'file-presentation';
-    case 'jpg':
-    case 'jpeg':
-    case 'png':
-    case 'gif':
-      return 'image';
-    case 'mp4':
-    case 'avi':
-    case 'mov':
-      return 'video';
-    case 'mp3':
-    case 'wav':
-      return 'audio';
-    case 'zip':
-    case 'rar':
-      return 'file-archive';
-    default:
-      return 'file';
-  }
-};
 
 // Generate mock items
 export const mockItems: Item[] = [
@@ -120,7 +85,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-05-10'),
     updatedAt: new Date('2023-05-10'),
-    path: []
+    // // path: []
   },
   {
     _id: 'folder-2',
@@ -138,7 +103,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-05-11'),
     updatedAt: new Date('2023-05-11'),
-    path: []
+    // // path: []
   },
   {
     _id: 'folder-3',
@@ -156,7 +121,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-05-12'),
     updatedAt: new Date('2023-05-12'),
-    path: []
+    // // path: []
   },
   
   // Files in root
@@ -177,9 +142,7 @@ export const mockItems: Item[] = [
     createdAt: new Date('2023-06-01'),
     updatedAt: new Date('2023-06-01'),
     size: 2.5 * 1024 * 1024, // 2.5MB
-    extension: 'pdf',
-    preview: 'file-pdf',
-    path: []
+    // // path: []
   },
   {
     _id: 'file-2',
@@ -199,9 +162,7 @@ export const mockItems: Item[] = [
     createdAt: new Date('2023-06-05'),
     updatedAt: new Date('2023-06-10'),
     size: 1.2 * 1024 * 1024, // 1.2MB
-    extension: 'docx',
-    preview: 'file-text',
-    path: []
+    // // path: []
   },
   
   // Files in Documents folder
@@ -223,9 +184,7 @@ export const mockItems: Item[] = [
     createdAt: new Date('2023-06-12'),
     updatedAt: new Date('2023-06-12'),
     size: 45 * 1024, // 45KB
-    extension: 'txt',
-    preview: 'file-text',
-    path: ['Documents']
+    // // path: ['Documents']
   },
   {
     _id: 'file-4',
@@ -245,9 +204,7 @@ export const mockItems: Item[] = [
     createdAt: new Date('2023-06-15'),
     updatedAt: new Date('2023-06-16'),
     size: 3.7 * 1024 * 1024, // 3.7MB
-    extension: 'xlsx',
-    preview: 'file-spreadsheet',
-    path: ['Documents']
+    // // path: ['Documents']
   },
   
   // Files in Photos folder
@@ -269,9 +226,7 @@ export const mockItems: Item[] = [
     createdAt: new Date('2023-07-01'),
     updatedAt: new Date('2023-07-01'),
     size: 4.8 * 1024 * 1024, // 4.8MB
-    extension: 'jpg',
-    preview: 'image',
-    path: ['Photos']
+    // path: ['Photos']
   },
   {
     _id: 'file-6',
@@ -291,9 +246,7 @@ export const mockItems: Item[] = [
     createdAt: new Date('2023-07-05'),
     updatedAt: new Date('2023-07-05'),
     size: 2.1 * 1024 * 1024, // 2.1MB
-    extension: 'png',
-    preview: 'image',
-    path: ['Photos']
+    // path: ['Photos']
   },
   
   // Nested folder in Work
@@ -314,7 +267,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-05-15'),
     updatedAt: new Date('2023-05-15'),
-    path: ['Work']
+    // path: ['Work']
   },
   
   // Files in Project X folder
@@ -336,9 +289,7 @@ export const mockItems: Item[] = [
     createdAt: new Date('2023-07-10'),
     updatedAt: new Date('2023-07-10'),
     size: 8.3 * 1024 * 1024, // 8.3MB
-    extension: 'pptx',
-    preview: 'file-presentation',
-    path: ['Work', 'Project X']
+    // path: ['Work', 'Project X']
   },
   
   // Password groups
@@ -359,7 +310,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-08-01'),
     updatedAt: new Date('2023-08-01'),
-    path: []
+    // // path: []
   },
   {
     _id: 'group-2',
@@ -378,7 +329,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-08-02'),
     updatedAt: new Date('2023-08-02'),
-    path: []
+    // // path: []
   },
   
   // Passwords in Personal group
@@ -402,7 +353,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-08-10'),
     updatedAt: new Date('2023-08-10'),
-    path: ['Personal']
+    // path: ['Personal']
   },
   {
     _id: 'password-2',
@@ -424,7 +375,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-08-11'),
     updatedAt: new Date('2023-08-11'),
-    path: ['Personal']
+    // path: ['Personal']
   },
   
   // Passwords in Work group
@@ -448,7 +399,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-08-15'),
     updatedAt: new Date('2023-08-15'),
-    path: ['Work']
+    // path: ['Work']
   },
   {
     _id: 'password-4',
@@ -470,7 +421,7 @@ export const mockItems: Item[] = [
     },
     createdAt: new Date('2023-08-16'),
     updatedAt: new Date('2023-08-16'),
-    path: ['Work']
+    // path: ['Work']
   }
 ];
 

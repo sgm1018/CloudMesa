@@ -75,9 +75,7 @@ export type Item = {
   
   // These aren't in the original type but are useful for the UI
   size?: number;
-  extension?: string;
-  preview?: string;
-  path?: string[];
+  // path?: string[];
 };
 
 export type ViewMode = 'list' | 'grid';

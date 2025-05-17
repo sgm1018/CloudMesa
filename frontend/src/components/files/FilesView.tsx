@@ -197,7 +197,6 @@ const FilesView: React.FC = () => {
             ref={fileInputRef}
             className="hidden"
             multiple
-            webkitdirectory=""
             onChange={(e) => handleFileUpload(Array.from(e.target.files || []))}
           />
           <button 
