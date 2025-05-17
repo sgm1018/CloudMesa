@@ -12,7 +12,21 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Public()
+
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('admin')
+  @Get()
+  async getAll() {
+    const result = await this.usersService.findAll();
+    if (!result.isSuccess()) {
+      throw new Error('Error fetching users');
+    }
+    return result.list;
+  }
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   async create(@Body() userDto: User) {
     const result = await this.usersService.create(userDto);

@@ -7,7 +7,7 @@ import { LoginGuard } from 'src/auth/guards/login.guard';
 import { User } from 'src/auth/decorators/user.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { PaginationParams } from 'src/shared/responses/paginationParams';
-import { CreateItemDto } from './dto/create-item.dto';
+import { Item } from './entities/item.entity';
 @Controller('items')
 @ApiBearerAuth('JWT-auth')  
 export class ItemsController {
@@ -56,12 +56,22 @@ export class ItemsController {
   @Public()
   @UseGuards(LoginGuard)
   @Post('random')
-  async createRandom(@Body() createItem: CreateItemDto ) {
-    const result = await this.itemsService.create(createItem.toClass());
+  async createRandom(@Body() createItem: Item ) {
+    const result = await this.itemsService.create(createItem);
     if (!result.isSuccess()) {
       throw new BadRequestException('Error creating item');
     }
     return result.value;
   }
 
-}
+  @UseGuards(LoginGuard, RolesGuard)
+  @Post('create')
+  async create(@User() user , @Body() createItem: Item) {
+    const result = await this.itemsService.create(createItem);
+    if (!result.isSuccess()) {
+      throw new BadRequestException('Error creating item');
+    }
+    return result.value;
+  }
+
+}  

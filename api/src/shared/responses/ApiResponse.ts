@@ -6,7 +6,7 @@ export class ApiResponse<T = any> {
   value?: T;
   list?: T[];
   total?: number;
-  paginationParams: PaginationParams;
+  paginationParams?: PaginationParams;
 
   private constructor(options: {
     result?: number;
@@ -58,7 +58,7 @@ export class ApiResponse<T = any> {
   }
 
   isSuccess(): boolean {
-    return this.result === 0 && this.value !== undefined;
+    return this.result == 0;
   }
 
   isList(): boolean {
