@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { LockIcon, Shield, Key, Server } from 'lucide-react';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import logoImagen from '../../assets/images/logos/logo.png';
 
 const AuthPage: React.FC = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -16,7 +17,7 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="flex h-screen">
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary-600 text-white relative overflow-hidden">
         <div className="relative z-10 px-12 py-24 h-full flex flex-col">
@@ -89,16 +90,14 @@ const AuthPage: React.FC = () => {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md">
           {/* Logo */}
-          <div className="flex bg-background items-center justify-center mb-12">
-            <div className="bg-background rounded-2xl p-3">
-              <LockIcon className="h-8 w-8 text-primary-600" />
-            </div>
+          <div className="flex bg-background items-center justify-center mb-2">
+            <img src={logoImagen} alt="CloudMesa Logo" className="h-16 w-auto" />
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white ">
               {isRegister ? 'Create Account' : 'Welcome Back'}
-            </h2>
+            </h2> 
             <p className="text-gray-600 mt-2">
               {isRegister 
                 ? 'Start your journey with CloudVault'
