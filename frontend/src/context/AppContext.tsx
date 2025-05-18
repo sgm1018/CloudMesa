@@ -28,8 +28,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentView, setCurrentView] = useState<View>('files');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [currentFileFolder, setCurrentFileFolder] = useState<string | null>(null);
-  const [currentPasswordFolder, setCurrentPasswordFolder] = useState<string | null>(null);
+  const [currentFileFolder, setCurrentFileFolder] = useState<string | null>('');
+  const [currentPasswordFolder, setCurrentPasswordFolder] = useState<string | null>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isAddingNewItem, setIsAddingNewItem] = useState(false);

@@ -181,7 +181,7 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
-                  {formatDate(item.updatedAt)}
+                  { item.updatedAt && formatDate(item.updatedAt)}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell">
                   {item.type === 'file' && item.size

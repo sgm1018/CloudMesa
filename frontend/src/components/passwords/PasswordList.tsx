@@ -264,7 +264,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                 )}
               </td>
               <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell">
-                {formatDate(item.updatedAt)}
+                { item.updatedAt && formatDate(item.updatedAt)}
               </td>
               <td className="px-4 py-3 text-right">
                 <div className="relative">

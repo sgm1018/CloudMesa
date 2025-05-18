@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { getItemsByParentId } from '../../data/mockData';
-import { Item } from '../../types';
+import { Item, ItemType } from '../../types';
 import FileGrid from './FileGrid';
 import FileList from './FileList';
 import Breadcrumb from './Breadcrumb';
@@ -33,32 +33,32 @@ const FilesView: React.FC = () => {
   const handleFileUpload = async (files: File[]) => {
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      showToast(`Successfully uploaded ${files.length} file(s)`);
+      // await new Promise(resolve => setTimeout(resolve, 1000));
+      // showToast(`Successfully uploaded ${files.length} file(s)`);
       
-      const newItems = files.map(file => ({
-        _id: `file-${Date.now()}-${file.name}`,
-        name: file.name,
-        userId: 'user-1',
-        type: 'file' as const,
-        parentId: currentFolder || undefined,
-        encryptedMetadata: {
-          name: file.name,
-          mimeType: file.type,
-        },
-        encryption: {
-          iv: 'mock_iv',
-          algorithm: 'AES-GCM',
-          encryptedKey: 'mock_encrypted_key'
-        },
-        size: file.size,
-        extension: file.name.split('.').pop(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        path: currentFolder ? ['Documents'] : []
-      }));
+      // const newItems = files.map(file => ({
+      //   _id: `file-${Date.now()}-${file.name}`,
+      //   name: file.name,
+      //   userId: 'user-1',
+      //   type: 'file' as const,
+      //   parentId: currentFolder || undefined,
+      //   encryptedMetadata: {
+      //     name: file.name,
+      //     mimeType: file.type,
+      //   },
+      //   encryption: {
+      //     iv: 'mock_iv',
+      //     algorithm: 'AES-GCM',
+      //     encryptedKey: 'mock_encrypted_key'
+      //   },
+      //   size: file.size,
+      //   extension: file.name.split('.').pop(),
+      //   createdAt: new Date(),
+      //   updatedAt: new Date(),
+      //   path: currentFolder ? ['Documents'] : []
+      // }));
 
-      setItems(prev => [...prev, ...newItems]);
+      // setItems(prev => [...prev, ...newItems]);
     } catch (error) {
       showToast('Failed to upload files', 'error');
     } finally {
@@ -68,10 +68,10 @@ const FilesView: React.FC = () => {
 
   useEffect(() => {
     const fetchItems = async () => {
-      setIsLoading(true);
+    setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 600));
       
-      let fetchedItems = getItemsByParentId(currentFolder);
+      let fetchedItems = getItemsByParentId(currentFolder, [ItemType.FOLDER, ItemType.FILE]);
       
       if (filterType !== 'all') {
         fetchedItems = fetchedItems.filter(item => 
@@ -87,6 +87,7 @@ const FilesView: React.FC = () => {
             comparison = a.name.localeCompare(b.name);
             break;
           case 'date':
+            if (!a.updatedAt || !b.updatedAt) return 0;
             comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
             break;
           case 'size':

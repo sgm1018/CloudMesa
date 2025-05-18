@@ -20,7 +20,7 @@ const Sidebar: React.FC = () => {
 
   const handleViewChange = (view: 'files' | 'passwords') => {
     setCurrentView(view);
-    setCurrentFolder(null); // Reset to root when changing views
+    setCurrentFolder(''); // Reset to root when changing views
   };
 
   const handleLogout = () => {

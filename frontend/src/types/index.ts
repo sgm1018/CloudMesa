@@ -1,56 +1,51 @@
-export type User = {
-  _id: string;
-  name: string;
-  surname: string;
-  email: string;
-  passwordHash: string;
-  avatar?: string;
-  publicKey: string;
-  maxSize: number;
-  roles: string[];
-  isActive: boolean;
-  isVerified: boolean;
-  refreshToken?: RefreshToken;
-  createdAt: Date;
-  updatedAt: Date;
-  userCreator?: string;
-  userUpdater?: string;
-};
-
-
-export type RefreshToken = {
-  token: string;
-  revoked: boolean;
-  createdAt: Date;
-  expiresAt: Date;
-};
 
 export class Entity {
   _id: string = '';
   createdAt: Date = new Date();
-  updatedAt: Date = new Date();
+  updatedAt?: Date;
   userCreator?: string;
   userUpdater?: string;
 };
 
-export type Permission = {
-  read: boolean;
-  write: boolean;
+export class User extends Entity {
+  name!: string;
+  surname!: string;
+  email!: string;
+  passwordHash!: string;
+  avatar!: string;
+  publicKey!: string;
+  maxSize!: number;
+  roles!: string[];
+  isActive!: boolean;
+  isVerified!: boolean;
+  refreshToken?: RefreshToken;
 };
 
-export type SharedConfig = {
-  userId: string;
-  permissions: Permission;
-  dateShared: Date;
+export class RefreshToken {
+  token!: string;
+  revoked!: boolean;
+  createdAt!: Date;
+  expiresAt!: Date;
+};
+
+
+export class Permission {
+  read: boolean = false;
+  write: boolean = false;
+};
+
+export class SharedConfig {
+  userId!: string;
+  permissions!: Permission;
+  dateShared!: Date;
   lastAccessed?: Date;
   expiresAt?: Date;
   link?: string;
-  encryptedKey: string;
+  encryptedKey!: string;
 };
 
-export type EncryptedMetadata = {
-  name: string;
-  mimeType?: string;
+export class EncryptedMetadata {
+  name?: string;
   notes?: string;
   username?: string;
   password?: string;
@@ -60,28 +55,27 @@ export type EncryptedMetadata = {
   icon?: string;
 };
 
-export type Encryption = {
-  iv: string;
-  algorithm: string;
-  encryptedKey: string;
+export class Encryption {
+  iv!: string;
+  algorithm!: string;
+  encryptedKey!: string;
 };
 
-export type ItemType = 'file' | 'folder' | 'password' | 'group';
+export enum ItemType {
+  FILE = 'file',
+  FOLDER = 'folder',
+  PASSWORD = 'password',
+  GROUP = 'group'
+}
 
-export type Item = {
-  _id: string;
-  name: string;
-  userId: string;
-  type: ItemType;
-  parentId?: string;
-  encryptedMetadata: EncryptedMetadata;
-  encryption: Encryption;
-  sharedWith?: SharedConfig[];
-  createdAt: Date;
-  updatedAt: Date;
-  userCreator?: string;
-  userUpdater?: string;
-  
+export class Item extends Entity {
+  name!: string;
+  userId!: string;
+  type!: ItemType;
+  parentId: string = '';
+  encryptedMetadata!: EncryptedMetadata;
+  encryption!: Encryption;
+  sharedWith: SharedConfig[] = [];
   // These aren't in the original type but are useful for the UI
   size?: number;
   // path?: string[];
