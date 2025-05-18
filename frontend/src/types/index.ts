@@ -17,11 +17,20 @@ export type User = {
   userUpdater?: string;
 };
 
+
 export type RefreshToken = {
   token: string;
   revoked: boolean;
   createdAt: Date;
   expiresAt: Date;
+};
+
+export class Entity {
+  _id: string = '';
+  createdAt: Date = new Date();
+  updatedAt: Date = new Date();
+  userCreator?: string;
+  userUpdater?: string;
 };
 
 export type Permission = {
