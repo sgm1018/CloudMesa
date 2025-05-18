@@ -100,7 +100,7 @@ const AuthPage: React.FC = () => {
             </h2> 
             <p className="text-gray-600 mt-2">
               {isRegister 
-                ? 'Start your journey with CloudVault'
+                ? 'Start your journey with CloudMesa'
                 : 'Sign in to your account'}
             </p>
           </div>

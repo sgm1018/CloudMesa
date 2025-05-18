@@ -13,6 +13,8 @@ import {
   LogOutIcon,
 } from 'lucide-react';
 
+import logoImagen from '../../assets/images/logos/logo.png';
+
 const Sidebar: React.FC = () => {
   const { currentView, setCurrentView, isSidebarCollapsed, toggleSidebar, setCurrentFolder } = useAppContext();
   const { isDarkMode, toggleTheme } = useTheme();
@@ -32,11 +34,10 @@ const Sidebar: React.FC = () => {
       className={`h-screen bg-sidebar border-r border-gray-200 dark:border-gray-800 transition-all duration-300 
       ${isSidebarCollapsed ? 'w-16' : 'w-60'} fixed left-0 top-0 z-10`}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="flex items-center justify-between p-4  gap-2 border-b border-gray-200 dark:border-gray-800">
         {!isSidebarCollapsed && (
           <div className="flex items-center">
-            <LockIcon className="h-6 w-6 text-primary-600" />
-            <span className="ml-2 font-bold text-lg">CloudVault</span>
+            <img src={logoImagen} alt="CloudMesa Logo" className={`w-auto ${isSidebarCollapsed && 'hidden'}`} /> 
           </div>
         )}
         {isSidebarCollapsed && <LockIcon className="h-6 w-6 text-primary-600 mx-auto" />}
