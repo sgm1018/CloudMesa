@@ -1,11 +1,12 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { LoginGuard } from '../auth/guards/login.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { User } from './entities/user.entity';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { PaginationParams } from 'src/shared/responses/paginationParams';
 
 @ApiBearerAuth('JWT-auth')
 @Controller('users')
@@ -16,9 +17,11 @@ export class UsersController {
 
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('admin')
+  @ApiQuery({ name: 'page', description: 'Número de página', type: Number, required: false })
+  @ApiQuery({ name: 'limit', description: 'Elementos por página', type: Number, required: false })
   @Get()
-  async getAll() {
-    const result = await this.usersService.findAll();
+  async findUsersPaginated(@Query() paginationParams: PaginationParams) {
+    const result = await this.usersService.findPaginated({}, paginationParams);
     if (!result.isSuccess()) {
       throw new Error('Error fetching users');
     }

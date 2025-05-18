@@ -4,8 +4,8 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { LoginGuard } from 'src/auth/guards/login.guard';
-import { User } from 'src/auth/decorators/user.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { User, UserDecoratorClass } from 'src/auth/decorators/user.decorator';
+import { ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { PaginationParams } from 'src/shared/responses/paginationParams';
 import { Item } from './entities/item.entity';
 @Controller('items')
@@ -56,13 +56,16 @@ export class ItemsController {
 
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
-  @Get('user/:id')
-  async getItemsByIdPaginated(@User() user: string, @Param('id') id: string, PaginationParams : PaginationParams) {
-    const result = await this.itemsService.findItemwByUserByParentIdPagination(user, id, PaginationParams)
+  @ApiParam({ name: 'id', description: 'ID del elemento padre', type: String })
+  @ApiQuery({ name: 'page', description: 'Número de página', type: Number, required: false })
+  @ApiQuery({ name: 'limit', description: 'Elementos por página', type: Number, required: false })
+  @Get('parent/:id')
+  async getItemsByIdPaginated(@User() user: UserDecoratorClass, @Param('id') parentId: string, @Query() paginationParams: PaginationParams) {
+    const result = await this.itemsService.findPaginated({ userId: user.userId, parentId: parentId }, paginationParams);
     if (!result.isSuccess()){
       throw new BadRequestException('Error getting items');
-    }
-    return result.value;
+    } 
+    return result.list;
   }
 
   @Public()

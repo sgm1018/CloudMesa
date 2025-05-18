@@ -13,16 +13,16 @@ export class EncryptedMetadata {
     @Prop({ required: true, default: ''})
     name: string;
 
-    @ApiProperty({
-        description: 'Encrypted MIME type in base64',
-        type: String,
-        required: false,
-        example: 'ZW5jcnlwdGVkX21pbWVUeXBl'
-    })
-    @IsOptional()
-    @IsString()
-    @Prop({ required: false, default: ''})
-    mimeType?: string;
+    // @ApiProperty({
+    //     description: 'Encrypted MIME type in base64',
+    //     type: String,
+    //     required: false,
+    //     example: 'ZW5jcnlwdGVkX21pbWVUeXBl'
+    // })
+    // @IsOptional()
+    // @IsString()
+    // @Prop({ required: false, default: ''})
+    // mimeType?: string;
 
     @ApiProperty({
         description: 'Encrypted notes in base64',

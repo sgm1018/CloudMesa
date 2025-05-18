@@ -10,6 +10,7 @@ import { LoginTokenDto } from './dto/loginToken.dto';
 import { UserGetDto } from 'src/users/dto/user.dto';
 import { ConfigService } from '@nestjs/config';
 import { RefreshToken } from 'src/users/entities/RefreshToken.entity';
+import { UserDecoratorClass } from './decorators/user.decorator';
 
 @Injectable()
 export class AuthService {
@@ -195,15 +196,8 @@ export class AuthService {
     return { message: 'Logout successful' };
   }
 
-  public generatePayload(user: User): any {
-    return {
-      userId: user._id,
-      email: user.email,
-      sub: user._id,
-      roles: user.roles,
-      name: user.name,
-      isVerified: user.isVerified,
-      isActive: user.isActive,
-    };
+  public generatePayload(user: User): UserDecoratorClass {
+    const userDecoratorClass = new UserDecoratorClass(user._id.toString(), user.email, user.roles, user.name, user.isVerified, user.isActive);
+    return userDecoratorClass;
   }
 }

@@ -32,8 +32,9 @@ export class Entity {
     example: new Date().toISOString()
   })
   @IsDate()
+  @IsOptional()
   @Prop({ default: Date.now })
-  updatedAt: Date = new Date(Date.now());
+  updatedAt?: Date;
 
   @ApiProperty({
     description: 'ID of the user who created the entity',
