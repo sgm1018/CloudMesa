@@ -128,7 +128,7 @@ const Header: React.FC = () => {
     if (item.parentId) {
       setCurrentFolder(item.parentId);
     } else {
-      setCurrentFolder(null);
+      setCurrentFolder('');
     }
 
     clearSearch();
@@ -215,11 +215,11 @@ const Header: React.FC = () => {
                   )}
                   <div className="ml-3">
                     <div className="text-sm font-medium">{item.name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {/* <div className="text-xs text-gray-500 dark:text-gray-400">
                       {item.path && item.path.length > 0
                         ? item.path.join(' > ')
                         : 'Root'}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               ))}
