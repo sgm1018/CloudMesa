@@ -22,7 +22,7 @@ export class BaseService {
 
     async create(entity: any): Promise<any> {
         try {
-            const response = await fetch(this.baseUrl + this.controller + "/", {
+            const response = await fetch(`${this.baseUrl}${this.controller}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(entity),
@@ -39,7 +39,7 @@ export class BaseService {
     async findAll(filter = {}): Promise<any> {
         try {
             const params = new URLSearchParams(this.serializeFilter(filter));
-            const response = await fetch(`${this.baseUrl}?${params}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}?${params}`);
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
@@ -51,20 +51,7 @@ export class BaseService {
 
     async findById(id: string): Promise<any> {
         try {
-            const response = await fetch(`${this.baseUrl}/${id}`);
-            
-            if (!response.ok) throw new Error(response.statusText);
-            return await response.json();
-        } catch (error) {
-            console.error(`Error fetching entity: ${error}`);
-            return null
-        }
-    }
-
-    async findOne(filter = {}): Promise<any> {
-        try {
-            const params = new URLSearchParams(this.serializeFilter(filter));
-            const response = await fetch(`${this.baseUrl}/findOne?${params}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}/${id}`);
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
@@ -80,7 +67,7 @@ export class BaseService {
             params.append('page', paginationParams.page.toString());
             params.append('limit', paginationParams.limit.toString());
             
-            const response = await fetch(`${this.baseUrl}/paginated?${params}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}/paginated?${params}`);
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
@@ -93,7 +80,7 @@ export class BaseService {
     async update(entity: any): Promise<any> {
         
         try {
-            const response = await fetch(`${this.baseUrl}/${entity._id}`, {
+            const response = await fetch(`${this.baseUrl}${this.controller}/${entity._id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(entity),
@@ -109,7 +96,7 @@ export class BaseService {
 
     async remove(id: string): Promise<any> {
         try {
-            const response = await fetch(`${this.baseUrl}/${id}`, {
+            const response = await fetch(`${this.baseUrl}${this.controller}/${id}`, {
                 method: 'DELETE',
             });
             
@@ -124,7 +111,7 @@ export class BaseService {
     async count(filter = {}): Promise<any> {
         try {
             const params = new URLSearchParams(this.serializeFilter(filter));
-            const response = await fetch(`${this.baseUrl}/count?${params}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}/count?${params}`);
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
@@ -137,7 +124,7 @@ export class BaseService {
     async exists(filter = {}): Promise<any> {
         try {
             const params = new URLSearchParams(this.serializeFilter(filter));
-            const response = await fetch(`${this.baseUrl}/exists?${params}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}/exists?${params}`);
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
