@@ -135,18 +135,18 @@ const FilesView: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Breadcrumb />
           
-          <div className="flex items-center space-x-2">
-            <div className="relative">
+          <div className="flex items-center ">
+            <div className="relative flex items-center justify-center">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center space-x-1"
+                className="flex items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg space-x-1"
               >
                 <Filter className="h-4 w-4" />
                 <span className="text-sm">Filters</span>
               </button>
               
               {showFilters && (
-                <div className="absolute z-50 top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-10">
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-10">
                   <div className="space-y-2">
                     <div>
                       <label className="text-sm font-medium mb-1 block">Sort by</label>

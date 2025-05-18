@@ -40,10 +40,10 @@ const Breadcrumb: React.FC = () => {
   const breadcrumbs = buildPath();
   
   return (
-    <div className="flex items-center mb-4 text-sm">
+    <div className="flex items-center text-sm">
       <button
-        onClick={() => setCurrentFolder(null)}
-        className="flex items-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+        onClick={() => setCurrentFolder('')}
+        className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
       >
         <Home className="h-4 w-4 text-gray-500" />
       </button>

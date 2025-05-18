@@ -150,14 +150,6 @@ const Header: React.FC = () => {
 
   return (
     <header className="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 bg-white dark:bg-background-primary sticky top-0 z-10 shadow-sm">
-      <div className="flex items-center">
-        <h1 className="text-lg font-bold">
-          {currentView === 'files' && 'My Files'}
-          {currentView === 'passwords' && 'My Passwords'}
-          {currentView === 'settings' && 'Settings'}
-        </h1>
-      </div>
-
       <div
         ref={searchContainerRef}
         className="relative mx-auto w-full max-w-2xl"
