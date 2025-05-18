@@ -137,9 +137,7 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
               {openMenuId === item._id && (
                 <div 
                   ref={menuRef}
-                  className={`fixed mt-1 w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown ${
-                    menuPosition === 'left' ? '-translate-x-full' : ''
-                  }`}
+                  className={`fixed mt-1 w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown flex flex-col justify-start items-center`}
                 >
                   <button 
                     className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
