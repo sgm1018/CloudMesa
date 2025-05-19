@@ -57,9 +57,29 @@ api/report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 
 # Frontend
-frontend/.angular
-frontend/dist
-frontend/node_modules
+# Logs
+frontend/logs
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
 
-.env
-.env.local
+frontend/node_modules
+frontend/dist
+frontend/dist-ssr
+frontend/*.local
+frontend/
+frontend/# Editor directories and files
+frontend/.vscode/*
+frontend/!.vscode/extensions.json
+frontend/.idea
+frontend/.DS_Store
+frontend/*.suo
+frontend/*.ntvs*
+frontend/*.njsproj
+frontend/*.sln
+frontend/*.sw?
+frontend/.env
+frontend/.bolt
