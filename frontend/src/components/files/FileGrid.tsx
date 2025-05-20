@@ -12,7 +12,7 @@ interface FileGridProps {
 const FileGrid: React.FC<FileGridProps> = ({ items }) => {
   const { selectedItems, setSelectedItems, setCurrentFolder } = useAppContext();
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
-  const [menuPosition, setMenuPosition] = React.useState<'left' | 'right'>('right');
+  const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [showShareModal, setShowShareModal] = React.useState(false);
   const [itemsToShare, setItemsToShare] = React.useState<Item[]>([]);
   const menuRef = React.useRef<HTMLDivElement>(null);
@@ -57,23 +57,31 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
     }
   };
 
-  const handleItemClick = (item: Item) => {
+  // Add right-click handler function
+  const rightClickOnElement = (event: React.MouseEvent, itemId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setMenuPosition({
+      top: event.clientY,
+      left: event.clientX
+    });
+    
+    setOpenMenuId(itemId);
+  };
+
+  // Update handleItemClick to handle both left and right clicks
+  const handleItemClick = (item: Item, event: React.MouseEvent) => {
+    // Handle right click to show context menu
+    if (event.button === 2) {
+      rightClickOnElement(event, item._id);
+      return;
+    }
+    
+    // Handle normal left click
     if (item.type === 'folder') {
       setCurrentFolder(item._id);
     }
-  };
-
-  const handleShare = (item: Item) => {
-    setItemsToShare([item]);
-    setShowShareModal(true);
-    setOpenMenuId(null);
-  };
-
-  const handleShareSelected = () => {
-    const itemsToShare = items.filter(item => selectedItems.includes(item._id));
-    setItemsToShare(itemsToShare);
-    setShowShareModal(true);
-    setOpenMenuId(null);
   };
 
   const toggleMenu = (id: string, event: React.MouseEvent) => {
@@ -81,22 +89,46 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
     
     if (openMenuId === id) {
       setOpenMenuId(null);
+      setMenuPosition(null);
       return;
     }
 
     const button = event.currentTarget as HTMLElement;
-    const buttonRect = button.getBoundingClientRect();
-    const spaceOnRight = window.innerWidth - buttonRect.right;
-    const spaceOnLeft = buttonRect.left;
+    const rect = button.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
     
-    setMenuPosition(spaceOnRight > 200 ? 'right' : 'left');
+    // Calculate available space
+    const spaceBelow = window.innerHeight - (rect.bottom + scrollTop);
+    const menuHeight = 200; // Approximate height of menu
+    
+    // Position menu above or below based on available space
+    const top = spaceBelow < menuHeight ? rect.top + scrollTop - menuHeight : rect.bottom + scrollTop;
+    const left = rect.right - 180; // Menu width is approximately 180px
+    
+    setMenuPosition({ top, left });
     setOpenMenuId(id);
+  };
+
+  const handleShare = (item: Item) => {
+    setItemsToShare([item]);
+    setShowShareModal(true);
+    setOpenMenuId(null);
+    setMenuPosition(null);
+  };
+
+  const handleShareSelected = () => {
+    const itemsToShare = items.filter(item => selectedItems.includes(item._id));
+    setItemsToShare(itemsToShare);
+    setShowShareModal(true);
+    setOpenMenuId(null);
+    setMenuPosition(null);
   };
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (openMenuId && !(event.target as Element).closest('.menu-dropdown')) {
+      if (openMenuId && menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenMenuId(null);
+        setMenuPosition(null);
       }
     };
 
@@ -113,7 +145,8 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
             className={`group relative bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden cursor-pointer border border-transparent hover:border-primary-300 dark:hover:border-primary-700 transition-all ${
               selectedItems.includes(item._id) ? 'ring-2 ring-primary-500' : ''
             }`}
-            onClick={() => handleItemClick(item)}
+            onClick={(event) => handleItemClick(item, event)}
+            onContextMenu={(event) => rightClickOnElement(event, item._id)}
           >
             <div
               className="absolute top-2 left-2 z-0"
@@ -133,41 +166,6 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
               >
                 <MoreVertical className="h-4 w-4 text-gray-500" />
               </button>
-              
-              {openMenuId === item._id && (
-                <div 
-                  ref={menuRef}
-                  className={`fixed mt-1 w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown flex flex-col justify-start items-center`}
-                >
-                  <button 
-                    className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleShare(item);
-                    }}
-                  >
-                    <Share className="h-4 w-4 mr-2" />
-                    <span>Share</span>
-                  </button>
-                  
-                  {item.type === 'file' && (
-                    <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-                      <Download className="h-4 w-4 mr-2" />
-                      <span>Download</span>
-                    </button>
-                  )}
-                  
-                  <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <Edit className="h-4 w-4 mr-2" />
-                    <span>Rename</span>
-                  </button>
-                  
-                  <button className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <Trash className="h-4 w-4 mr-2" />
-                    <span>Delete</span>
-                  </button>
-                </div>
-              )}
             </div>
             
             <div className="p-4 pt-6 flex flex-col items-center">
@@ -197,6 +195,45 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
           </div>
         ))}
       </div>
+
+      {openMenuId && menuPosition && (
+        <div 
+          ref={menuRef}
+          style={{
+            position: 'fixed',
+            top: `${menuPosition.top}px`,
+            left: `${menuPosition.left}px`,
+          }}
+          className="w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown"
+        >
+          <button 
+            className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={(e) => {
+              e.stopPropagation();
+              const item = items.find(item => item._id === openMenuId);
+              if (item) handleShare(item);
+            }}
+          >
+            <Share className="h-4 w-4 mr-2" />
+            <span>Share</span>
+          </button>
+          
+          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
+            <Download className="h-4 w-4 mr-2" />
+            <span>Download</span>
+          </button>
+          
+          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
+            <Edit className="h-4 w-4 mr-2" />
+            <span>Rename</span>
+          </button>
+          
+          <button className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+            <Trash className="h-4 w-4 mr-2" />
+            <span>Delete</span>
+          </button>
+        </div>
+      )}
 
       <ShareModal
         isOpen={showShareModal}

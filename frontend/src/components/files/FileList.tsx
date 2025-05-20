@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Item } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { formatFileSize } from '../../data/mockData';
-import { Lock, Key, Folder, MoreVertical, Share, Eye, EyeOff, Copy, ExternalLink as External } from 'lucide-react';
+import { Lock, Key, Folder, MoreVertical, Share, Eye, EyeOff, Copy, ExternalLink as External, X, Download } from 'lucide-react';
 import ShareModal from '../shared/ShareModal';
 
 interface FileListProps {
@@ -13,7 +13,7 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
   const { selectedItems, setSelectedItems, setCurrentFolder } = useAppContext();
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
-  const [menuPosition, setMenuPosition] = React.useState<'left' | 'right'>('right');
+  const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [showShareModal, setShowShareModal] = React.useState(false);
   const [itemsToShare, setItemsToShare] = React.useState<Item[]>([]);
   const menuRef = React.useRef<HTMLDivElement>(null);
@@ -67,7 +67,28 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
     }
   };
 
-  const handleItemClick = (item: Item) => {
+  // Add right-click handler function
+  const rightClickOnElement = (event: React.MouseEvent, itemId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setMenuPosition({
+      top: event.clientY,
+      left: event.clientX
+    });
+    
+    setOpenMenuId(itemId);
+  };
+
+  // Update handleItemClick to handle both left and right clicks
+  const handleItemClick = (item: Item, event: React.MouseEvent) => {
+    // Handle right click to show context menu
+    if (event.button === 2) {
+      rightClickOnElement(event, item._id);
+      return;
+    }
+    
+    // Handle normal left click
     if (item.type === 'folder') {
       setCurrentFolder(item._id);
     }
@@ -78,15 +99,23 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
     
     if (openMenuId === id) {
       setOpenMenuId(null);
+      setMenuPosition(null);
       return;
     }
 
     const button = event.currentTarget as HTMLElement;
-    const buttonRect = button.getBoundingClientRect();
-    const spaceOnRight = window.innerWidth - buttonRect.right;
-    const spaceOnLeft = buttonRect.left;
+    const rect = button.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
     
-    setMenuPosition(spaceOnRight > 200 ? 'right' : 'left');
+    // Calculate available space
+    const spaceBelow = window.innerHeight - (rect.bottom + scrollTop);
+    const menuHeight = 200; // Approximate height of menu
+    
+    // Position menu above or below based on available space
+    const top = spaceBelow < menuHeight ? rect.top + scrollTop - menuHeight : rect.bottom + scrollTop;
+    const left = rect.right - 180; // Menu width is approximately 180px
+    
+    setMenuPosition({ top, left });
     setOpenMenuId(id);
   };
 
@@ -94,6 +123,7 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
     setItemsToShare([item]);
     setShowShareModal(true);
     setOpenMenuId(null);
+    setMenuPosition(null);
   };
 
   const handleShareSelected = () => {
@@ -101,12 +131,14 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
     setItemsToShare(itemsToShare);
     setShowShareModal(true);
     setOpenMenuId(null);
+    setMenuPosition(null);
   };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (openMenuId && !(event.target as Element).closest('.menu-dropdown')) {
+      if (openMenuId && menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenMenuId(null);
+        setMenuPosition(null);
       }
     };
 
@@ -152,8 +184,9 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
             {items.map((item) => (
               <tr
                 key={item._id}
-                onClick={() => handleItemClick(item)}
-                className={`hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
+                onClick={(event) => handleItemClick(item, event)}
+                onContextMenu={(event) => rightClickOnElement(event, item._id)}
+                className={`hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer group ${
                   selectedItems.includes(item._id)
                     ? 'bg-primary-50 dark:bg-primary-900/20'
                     : ''
@@ -181,12 +214,10 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
-                  { item.updatedAt && formatDate(item.updatedAt)}
+                  {item.updatedAt && formatDate(item.updatedAt)}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell">
-                  {item.type === 'file' && item.size
-                    ? formatFileSize(item.size)
-                    : '—'}
+                  {item.type === 'file' && item.size ? formatFileSize(item.size) : '—'}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="relative">
@@ -196,45 +227,6 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
                     >
                       <MoreVertical className="h-4 w-4 text-gray-500" />
                     </button>
-                    
-                    {openMenuId === item._id && (
-                      <div 
-                        ref={menuRef}
-                        className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown"
-                      >
-                        <button
-                          className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShare(item);
-                          }}
-                        >
-                          <Share className="h-4 w-4 mr-2" />
-                          <span>Share</span>
-                        </button>
-                        <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-                          <Copy className="h-4 w-4 mr-2" />
-                          <span>Copy Link</span>
-                        </button>
-                        <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-                          <External className="h-4 w-4 mr-2" />
-                          <span>Open</span>
-                        </button>
-                        <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-                          {visiblePasswords[item._id] ? (
-                            <>
-                              <EyeOff className="h-4 w-4 mr-2" />
-                              <span>Hide Password</span>
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-4 w-4 mr-2" />
-                              <span>Show Password</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </td>
               </tr>
@@ -242,6 +234,47 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
           </tbody>
         </table>
       </div>
+
+      {openMenuId && menuPosition && (
+        <div 
+          ref={menuRef}
+          style={{
+            position: 'fixed',
+            top: `${menuPosition.top}px`,
+            left: `${menuPosition.left}px`,
+          }}
+          className="w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown"
+        >
+          <button
+            className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={(e) => {
+              e.stopPropagation();
+              const item = items.find(item => item._id === openMenuId);
+              if (item) handleShare(item);
+            }}
+          >
+            <Share className="h-4 w-4 mr-2" />
+            <span>Share</span>
+          </button>
+          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
+            <Copy className="h-4 w-4 mr-2" />
+            <span>Copy Link</span>
+          </button>
+          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
+            <External className="h-4 w-4 mr-2" />
+            <span>Open</span>
+          </button>
+          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
+            <Download className="h-4 w-4 mr-2" />
+            <span>Download</span>
+          </button>
+          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
+            <X className="h-4 w-4 mr-2" />
+            <span>Delete</span>
+          </button>
+
+        </div>
+      )}
 
       <ShareModal
         isOpen={showShareModal}
@@ -256,4 +289,3 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
 };
 
 export default FileList;
-

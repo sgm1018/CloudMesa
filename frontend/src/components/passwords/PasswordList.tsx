@@ -14,8 +14,8 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
   const { showToast } = useToast();
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
-  const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const menuRef = React.useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [selectedPasswordId, setSelectedPasswordId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -93,13 +93,6 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
     }
   };
 
-  const handleItemClick = (item: Item) => {
-    if (item.type === 'group') {
-      setCurrentFolder(item._id);
-    } else {
-      setSelectedPasswordId(prevId => prevId === item._id ? null : item._id);
-    }
-  };
 
   const handleDoubleClick = (item: Item) => {
     if (item.type === 'password') {
@@ -145,6 +138,37 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
     setOpenMenuId(id);
   };
 
+// Update the rightClickOnElement function to accept itemId parameter
+const rightClickOnElement = (event: React.MouseEvent, itemId: string) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  setMenuPosition({
+    top: event.clientY,
+    left: event.clientX
+  });
+  
+  setOpenMenuId(itemId);
+};
+
+// Fix the handleItemClick function
+const handleItemClick = (item: Item, event: React.MouseEvent) => {
+  // Handle right click to show context menu
+  if (event.button === 2) {
+    rightClickOnElement(event, item._id);
+    return;
+  }
+  
+  // Handle normal left click
+  if (item.type === 'group') {
+    setCurrentFolder(item._id);
+  } else {
+    setSelectedPasswordId(prevId => prevId === item._id ? null : item._id);
+  }
+};
+
+
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (openMenuId && menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -184,7 +208,14 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
           {items.map((item) => (
             <tr
               key={item._id}
-              onClick={() => handleItemClick(item)}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                handleItemClick(item, event);
+              }}
+              onClick={(event) => {
+                event.preventDefault();
+                handleItemClick(item, event);
+              }}
               onDoubleClick={() => handleDoubleClick(item)}
               className={`hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer group ${
                 selectedItems.includes(item._id)
