@@ -1,64 +1,81 @@
-import React, { createContext, useContext, useState } from 'react';
-import { User } from '../types';
-import { mockCurrentUser } from '../data/mockData';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { UserLoginDto } from '../dto/auth/UserLoginDto';
+import { authService } from '../services/AuthService';
 
-type AuthContextType = {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  isLoading: boolean;
-};
+
+interface AuthContextType {
+    user: UserLoginDto | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    login: (email: string, password: string) => Promise<void>;
+    register: (name: string, surname: string, email: string, password: string) => Promise<void>;
+    logout: () => void;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const [user, setUser] = useState<UserLoginDto | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // In a real app, we would validate credentials here
-      // For demo purposes, accept any non-empty email/password
-      if (!email || !password) {
-        throw new Error('Please enter both email and password');
-      }
+    useEffect(() => {
+        // Verificar si hay un usuario ya logueado al inicializar
+        const currentUser = authService.getCurrentUser();
+        setUser(currentUser);
+        setIsLoading(false);
+    }, []);
 
-      setUser(mockCurrentUser);
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const login = async (email: string, password: string) => {
+        setIsLoading(true);
+        try {
+            const userData = await authService.login(email, password);
+            setUser(userData);
+        } catch (error) {
+            // Re-lanzar el error para que el componente lo maneje
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-  const logout = () => {
-    setUser(null);
-  };
+    const register = async (name: string, surname: string, email: string, password: string) => {
+        setIsLoading(true);
+        try {
+            const userData = await authService.register(name, surname, email, password);
+            setUser(userData);
+        } catch (error) {
+            // Re-lanzar el error para que el componente lo maneje
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-  return (
-    <AuthContext.Provider
-      value={{
+    const logout = () => {
+        authService.logout();
+        setUser(null);
+    };
+
+    const value = {
         user,
         isAuthenticated: !!user,
-        login,
-        logout,
         isLoading,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+        login,
+        register,
+        logout
+    };
+
+    return (
+        <AuthContext.Provider value={value}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
 };

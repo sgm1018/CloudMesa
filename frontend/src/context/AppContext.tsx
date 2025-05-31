@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import { Item, ViewMode } from '../types';
-
+import { itemService } from '../services/ItemService';
+import { PaginationParams } from '../services/BaseService';
 type View = 'files' | 'passwords' | 'settings';
 
 type AppContextType = {
@@ -21,6 +22,7 @@ type AppContextType = {
   toggleSidebar: () => void;
   isSearching: boolean;
   setIsSearching: (searching: boolean) => void;
+  getItemsByParentId: (parentId: string , paginationParams : PaginationParams) => Promise<Item[]>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -48,6 +50,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const getItemsByParentId = async (parentId: string, paginationParams: PaginationParams) => {
+      const items = await itemService.findItemwByUserByParentIdPagination(parentId, paginationParams);
+      return items;
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -58,6 +65,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentFileFolder,
         currentPasswordFolder,
         setCurrentFolder,
+        getItemsByParentId,
         searchQuery,
         setSearchQuery,
         selectedItems,

@@ -1,32 +1,32 @@
 import { Entity, User, Permission, SharedConfig, EncryptedMetadata, Encryption, Item, ItemType, RefreshToken } from '../types';
 
 // Mock current user
-export const mockCurrentUser: User = {
-  _id: 'user-1',
-  name: 'John',
-  surname: 'Doe',
-  email: 'john.doe@example.com',
-  passwordHash: 'hashed_password',
-  avatar: 'https://i.pravatar.cc/150?img=68',
-  publicKey: 'mock_public_key',
-  maxSize: 10737418240, // 10GB
-  roles: ['user'],
-  isActive: true,
-  isVerified: true,
-  createdAt: new Date('2023-01-01'),
-  updatedAt: new Date('2023-01-01'),
-  userCreator: 'system',
-  refreshToken: {
-    token: 'mock_refresh_token',
-    revoked: false,
-    createdAt: new Date('2023-01-01'),
-    expiresAt: new Date('2023-12-31')
-  }
-};
+// export const mockCurrentUser: User = {
+//   _id: 'user-1',
+//   name: 'John',
+//   surname: 'Doe',
+//   email: 'john.doe@example.com',
+//   passwordHash: 'hashed_password',
+//   avatar: 'https://i.pravatar.cc/150?img=68',
+//   publicKey: 'mock_public_key',
+//   maxSize: 10737418240, // 10GB
+//   roles: ['user'],
+//   isActive: true,
+//   isVerified: true,
+//   createdAt: new Date('2023-01-01'),
+//   updatedAt: new Date('2023-01-01'),
+//   userCreator: 'system',
+//   refreshToken: {
+//     token: 'mock_refresh_token',
+//     revoked: false,
+//     createdAt: new Date('2023-01-01'),
+//     expiresAt: new Date('2023-12-31')
+//   }
+// };
 
 // Other mock users for sharing functionality
 export const mockUsers: User[] = [
-  mockCurrentUser,
+  // mockCurrentUser,
   {
     _id: 'user-2',
     name: 'Jane',

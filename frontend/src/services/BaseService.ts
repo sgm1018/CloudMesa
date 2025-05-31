@@ -1,17 +1,16 @@
-import { log } from 'console';
-import { Entity } from '../types';
-import { Enviroment } from './../../enviroment';
 
+import { get } from 'http';
+import { Enviroment } from '../../enviroment';
 // Common interfaces
 
 
-export interface PaginationParams {
+export interface  PaginationParams {
     page: number;
     limit: number;
 }
 
 
-export class BaseService {
+export abstract class BaseService {
     protected baseUrl: string;
     protected controller: string;
 
@@ -24,7 +23,7 @@ export class BaseService {
         try {
             const response = await fetch(`${this.baseUrl}${this.controller}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this.getAuthHeaders() ,
                 body: JSON.stringify(entity),
             });
             
@@ -39,7 +38,10 @@ export class BaseService {
     async findAll(filter = {}): Promise<any> {
         try {
             const params = new URLSearchParams(this.serializeFilter(filter));
-            const response = await fetch(`${this.baseUrl}${this.controller}?${params}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}?${params}` , {
+                method: 'GET',
+                headers: this.getAuthHeaders(),
+            });
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
@@ -51,7 +53,10 @@ export class BaseService {
 
     async findById(id: string): Promise<any> {
         try {
-            const response = await fetch(`${this.baseUrl}${this.controller}/${id}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}/${id}`, {
+                method: 'GET',
+                headers: this.getAuthHeaders(),
+            });
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
@@ -67,7 +72,10 @@ export class BaseService {
             params.append('page', paginationParams.page.toString());
             params.append('limit', paginationParams.limit.toString());
             
-            const response = await fetch(`${this.baseUrl}${this.controller}/paginated?${params}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}/paginated?${params}`, {
+                method: 'GET',
+                headers: this.getAuthHeaders(),
+            });
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
@@ -82,7 +90,7 @@ export class BaseService {
         try {
             const response = await fetch(`${this.baseUrl}${this.controller}/${entity._id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this.getAuthHeaders(),
                 body: JSON.stringify(entity),
             });
             
@@ -98,6 +106,7 @@ export class BaseService {
         try {
             const response = await fetch(`${this.baseUrl}${this.controller}/${id}`, {
                 method: 'DELETE',
+                headers: this.getAuthHeaders(),
             });
             
             if (!response.ok) throw new Error(response.statusText);
@@ -111,7 +120,12 @@ export class BaseService {
     async count(filter = {}): Promise<any> {
         try {
             const params = new URLSearchParams(this.serializeFilter(filter));
-            const response = await fetch(`${this.baseUrl}${this.controller}/count?${params}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}/count?${params}`,
+                {
+                    method: 'GET',
+                    headers: this.getAuthHeaders(),
+                }
+            );
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
@@ -124,7 +138,12 @@ export class BaseService {
     async exists(filter = {}): Promise<any> {
         try {
             const params = new URLSearchParams(this.serializeFilter(filter));
-            const response = await fetch(`${this.baseUrl}${this.controller}/exists?${params}`);
+            const response = await fetch(`${this.baseUrl}${this.controller}/exists?${params}`,
+                {
+                    method: 'GET',
+                    headers: this.getAuthHeaders(),
+                }
+            );
             
             if (!response.ok) throw new Error(response.statusText);
             return await response.json();
@@ -134,7 +153,7 @@ export class BaseService {
         }
     }
 
-    private serializeFilter(filter: any): Record<string, string> {
+    protected serializeFilter(filter: any): Record<string, string> {
         const result: Record<string, string> = {};
         Object.entries(filter).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
@@ -142,5 +161,14 @@ export class BaseService {
             }
         });
         return result;
+    }
+
+
+    protected getAuthHeaders(): Record<string, string> {
+        const accesToken = localStorage.getItem('accesToken');
+        return {
+            'Content-Type': 'application/json',
+            ...(accesToken ? { 'Authorization': `Bearer ${accesToken}` } : {})
+        };
     }
 }

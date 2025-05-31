@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { getItemsByParentId } from '../../data/mockData';
 import { Item, ItemType } from '../../types';
 import FileGrid from './FileGrid';
 import FileList from './FileList';
@@ -8,9 +7,10 @@ import Breadcrumb from './Breadcrumb';
 import { useDropzone } from 'react-dropzone';
 import { Folder, File, Upload, Plus, FolderPlus, Loader2, Filter } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { PaginationParams } from '../../services/BaseService';
 
 const FilesView: React.FC = () => {
-  const { currentFileFolder: currentFolder, viewMode, searchQuery } = useAppContext();
+  const { currentFileFolder: currentFolder, viewMode, searchQuery, getItemsByParentId } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,8 +70,11 @@ const FilesView: React.FC = () => {
     const fetchItems = async () => {
     setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 600));
-      
-      let fetchedItems = getItemsByParentId(currentFolder, [ItemType.FOLDER, ItemType.FILE]);
+      const params : PaginationParams = {
+        page: 1,
+        limit: 20, // Adjust as needed
+      }
+      let fetchedItems = await getItemsByParentId(currentFolder ? currentFolder : '', params);
       
       if (filterType !== 'all') {
         fetchedItems = fetchedItems.filter(item => 

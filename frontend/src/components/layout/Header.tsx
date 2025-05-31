@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Item } from '../../types';
 import { searchItems } from '../../data/mockData';
@@ -17,6 +16,7 @@ import {
   KeyIcon,
   LogOut,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Header: React.FC = () => {
   const {
@@ -255,12 +255,12 @@ const Header: React.FC = () => {
             className="flex items-center space-x-2"
           >
             <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center overflow-hidden">
-              {user?.avatar ? (
-                <img src={user.avatar} alt={`${user.name} ${user.surname}`} className="w-full h-full object-cover" />
+              {user?.user.avatar ? (
+                <img src={user.user.avatar} alt={`${user.user.name} ${user.user.surname}`} className="w-full h-full object-cover" />
               ) : (
                 <span className="font-medium text-primary-700 dark:text-primary-300">
-                  {user?.name.charAt(0)}
-                  {user?.surname.charAt(0)}
+                  {user?.user.name.charAt(0)}
+                  {user?.user.surname.charAt(0)}
                 </span>
               )}
             </div>
@@ -270,9 +270,9 @@ const Header: React.FC = () => {
           {showUserDropdown && (
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
               <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                <div className="font-medium">{user?.name} {user?.surname}</div>
+                <div className="font-medium">{user?.user.name} {user?.user.surname}</div>
                 <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                  {user?.email}
+                  {user?.user.email}
                 </div>
               </div>
               <button

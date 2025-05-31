@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { Mail, Lock, EyeIcon, EyeOffIcon } from 'lucide-react';
 import ForgotPasswordModal from './ForgotPasswordModal';
+import { useAuth } from '../../context/AuthContext';
 
 const LoginForm: React.FC<{ onToggleForm: () => void }> = ({ onToggleForm }) => {
   const { login, isLoading } = useAuth();
@@ -17,7 +17,7 @@ const LoginForm: React.FC<{ onToggleForm: () => void }> = ({ onToggleForm }) => 
     
     try {
       await login(email, password);
-    } catch (err) {
+    } catch (err) { 
       setError(err instanceof Error ? err.message : 'Invalid email or password');
     }
   };
