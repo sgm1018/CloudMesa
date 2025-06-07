@@ -90,8 +90,6 @@ const FilesView: React.FC = () => {
       }
       let fetchedItems = await getItemsByParentId(params);
       
-      fetchedItems = fetchedItems.filter(item => item.type === 'file' || item.type === 'folder'
-      );
       
       fetchedItems.sort((a, b) => {
         let comparison = 0;

@@ -6,11 +6,11 @@ import PasswordList from './PasswordList';
 import Breadcrumb from '../files/Breadcrumb';
 import NewPasswordModal from './NewPasswordModal';
 import PasswordDetailsModal from './PasswordDetailsModal';
-import { FolderPlus, KeyIcon, Plus, Loader2, Filter } from 'lucide-react';
+import { FolderPlus, KeyIcon, Plus, Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PaginationParams } from '../../services/BaseService';
 
 const PasswordsView: React.FC = () => {
-  const { currentPasswordFolder: currentFolder, viewMode, searchQuery, getItemsByParentId } = useAppContext();
+  const { currentPasswordFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
@@ -19,47 +19,128 @@ const PasswordsView: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [filterType, setFilterType] = useState<'all' | 'passwords' | 'groups'>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [items4Page, setItems4Page] = useState(20);
+
+  const handlePage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const fetchItems = async () => {
+    setIsLoading(true);
+
+    const contItems: number = await countItems(['password', 'group'], currentFolder || '');
+    setTotalPages(Math.ceil(contItems / items4Page));
+    
+    const params: PaginationParams = {
+      parentId: currentFolder || '',
+      itemTypes: ['password', 'group'],
+      page: currentPage,
+      limit: items4Page,
+    };
+
+    let fetchedItems = await getItemsByParentId(params);
+
+    // Apply sorting
+    fetchedItems.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'date':
+          if (!a.updatedAt || !b.updatedAt) return 0;
+          comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+    
+    setItems(fetchedItems);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    const fetchItems = async () => {
-      setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 600));
-      const params : PaginationParams= {
-        parentId: currentFolder || '',
-        itemTypes: ['password', 'group'],
-        page: 1,
-        limit: 20, // Adjust as needed
-      } 
-
-      let fetchedItems = await getItemsByParentId(params);
-
-      // Apply filters
-      fetchedItems = fetchedItems.filter(item => item.type === 'password' || item.type === 'group'
-      );      
-      
-      // Apply sorting
-      fetchedItems.sort((a, b) => {
-        let comparison = 0;
-        
-        switch (sortBy) {
-          case 'name':
-            comparison = a.name.localeCompare(b.name);
-            break;
-          case 'date':
-            if (!a.updatedAt || !b.updatedAt) return 0;
-            comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-            break;
-        }
-        
-        return sortOrder === 'asc' ? comparison : -comparison;
-      });
-      
-      setItems(fetchedItems);
-      setIsLoading(false);
-    };
-    
     fetchItems();
-  }, [currentFolder, searchQuery, sortBy, sortOrder, filterType]);
+  }, [currentFolder, searchQuery, sortBy, sortOrder, filterType, currentPage]);
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const getVisiblePages = () => {
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
+
+      for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+        range.push(i);
+      }
+
+      if (currentPage - delta > 2) {
+        rangeWithDots.push(1, '...');
+      } else {
+        rangeWithDots.push(1);
+      }
+
+      rangeWithDots.push(...range);
+
+      if (currentPage + delta < totalPages - 1) {
+        rangeWithDots.push('...', totalPages);
+      } else {
+        rangeWithDots.push(totalPages);
+      }
+
+      return rangeWithDots;
+    };
+
+    const visiblePages = getVisiblePages();
+
+    return (
+      <div className="flex items-center justify-center space-x-1 mt-6">
+        <button
+          onClick={() => handlePage(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        {visiblePages.map((page, index) => (
+          <React.Fragment key={index}>
+            {page === '...' ? (
+              <span className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                ...
+              </span>
+            ) : (
+              <button
+                onClick={() => handlePage(page as number)}
+                className={`px-3 py-2 text-sm font-medium rounded border ${
+                  currentPage === page
+                    ? 'z-10 text-primary-600 bg-primary-50 border-primary-500 dark:bg-blue-900 dark:text-white dark:border-primary-600'
+                    : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                }`}
+              >
+                {page}
+              </button>
+            )}
+          </React.Fragment>
+        ))}
+
+        <button
+          onClick={() => handlePage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  };
 
   const handleSavePassword = (data: {
     name: string;
@@ -69,33 +150,7 @@ const PasswordsView: React.FC = () => {
     notes?: string;
   }) => {
     // Create a new password item
-    // const newPassword: Item = {
-    //   _id: `password-${Date.now()}`, // In a real app, this would be generated by the server
-    //   name: data.name,
-    //   userId: 'user-1', // In a real app, this would be the current user's ID
-    //   type: 'password',
-    //   parentId: currentFolder || undefined,
-    //   encryptedMetadata: {
-    //     name: data.name,
-    //     username: data.username,
-    //     password: data.password,
-    //     url: data.url,
-    //     notes: data.notes,
-    //     icon: 'lock', // Default icon
-    //   },
-    //   encryption: {
-    //     iv: 'mock_iv',
-    //     algorithm: 'AES-GCM',
-    //     encryptedKey: 'mock_encrypted_key'
-    //   },
-    //   createdAt: new Date(),
-    //   updatedAt: new Date(),
-    //   path: currentFolder ? ['Personal'] : [] // In a real app, this would be the actual path
-    // };
-
-    // // Add the new password to the items list
-    // setItems(prevItems => [...prevItems, newPassword]);
-    // setShowNewPasswordModal(false);
+    // Implementation remains the same
   };
 
   const handleUpdatePassword = (data: {
@@ -254,6 +309,8 @@ const PasswordsView: React.FC = () => {
           ) : (
             <PasswordList items={items} onPasswordSelect={handlePasswordSelect} />
           )}
+          
+          {renderPagination()}
         </div>
       )}
 
