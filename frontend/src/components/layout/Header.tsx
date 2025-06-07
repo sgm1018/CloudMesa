@@ -29,6 +29,7 @@ const Header: React.FC = () => {
     currentView,
     setCurrentView,
     setCurrentFolder,
+    setIsForceParentId
   } = useAppContext();
   
   const { user, logout } = useAuth();

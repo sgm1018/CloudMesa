@@ -67,8 +67,7 @@ const FilesView: React.FC = () => {
   };
 
   const fetchItems = async () => {
-    setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 600));
+      setIsLoading(true);
       const params : PaginationParams = {
         parentId: currentFolder || '',
         page: 1,
@@ -104,7 +103,7 @@ const FilesView: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [currentFolder, searchQuery, sortBy, sortOrder, filterType]);
+  }, [currentFolder, searchQuery, sortBy, sortOrder, filterType,]);
 
   if (isLoading) {
     return (
