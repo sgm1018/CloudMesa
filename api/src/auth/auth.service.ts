@@ -11,6 +11,7 @@ import { UserGetDto } from 'src/users/dto/user.dto';
 import { ConfigService } from '@nestjs/config';
 import { RefreshToken } from 'src/users/entities/RefreshToken.entity';
 import { UserDecoratorClass } from './decorators/user.decorator';
+import { ApiResponse } from 'src/shared/responses/ApiResponse';
 
 @Injectable()
 export class AuthService {
@@ -20,12 +21,12 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto) : Promise<ApiResponse<LoginTokenDto>> {
     const userExist = await this.usersService.findOne({
       email: registerDto.email,
     });
     if (userExist.isSuccess()) {
-      throw new Error('User already exists');
+      return ApiResponse.error(-1, 'User already exists with this email');
     }
 
     const passwordHash = await this.hashPassword(registerDto.password);
@@ -42,35 +43,37 @@ export class AuthService {
     user.avatar = ''; // Default avatar
     const userCreado = await this.usersService.create(user);
     if (!userCreado.isSuccess()) {
-      throw new Error('Error creating user');
+      return ApiResponse.error(-1, 'Error creating user');
     }
     const tokens = await this.generateTokens(userCreado.value!);
     if (!tokens) {
-      throw new Error('Error generating tokens');
+      return ApiResponse.error(-1, 'Error generating tokens');
     }
 
-    return new LoginTokenDto().createFromUser(
+    const loginDto = new LoginTokenDto().createFromUser(
       userCreado.value!,
       tokens.accessToken,
       tokens.refreshToken,
     );
+    return ApiResponse.item(loginDto);
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto) : Promise<ApiResponse<LoginTokenDto>> {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) {
-      throw new Error('Invalid credentials');
+      return ApiResponse.error(-1, 'Invalid email or password');
     }
 
     const tokens = await this.generateTokens(user);
     if (!tokens) {
-      throw new Error('Error generating tokens');
+      return ApiResponse.error(-1, 'Error generating tokens');
     }
-    return new LoginTokenDto().createFromUser(
+    const loginTokenDto = new LoginTokenDto().createFromUser(
       user,
       tokens.accessToken,
       tokens.refreshToken,
     );
+    return ApiResponse.item(loginTokenDto);
   }
 
   private async validateUser(
@@ -79,7 +82,7 @@ export class AuthService {
   ): Promise<User | null> {
     const user = await this.usersService.findOne({ email: email });
     if (!user.isSuccess()) {
-      throw new Error('Error finding user');
+      return null;
     }
     if (await bcrypt.compare(password, user.value!.passwordHash)) {
       return user.value!;
@@ -133,11 +136,11 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(refreshTokenStr: string) {
+  async refreshTokens(refreshTokenStr: string) : Promise<ApiResponse<LoginTokenDto>> {
     const userResult =
       await this.usersService.findOneByRefreshToken(refreshTokenStr);
     if (!userResult.isSuccess()) {
-      throw new Error('Invalid refresh token');
+      return ApiResponse.empty<LoginTokenDto>();
     }
 
     const user = userResult.value!;
@@ -147,17 +150,17 @@ export class AuthService {
       user.refreshToken.token !== refreshTokenStr ||
       user.refreshToken.revoked
     ) {
-      throw new Error('Invalid or expired refresh token');
+      return ApiResponse.empty<LoginTokenDto>();
     }
 
     // verify token
     try {
       const payload = this.jwtService.verify(refreshTokenStr);
       if (payload.type != 'refresh') {
-        throw new Error('Invalid token type');
+        return ApiResponse.empty<LoginTokenDto>();
       }
     } catch (error) {
-      throw new Error('Invalid or expired refresh token');
+      return ApiResponse.empty<LoginTokenDto>();
     }
 
     // reovoke token
@@ -166,18 +169,19 @@ export class AuthService {
     // gen new tokens
     const tokens = await this.generateTokens(user);
 
-    return new LoginTokenDto().createFromUser(
+    const userLoginDto = new LoginTokenDto().createFromUser(
       user,
       tokens.accessToken,
       tokens.refreshToken,
     );
+    return ApiResponse.item(userLoginDto);
   }
 
-  public async logout(refreshTokenStr: string) {
+  public async logout(refreshTokenStr: string) : Promise<ApiResponse<string>> {
     const userResult =
       await this.usersService.findOneByRefreshToken(refreshTokenStr);
     if (!userResult.isSuccess()) {
-      throw new Error('Invalid refresh token');
+      return ApiResponse.empty<string>('Invalid refresh token');
     }
 
     const user = userResult.value!;
@@ -187,13 +191,12 @@ export class AuthService {
       user.refreshToken.token !== refreshTokenStr ||
       user.refreshToken.revoked
     ) {
-      throw new Error('Invalid or expired refresh token');
+      return ApiResponse.empty<string>('Invalid refresh token');
     }
 
     // revoke token
     await this.usersService.revokeRefreshToken(user._id?.toString()!);
-
-    return { message: 'Logout successful' };
+    return ApiResponse.item('Logout successful');
   }
 
   public generatePayload(user: User): UserDecoratorClass {

@@ -70,7 +70,6 @@ frontend/node_modules
 frontend/dist
 frontend/dist-ssr
 frontend/*.local
-frontend/
 frontend/# Editor directories and files
 frontend/.vscode/*
 frontend/!.vscode/extensions.json

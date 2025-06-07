@@ -14,25 +14,36 @@ import { RefreshTokenDto } from './dto/refreshToken.dto';
 @ApiBearerAuth('JWT-auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
   @Public()
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+    const result = await this.authService.register(registerDto);
+    if (!result.isSuccess()) {
+      throw new Error('Registration failed');
+    }
+    return result.value;
   }
 
   @Public()
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
 
-    return this.authService.login(loginDto);
+    const result = await this.authService.login(loginDto);
+    if (!result.isSuccess()){
+      throw new Error(result.message);
+    }
+    return result.value;
   }
 
   @Public()
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh access token' })
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshTokens(refreshTokenDto.refreshToken);
+    const result = await this.authService.refreshTokens(refreshTokenDto.refreshToken);
+    if (!result.isSuccess()) {
+      throw new Error(result.message);
+    }
+    return result.value;
   }
 
   @Post('logout')
@@ -40,7 +51,11 @@ export class AuthController {
   @ApiBody({ type: RefreshTokenDto })
   @UseGuards(LoginGuard)
   async logout(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.logout(refreshTokenDto.refreshToken);
+    const result = await this.authService.logout(refreshTokenDto.refreshToken);
+    if (!result.isSuccess()) {
+      throw new Error(result.message);
+    }
+    return result.value;
   }
 
 
