@@ -275,9 +275,6 @@ export const mockItems: Item[] = [
 // };
 
 
-export const getItemsByParentId = (parentId: string | null = null, type : ItemType[]) : Item[] => {
-  return mockItems.filter( item => item.parentId == parentId && type.includes(item.type));
-} 
 
 // export const getRootFolders = (): Item[] => {
 //   return mockItems.filter(item => 

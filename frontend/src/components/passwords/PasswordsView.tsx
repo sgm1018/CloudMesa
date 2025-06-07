@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { getItemsByParentId } from '../../data/mockData';
 import { Item, ItemType } from '../../types';
 import PasswordGrid from './PasswordGrid';
 import PasswordList from './PasswordList';
@@ -8,9 +7,10 @@ import Breadcrumb from '../files/Breadcrumb';
 import NewPasswordModal from './NewPasswordModal';
 import PasswordDetailsModal from './PasswordDetailsModal';
 import { FolderPlus, KeyIcon, Plus, Loader2, Filter } from 'lucide-react';
+import { PaginationParams } from '../../services/BaseService';
 
 const PasswordsView: React.FC = () => {
-  const { currentPasswordFolder: currentFolder, viewMode, searchQuery } = useAppContext();
+  const { currentPasswordFolder: currentFolder, viewMode, searchQuery, getItemsByParentId } = useAppContext();
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
@@ -24,16 +24,15 @@ const PasswordsView: React.FC = () => {
     const fetchItems = async () => {
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 600));
+      const params : PaginationParams= {
+        parentId: currentFolder || '',
+      } 
+
+      let fetchedItems = await getItemsByParentId(params);
       
-      let fetchedItems: Item[];
-      
-      fetchedItems = getItemsByParentId(currentFolder, [ItemType.GROUP, ItemType.PASSWORD]);
       // Apply filters
-      if (filterType !== 'all') {
-        fetchedItems = fetchedItems.filter(item => 
-          filterType === 'passwords' ? item.type === 'password' : item.type === 'group'
-        );
-      }
+      fetchedItems = fetchedItems.filter(item => item.type === 'password' || item.type === 'group'
+      );      
       
       // Apply sorting
       fetchedItems.sort((a, b) => {
