@@ -85,7 +85,7 @@ class AuthService {
 
         const refreshTokenDto : RefreshTokenDto = new RefreshTokenDto();
         refreshTokenDto.refreshToken = sessionStorage.getItem('refreshToken') || '';
-        const response = await fetch(`${Enviroment.API_URL}${this.controller}/logout`, {
+        const response =    await fetch(`${Enviroment.API_URL}${this.controller}/logout`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('accesToken')}` },
             body: JSON.stringify(refreshTokenDto),
