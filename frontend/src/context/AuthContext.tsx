@@ -3,6 +3,8 @@ import { UserLoginDto } from '../dto/auth/UserLoginDto';
 import { authService } from '../services/AuthService';
 import { log } from 'console';
 import { useNavigate } from 'react-router-dom';
+import { encryptService } from '../services/EncryptService';
+
 
 interface AuthContextType {
     user: UserLoginDto | null;
@@ -30,12 +32,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(true);
         try {
             const userData = await authService.login(email, password);
+            const publicKey = await encryptService.getPublicKey();
+            sessionStorage.setItem('publicKey', publicKey);
             setUser(userData as UserLoginDto); // Cast to UserLoginDto
             console.log(userData);
             navigate("/dashboard");
         } catch (error) {
             // Re-lanzar el error para que el componente lo maneje
-            throw error;
+                throw error;
         } finally {
             setIsLoading(false);
         }

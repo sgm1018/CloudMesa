@@ -9,6 +9,7 @@ import { Folder, File, Upload, Plus, FolderPlus, Loader2, Filter, ChevronLeft, C
 import { useToast } from '../../context/ToastContext';
 import { PaginationParams } from '../../services/BaseService';
 
+
 const FilesView: React.FC = () => {
   const { currentFileFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
   const { showToast } = useToast();
@@ -23,6 +24,8 @@ const FilesView: React.FC = () => {
   const [items4Page, setItems4Page] = useState(20);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+
 
   const handlePage = (page: number) => {
     if (page >= 1 && page <= totalPages) {

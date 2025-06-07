@@ -6,6 +6,7 @@ import MainLayout from './components/layout/MainLayout';
 import AuthPage from './components/auth/AuthPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
+import { EncriptionProvider } from './context/EncryptionContext';
 
 
 
@@ -15,16 +16,18 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <AppProvider>
-            <ToastProvider>
-            <Routes>
-              <Route path="/login" element={<AuthPage />} />
-              <Route path="/dashboard/*" element={<MainLayout />} />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-            </ToastProvider>
-          </AppProvider>
+          <EncriptionProvider>
+            <AppProvider>
+              <ToastProvider>
+              <Routes>
+                <Route path="/login" element={<AuthPage />} />
+                <Route path="/dashboard/*" element={<MainLayout />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+              </ToastProvider>
+            </AppProvider>
+          </EncriptionProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
