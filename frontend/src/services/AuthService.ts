@@ -1,7 +1,9 @@
 import { Enviroment } from "../../enviroment";
 import { LoginDto } from "../dto/auth/Login.dto";
+import { RefreshTokenDto } from "../dto/auth/RefreshTokenDto";
 import { RegisterDto } from "../dto/auth/Register.dto";
 import { UserLoginDto } from "../dto/auth/UserLoginDto";
+import { RefreshToken } from "../types";
 
 class AuthService {
     public static instance: AuthService;
@@ -37,8 +39,9 @@ class AuthService {
             
             if (!response.ok) throw new Error(response.statusText);
             const user : UserLoginDto = await response.json();
-            sessionStorage.setItem('accesToken', user.accessToken); // Store token in session storage
-            sessionStorage.setItem('refreshToken', user.refreshToken); // Store token in session storage
+            sessionStorage.setItem('accesToken', user.accessToken);
+            sessionStorage.setItem('refreshToken', user.refreshToken);
+            window.location.href = '/'; 
             return user;
         }catch( error : any){
             console.error('Login error:', error);
@@ -46,10 +49,6 @@ class AuthService {
         }
     }
     async register(name: string, surname: string, email: string, password: string): Promise<UserLoginDto | null> {
-        // Simulate API call
-    
-        // In a real app, we would validate registration data here
-        // For demo purposes, accept any non-empty name/surname/email/password
         if (!name || !surname || !email || !password) {
             throw new Error('Please fill in all fields');
         }
@@ -69,7 +68,9 @@ class AuthService {
             if (!response.ok) throw new Error(response.statusText);
 
             const user: UserLoginDto = await response.json();
-            this.currentUser = user; // Set the current user after registration
+            sessionStorage.setItem('accesToken', user.accessToken);
+            sessionStorage.setItem('refreshToken', user.refreshToken);
+            window.location.href = '/'; 
             return user;
 
         }catch(error){
@@ -79,14 +80,25 @@ class AuthService {
     
     }
 
-    logout(): void {
-        // Simulate logout by clearing the current user
+    async logout(): Promise<void> {
         this.currentUser = null;
 
+        const refreshTokenDto : RefreshTokenDto = new RefreshTokenDto();
+        refreshTokenDto.refreshToken = sessionStorage.getItem('refreshToken') || '';
+        const response = await fetch(`${Enviroment.API_URL}${this.controller}/logout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionStorage.getItem('accesToken')}` },
+            body: JSON.stringify(refreshTokenDto),
+        });
+        if (!response.ok) {
+            console.error(`Error logging out: ${response.statusText}`);
+        }
+        sessionStorage.removeItem('accesToken'); 
+        sessionStorage.removeItem('refreshToken'); 
+        window.location.href = '/login';
     }
 
     getCurrentUser(): UserLoginDto | null {
-        // Simulate getting the current user
         return this.currentUser || null;
     }
 }

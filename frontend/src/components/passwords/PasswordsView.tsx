@@ -23,7 +23,6 @@ const PasswordsView: React.FC = () => {
   useEffect(() => {
     const fetchItems = async () => {
       setIsLoading(true);
-      // Simulate network request
       await new Promise(resolve => setTimeout(resolve, 600));
       
       let fetchedItems: Item[];

@@ -5,10 +5,14 @@ import { useAppContext } from '../../context/AppContext';
 import FilesView from '../files/FilesView';
 import PasswordsView from '../passwords/PasswordsView';
 import SettingsView from '../settings/SettingsView';
+import { useAuth } from '../../context/AuthContext';
+import AuthPage from '../auth/AuthPage';
 
 const MainLayout: React.FC = () => {
   const { currentView, isSidebarCollapsed } = useAppContext();
-
+  const { isAuthenticated } = useAuth();
+  const auth : boolean = isAuthenticated();
+  if (!auth) return <AuthPage/>
   return (
     <div className="min-h-screen flex bg-background-primary">
       <Sidebar />

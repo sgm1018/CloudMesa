@@ -37,12 +37,11 @@ const Sidebar: React.FC = () => {
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <div className="flex items-center">
+        <div onClick={toggleSidebar} className="flex items-center cursor-pointer">
           {!isSidebarCollapsed ? (
         <img src={logoImagen} alt="CloudMesa Logo" className="h-8 w-auto" />
           ) : (
         <button
-          onClick={toggleSidebar}
           className="w-8 h-8 flex items-center justify-center  rounded transition-colors duration-200"
           title="Expand Sidebar"
         >

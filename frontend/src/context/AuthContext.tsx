@@ -5,7 +5,7 @@ import { authService } from '../services/AuthService';
 
 interface AuthContextType {
     user: UserLoginDto | null;
-    isAuthenticated: boolean;
+    isAuthenticated: () => boolean;
     isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     register: (name: string, surname: string, email: string, password: string) => Promise<void>;
@@ -38,6 +38,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
+    const isAuthenticated = () => {
+        return !!sessionStorage.getItem('accesToken') || !!user;
+    };
+
     const register = async (name: string, surname: string, email: string, password: string) => {
         setIsLoading(true);
         try {
@@ -58,7 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const value = {
         user,
-        isAuthenticated: !!user,
+        isAuthenticated,
         isLoading,
         login,
         register,
