@@ -66,15 +66,15 @@ const FilesView: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchItems = async () => {
+  const fetchItems = async () => {
     setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 600));
       const params : PaginationParams = {
+        parentId: currentFolder || '',
         page: 1,
         limit: 20, // Adjust as needed
       }
-      let fetchedItems = await getItemsByParentId(currentFolder ? currentFolder : '', params);
+      let fetchedItems = await getItemsByParentId(params);
       
       if (filterType !== 'all') {
         fetchedItems = fetchedItems.filter(item => 
@@ -104,7 +104,8 @@ const FilesView: React.FC = () => {
       setItems(fetchedItems);
       setIsLoading(false);
     };
-    
+
+  useEffect(() => {
     fetchItems();
   }, [currentFolder, searchQuery, sortBy, sortOrder, filterType]);
 

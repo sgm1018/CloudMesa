@@ -22,7 +22,7 @@ type AppContextType = {
   toggleSidebar: () => void;
   isSearching: boolean;
   setIsSearching: (searching: boolean) => void;
-  getItemsByParentId: (parentId: string , paginationParams : PaginationParams) => Promise<Item[]>;
+  getItemsByParentId: (paginationParams : PaginationParams) => Promise<Item[]>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -50,8 +50,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const getItemsByParentId = async (parentId: string, paginationParams: PaginationParams) => {
-      const items = await itemService.findItemwByUserByParentIdPagination(parentId, paginationParams);
+  const getItemsByParentId = async (paginationParams: PaginationParams) => {
+      const items = await itemService.findItemwByUserByParentIdPagination(paginationParams);
       return items;
   };
 

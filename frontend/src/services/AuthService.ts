@@ -2,7 +2,6 @@ import { Enviroment } from "../../enviroment";
 import { LoginDto } from "../dto/auth/Login.dto";
 import { RegisterDto } from "../dto/auth/Register.dto";
 import { UserLoginDto } from "../dto/auth/UserLoginDto";
-import { User } from "../types";
 
 class AuthService {
     public static instance: AuthService;

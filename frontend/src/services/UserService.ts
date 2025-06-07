@@ -19,15 +19,15 @@ class UserService extends BaseService{
 
 
     async findUsersPaginated(paginationParams: PaginationParams) {
-        const url = new URL(`${this.baseUrl}${this.controller}/`);
-        url.searchParams.append('page', paginationParams.page.toString());
-        url.searchParams.append('limit', paginationParams.limit.toString());
+        const url = new URL(`${this.baseUrl}`);
+        url.searchParams.append('page', paginationParams.page!.toString());
+        url.searchParams.append('limit', paginationParams.limit!.toString());
         
         return await fetch(url.toString(), {
             method: 'GET',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${sessionStorage.getItem('accesToken')}`
             }
         });
     }

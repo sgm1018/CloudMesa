@@ -1,12 +1,12 @@
 
-import { get } from 'http';
 import { Enviroment } from '../../enviroment';
 // Common interfaces
 
 
 export interface  PaginationParams {
-    page: number;
-    limit: number;
+    parentId?: string;
+    page?: number;
+    limit?: number;
 }
 
 
@@ -15,8 +15,8 @@ export abstract class BaseService {
     protected controller: string;
 
     constructor(endpoint: string) {
-        this.baseUrl = `${Enviroment.API_URL}/${endpoint}`;
-        this.controller = "base";
+        this.baseUrl = `${Enviroment.API_URL}${endpoint}`;
+        this.controller = endpoint;
     }
 
     async create(entity: any): Promise<any> {
@@ -68,9 +68,11 @@ export abstract class BaseService {
 
     async findPaginated(filter = {}, paginationParams: PaginationParams): Promise<any> {
         try {
+            paginationParams.limit = paginationParams.limit || 10;
+            paginationParams.page = paginationParams.page || 1;
             const params = new URLSearchParams(this.serializeFilter(filter));
-            params.append('page', paginationParams.page.toString());
-            params.append('limit', paginationParams.limit.toString());
+            params.append('page', paginationParams.page!.toString());
+            params.append('limit', paginationParams.limit!.toString());
             
             const response = await fetch(`${this.baseUrl}${this.controller}/paginated?${params}`, {
                 method: 'GET',
@@ -165,7 +167,7 @@ export abstract class BaseService {
 
 
     protected getAuthHeaders(): Record<string, string> {
-        const accesToken = localStorage.getItem('accesToken');
+        const accesToken = sessionStorage.getItem('accesToken');
         return {
             'Content-Type': 'application/json',
             ...(accesToken ? { 'Authorization': `Bearer ${accesToken}` } : {})

@@ -15,10 +15,11 @@ class ItemService extends BaseService {
         return ItemService.instance;
     }
     
-    async findItemwByUserByParentIdPagination(id: string, paginationParams: PaginationParams) {
-        const url = new URL(`${this.baseUrl}${this.controller}/${id}/parent`);
-        url.searchParams.append('paginationParams.page', paginationParams.page.toString());
-        url.searchParams.append('paginationParams.limit', paginationParams.limit.toString());
+    async findItemwByUserByParentIdPagination(paginationParams: PaginationParams) {
+        const url = new URL(`${this.baseUrl}/parent`);
+        url.searchParams.append('parentId', paginationParams.parentId!);
+        url.searchParams.append('page', paginationParams.page?.toString() || '1');
+        url.searchParams.append('limit', paginationParams.limit?.toString() || '10');
         
         const result = await fetch(url.toString(), {
             method: 'GET',
