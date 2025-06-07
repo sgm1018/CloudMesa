@@ -5,6 +5,7 @@ import { Enviroment } from '../../enviroment';
 
 export interface  PaginationParams {
     parentId?: string;
+    itemTypes?: string[];
     page?: number;
     limit?: number;
 }

@@ -26,10 +26,13 @@ const PasswordsView: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 600));
       const params : PaginationParams= {
         parentId: currentFolder || '',
+        itemTypes: ['password', 'group'],
+        page: 1,
+        limit: 20, // Adjust as needed
       } 
 
       let fetchedItems = await getItemsByParentId(params);
-      
+
       // Apply filters
       fetchedItems = fetchedItems.filter(item => item.type === 'password' || item.type === 'group'
       );      

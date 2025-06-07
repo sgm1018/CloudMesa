@@ -1,6 +1,7 @@
 import { error } from "console";
 import { BaseService, PaginationParams } from "./BaseService";
 import { Item } from "../types";
+import { json } from "stream/consumers";
 
 class ItemService extends BaseService {
     private static instance: ItemService;
@@ -18,6 +19,7 @@ class ItemService extends BaseService {
     async findItemwByUserByParentIdPagination(paginationParams: PaginationParams) {
         const url = new URL(`${this.baseUrl}/parent`);
         url.searchParams.append('parentId', paginationParams.parentId!);
+        url.searchParams.append('itemTypes', JSON.stringify(paginationParams.itemTypes || []));
         url.searchParams.append('page', paginationParams.page?.toString() || '1');
         url.searchParams.append('limit', paginationParams.limit?.toString() || '10');
         
@@ -47,6 +49,26 @@ class ItemService extends BaseService {
         }
         
         const items: Item[] = await response.json();
+        return items;
+
+    }
+    async countItems(type: string[], parentId: string): Promise<number> {
+        const url = new URL(`${this.baseUrl}/count`);
+        
+        url.searchParams.append('type', JSON.stringify(type));
+        url.searchParams.append('parentId', parentId);
+
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            headers: this.getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            console.error(`Error searching items: ${response.statusText}`);
+            return 0;
+        }
+        
+        const items : number = await response.json();
         return items;
 
     }

@@ -8,7 +8,6 @@ import { RefreshToken } from "../types";
 class AuthService {
     public static instance: AuthService;
     private controller: string;
-    private currentUser! : UserLoginDto | null;
     
     private constructor(){
         this.controller = "auth";
@@ -41,8 +40,8 @@ class AuthService {
             const user : UserLoginDto = await response.json();
             sessionStorage.setItem('accesToken', user.accessToken);
             sessionStorage.setItem('refreshToken', user.refreshToken);
-            window.location.href = '/'; 
             return user;
+            
         }catch( error : any){
             console.error('Login error:', error);
             return null;
@@ -70,7 +69,6 @@ class AuthService {
             const user: UserLoginDto = await response.json();
             sessionStorage.setItem('accesToken', user.accessToken);
             sessionStorage.setItem('refreshToken', user.refreshToken);
-            window.location.href = '/'; 
             return user;
 
         }catch(error){
@@ -81,7 +79,6 @@ class AuthService {
     }
 
     async logout(): Promise<void> {
-        this.currentUser = null;
 
         const refreshTokenDto : RefreshTokenDto = new RefreshTokenDto();
         refreshTokenDto.refreshToken = sessionStorage.getItem('refreshToken') || '';
@@ -98,9 +95,7 @@ class AuthService {
         window.location.href = '/login';
     }
 
-    getCurrentUser(): UserLoginDto | null {
-        return this.currentUser || null;
-    }
+
 }
 
 export const authService = AuthService.getInstance();

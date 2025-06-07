@@ -5,12 +5,12 @@ import FileGrid from './FileGrid';
 import FileList from './FileList';
 import Breadcrumb from './Breadcrumb';
 import { useDropzone } from 'react-dropzone';
-import { Folder, File, Upload, Plus, FolderPlus, Loader2, Filter } from 'lucide-react';
+import { Folder, File, Upload, Plus, FolderPlus, Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { PaginationParams } from '../../services/BaseService';
 
 const FilesView: React.FC = () => {
-  const { currentFileFolder: currentFolder, viewMode, searchQuery, getItemsByParentId } = useAppContext();
+  const { currentFileFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,7 +18,17 @@ const FilesView: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [filterType, setFilterType] = useState<'all' | 'files' | 'folders'>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [items4Page, setItems4Page] = useState(20);
+
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handlePage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   const onDrop = (acceptedFiles: File[]) => {
     handleFileUpload(acceptedFiles);
@@ -68,10 +78,15 @@ const FilesView: React.FC = () => {
 
   const fetchItems = async () => {
       setIsLoading(true);
+
+      const contItems : number = await countItems(['file', 'folder'], currentFolder || '');
+      setTotalPages(Math.ceil(contItems / items4Page));
+      
       const params : PaginationParams = {
         parentId: currentFolder || '',
-        page: 1,
-        limit: 20, // Adjust as needed
+        itemTypes: ['file', 'folder'],
+        page: currentPage,
+        limit: items4Page, 
       }
       let fetchedItems = await getItemsByParentId(params);
       
@@ -103,7 +118,80 @@ const FilesView: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [currentFolder, searchQuery, sortBy, sortOrder, filterType,]);
+  }, [currentFolder, searchQuery, sortBy, sortOrder, filterType, currentPage]);
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const getVisiblePages = () => {
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
+
+      for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+        range.push(i);
+      }
+
+      if (currentPage - delta > 2) {
+        rangeWithDots.push(1, '...');
+      } else {
+        rangeWithDots.push(1);
+      }
+
+      rangeWithDots.push(...range);
+
+      if (currentPage + delta < totalPages - 1) {
+        rangeWithDots.push('...', totalPages);
+      } else {
+        rangeWithDots.push(totalPages);
+      }
+
+      return rangeWithDots;
+    };
+
+    const visiblePages = getVisiblePages();
+
+    return (
+      <div className="flex items-center justify-center space-x-1 mt-6">
+        <button
+          onClick={() => handlePage(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        {visiblePages.map((page, index) => (
+          <React.Fragment key={index}>
+            {page === '...' ? (
+              <span className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                ...
+              </span>
+            ) : (
+              <button
+                onClick={() => handlePage(page as number)}
+                className={`px-3 py-2 text-sm font-medium rounded border ${
+                  currentPage === page
+                    ? 'z-10 text-primary-600 bg-primary-50 border-primary-500 dark:bg-blue-900 dark:text-white dark:border-primary-600'
+                    : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                }`}
+              >
+                {page}
+              </button>
+            )}
+          </React.Fragment>
+        ))}
+
+        <button
+          onClick={() => handlePage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -252,6 +340,8 @@ const FilesView: React.FC = () => {
           ) : (
             <FileList items={items} />
           )}
+          
+          {renderPagination()}
         </div>
       )}
     </div>

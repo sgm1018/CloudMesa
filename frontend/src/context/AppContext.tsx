@@ -23,6 +23,7 @@ type AppContextType = {
   isSearching: boolean;
   setIsSearching: (searching: boolean) => void;
   getItemsByParentId: (paginationParams : PaginationParams) => Promise<Item[]>;
+  countItems: (type: string[], parentId: string) => Promise<number>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -48,6 +49,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
       setCurrentPasswordFolder(folderId);
     }
+  };
+
+  const countItems = async (type: string[], parentId: string) => {
+    return await itemService.countItems(type, parentId);
   };
 
   const getItemsByParentId = async (paginationParams: PaginationParams) => {
@@ -76,6 +81,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleSidebar,
         isSearching,
         setIsSearching,
+        countItems
       }}
     >
       {children}

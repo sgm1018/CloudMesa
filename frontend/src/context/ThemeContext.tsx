@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 type ThemeContextType = {
   isDarkMode: boolean;
   toggleTheme: () => void;
+  setDarkMode: (state: boolean) => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -35,8 +36,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsDarkMode((prev) => !prev);
   };
 
+  const setDarkMode= (state: boolean) =>{
+    setIsDarkMode(state);
+    // Save preference to session storage
+    sessionStorage.setItem('theme', state ? 'dark' : 'light');
+  } 
+
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, setDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );

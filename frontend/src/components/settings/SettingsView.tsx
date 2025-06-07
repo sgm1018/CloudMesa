@@ -3,16 +3,18 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Camera, Key, Shield, Bell, Moon, Sun, Trash2, Save } from 'lucide-react';
 import TwoFactorSetup from './TwoFactorSetup';
+import { useTheme } from '../../context/ThemeContext';
 
 const SettingsView: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const {isDarkMode, toggleTheme, setDarkMode} =  useTheme();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences'>('profile');
   const [showTwoFactorSetup, setShowTwoFactorSetup] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    surname: user?.surname || '',
-    email: user?.email || '',
+    name: user?.user.name || '',
+    surname: user?.user.surname || '',
+    email: user?.user.email || '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -29,6 +31,12 @@ const SettingsView: React.FC = () => {
   };
 
   const handleSave = () => {
+    if (formData.darkMode){
+      setDarkMode(true);
+    }else{
+      setDarkMode(false);
+    }
+    
     showToast('Settings saved successfully');
   };
 
@@ -90,12 +98,12 @@ const SettingsView: React.FC = () => {
                 <div className="flex items-center space-x-6">
                   <div className="relative">
                     <div className="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center overflow-hidden">
-                      {user?.avatar ? (
-                        <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
+                      {user?.user.avatar ? (
+                        <img src={user.user.avatar} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-3xl font-medium text-primary-700 dark:text-primary-300">
-                          {user?.name.charAt(0)}
-                          {user?.surname.charAt(0)}
+                          {user?.user.name.charAt(0)}
+                          {user?.user.surname.charAt(0)}
                         </span>
                       )}
                     </div>
