@@ -31,6 +31,25 @@ class ItemService extends BaseService {
         const items : Item[]= await result.json();
         return items;
     }
+
+    async findSearchItems(search: string): Promise<Item[]> {
+        const url = new URL(`${this.baseUrl}/search`);
+        url.searchParams.append('itemName', search);
+        
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            headers: this.getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            console.error(`Error searching items: ${response.statusText}`);
+            return [];
+        }
+        
+        const items: Item[] = await response.json();
+        return items;
+
+    }
 }
 
 export const itemService = ItemService.getInstance();

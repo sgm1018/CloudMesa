@@ -40,14 +40,17 @@ const Header: React.FC = () => {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const performSearch = async () => {
     if (searchQuery.length > 0) {
-      const results = searchItems(searchQuery);
+      const results = await searchItems(searchQuery);
       setSearchResults(results);
       setSelectedResultIndex(-1);
     } else {
       setSearchResults([]);
     }
+  };
+  useEffect(() => {
+    performSearch();
   }, [searchQuery]);
 
   useEffect(() => {

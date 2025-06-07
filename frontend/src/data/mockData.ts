@@ -1,3 +1,4 @@
+import { itemService } from '../services/ItemService';
 import { Entity, User, Permission, SharedConfig, EncryptedMetadata, Encryption, Item, ItemType, RefreshToken } from '../types';
 
 // Mock current user
@@ -296,11 +297,9 @@ export const getItemById = (id: string): Item | undefined => {
   return mockItems.find(item => item._id === id);
 };
 
-export const searchItems = (query: string): Item[] => {
+export const searchItems = async  (query: string): Promise<Item[]> => {
   const lowercaseQuery = query.toLowerCase();
-  return mockItems.filter(item => 
-    item.name.toLowerCase().includes(lowercaseQuery)
-  );
+  return await itemService.findSearchItems(lowercaseQuery)
 };
 
 export const formatFileSize = (bytes: number): string => {
