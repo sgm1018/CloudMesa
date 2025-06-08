@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from './entities/user.entity';
 import { BaseService } from 'src/base/base.service';
 import { ApiResponse } from 'src/shared/responses/ApiResponse';
@@ -17,8 +17,9 @@ export class UsersService extends BaseService<User> {
     refreshToken: RefreshToken,
   ): Promise<ApiResponse<User>> {
     try {
+      
       const user = await this.model.findByIdAndUpdate(
-        userId,
+      new Types.ObjectId(userId),
         { refreshToken: refreshToken },
         { new: true },
       );
@@ -34,9 +35,31 @@ export class UsersService extends BaseService<User> {
       );
     }
   }
+
+  async updatatePublicKey(userId: string, key : string){
+    try {
+      const user = await this.model.findByIdAndUpdate(
+        new Types.ObjectId(userId),
+        { publicKey: key },
+        { new: true },
+      );
+
+      if (!user) {
+        return ApiResponse.empty();
+      }
+
+      return ApiResponse.item(user);
+    } catch (error) {
+      throw new BadRequestException(
+        `Error updating public key: ${error.message}`,
+      );
+    }
+  }
+
   //TODO check this refresh toke, dont work correctly
-  async findOneByRefreshToken(token: string): Promise<ApiResponse<User>> {
-    return this.findOne({
+  async findOneByRefreshToken(userId: string, token: string): Promise<ApiResponse<User>> {
+    return this.  findOne({
+      _id: new Types.ObjectId(userId),
       'refreshToken.token': token,
       'refreshToken.revoked': false,
     });
@@ -45,7 +68,7 @@ export class UsersService extends BaseService<User> {
   async revokeRefreshToken(userId: string): Promise<ApiResponse<User>> {
     try {
       const user = await this.model.findByIdAndUpdate(
-        userId,
+        new Types.ObjectId(userId),
         { 'refreshToken.revoked': true },
         { new: true },
       );
@@ -61,4 +84,7 @@ export class UsersService extends BaseService<User> {
       );
     }
   }
+
+
+
 }

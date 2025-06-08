@@ -350,6 +350,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                               if (item.encryptedMetadata.username) {
                                 copyToClipboard(item.encryptedMetadata.username, 'username');
                               }
+                              setOpenMenuId(null);
                             }}
                           >
                             <Copy className="h-4 w-4 mr-2" />
@@ -363,6 +364,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                               if (item.encryptedMetadata.password) {
                                 copyToClipboard(item.encryptedMetadata.password, 'password');
                               }
+                              setOpenMenuId(null);
                             }}
                           >
                             <Copy className="h-4 w-4 mr-2" />
@@ -375,6 +377,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                               onClick={(e) => {
                                 e.stopPropagation();
                                 window.open(item.encryptedMetadata.url, '_blank');
+                                setOpenMenuId(null);
                               }}
                             >
                               <External className="h-4 w-4 mr-2" />
@@ -398,13 +401,22 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                           if (item.type === 'password') {
                             onPasswordSelect(item);
                           }
+                          setOpenMenuId(null);
                         }}
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         <span>Edit</span>
                       </button>
                       
-                      <button className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <button className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Handle delete action here
+                          // You can call a delete function or show a confirmation dialog
+                          showToast('Delete action not implemented yet', 'error');
+                          setOpenMenuId(null);
+                        }
+                         }>
                         <Copy className="h-4 w-4 mr-2" />
                         <span>Delete</span>
                       </button>

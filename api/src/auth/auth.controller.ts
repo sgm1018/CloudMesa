@@ -9,6 +9,7 @@ import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { ApiBearerAuth, ApiBody, ApiOperation } from '@nestjs/swagger';
 import { RefreshTokenDto } from './dto/refreshToken.dto';
+import { User, UserDecoratorClass } from './decorators/user.decorator';
 
 @Controller('auth')
 @ApiBearerAuth('JWT-auth')
@@ -38,8 +39,8 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh access token' })
-  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
-    const result = await this.authService.refreshTokens(refreshTokenDto.refreshToken);
+  async refresh(@User() user : UserDecoratorClass ,@Body() refreshTokenDto: RefreshTokenDto) {
+    const result = await this.authService.refreshTokens(user.userId, refreshTokenDto.refreshToken);
     if (!result.isSuccess()) {
       throw new Error(result.message);
     }
@@ -50,8 +51,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout user' })
   @ApiBody({ type: RefreshTokenDto })
   @UseGuards(LoginGuard)
-  async logout(@Body() refreshTokenDto: RefreshTokenDto) {
-    const result = await this.authService.logout(refreshTokenDto.refreshToken);
+  async logout(@User() user : UserDecoratorClass,  @Body() refreshTokenDto: RefreshTokenDto) {
+    const result = await this.  authService.logout(user.userId ,refreshTokenDto.refreshToken);
     if (!result.isSuccess()) {
       throw new Error(result.message);
     }

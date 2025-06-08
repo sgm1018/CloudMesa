@@ -21,6 +21,55 @@ export class ItemsController {
 
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
+  @ApiQuery({ name: 'parentId', description: 'ID del elemento padre', type: String, required: false })
+  @ApiQuery({ name: 'page', description: 'Número de página', type: Number, required: false })
+  @ApiQuery({ name: 'limit', description: 'Elementos por página', type: Number, required: false })
+  @Get('parent')
+  async getItemsByIdPaginated(@User() user: UserDecoratorClass, @Query() paginationParams: PaginationParams) {
+    if (paginationParams.page == 0 || paginationParams.page == null){
+      paginationParams.page = 1;
+    }
+    if (paginationParams.limit == 0 || paginationParams.limit == null){
+      paginationParams.limit = 10;
+    }
+    const typeArray = typeof paginationParams.itemTypes === 'string' ? JSON.parse(paginationParams.itemTypes) : paginationParams.itemTypes;
+    const result = await this.itemsService.findPaginated({ userId: user.userId, parentId: paginationParams.parentId, type: { $in : typeArray} }, paginationParams);
+    if (!result.isSuccess()){
+      throw new BadRequestException('Error getting items');
+    } 
+    return result.list;
+  }
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @ApiQuery({ name: 'parentId', description: 'ID del elemento padre', type: String, required: false })
+  @ApiQuery({ name: 'type', description: 'Tipo de item', type: String, required: true })
+  @Get('count')
+  async countItems(@User() user: UserDecoratorClass, @Query() query : { parentId?: string, type: string }) {
+    const typeArray = typeof query.type === 'string' ? JSON.parse(query.type) : query.type;
+    const result = await this.itemsService.countItems(user.userId, typeArray, query.parentId);
+    if (!result.isSuccess()){
+      throw new BadRequestException('Error counting items');
+    } 
+    return result.value;
+
+  }
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @ApiQuery({ name: 'itemName', description: 'Nombre del item', type: String, required: true })
+  @Get('search')
+  async findSearchItems(@User() user: UserDecoratorClass, @Query() query: { itemName: string }) {
+
+    const result = await this.itemsService.findContainName(user.userId, query.itemName);
+    if (!result.isSuccess()){
+      throw new BadRequestException('Error getting items');
+    } 
+    return result.list;
+  }
+
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
   @Get()
   async getAll() {
     const result = await this.itemsService.findAll();
@@ -33,7 +82,7 @@ export class ItemsController {
 
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
-  @Get(':id')
+  @Get('find/:id')
   async findOne(@Param('id') id: string, @User() user: string) {
     const result = await this.itemsService.findOne({userId: id});
     if (!result.isSuccess()) {
@@ -54,19 +103,7 @@ export class ItemsController {
     return result.value;
   }
 
-  @UseGuards(LoginGuard, RolesGuard)
-  @Roles('user')
-  @ApiParam({ name: 'id', description: 'ID del elemento padre', type: String })
-  @ApiQuery({ name: 'page', description: 'Número de página', type: Number, required: false })
-  @ApiQuery({ name: 'limit', description: 'Elementos por página', type: Number, required: false })
-  @Get('parent/:id')
-  async getItemsByIdPaginated(@User() user: UserDecoratorClass, @Param('id') parentId: string, @Query() paginationParams: PaginationParams) {
-    const result = await this.itemsService.findPaginated({ userId: user.userId, parentId: parentId }, paginationParams);
-    if (!result.isSuccess()){
-      throw new BadRequestException('Error getting items');
-    } 
-    return result.list;
-  }
+
 
   @Public()
   @UseGuards(LoginGuard)

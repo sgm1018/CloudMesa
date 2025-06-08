@@ -10,12 +10,12 @@ export class Entity {
   @ApiProperty({
     description: 'MongoDB ObjectId identifier',
     type: String,
-    required: true,
+    required: false,
     example: '61a12345b9c1a2b3c4d5e6f7'
   })
   @IsString()
-  @Prop({ required: true, type: Types.ObjectId })
-  _id: Types.ObjectId;
+  @Prop({ required: false, type: Types.ObjectId })
+  _id?: Types.ObjectId = new Types.ObjectId();
   
   @ApiProperty({  
     description: 'Creation timestamp',

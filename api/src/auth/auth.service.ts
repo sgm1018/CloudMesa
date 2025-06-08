@@ -136,9 +136,9 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(refreshTokenStr: string) : Promise<ApiResponse<LoginTokenDto>> {
+  async refreshTokens(userId : string, refreshTokenStr: string) : Promise<ApiResponse<LoginTokenDto>> {
     const userResult =
-      await this.usersService.findOneByRefreshToken(refreshTokenStr);
+      await this.usersService.findOneByRefreshToken(userId, refreshTokenStr);
     if (!userResult.isSuccess()) {
       return ApiResponse.empty<LoginTokenDto>();
     }
@@ -177,9 +177,9 @@ export class AuthService {
     return ApiResponse.item(userLoginDto);
   }
 
-  public async logout(refreshTokenStr: string) : Promise<ApiResponse<string>> {
+  public async logout(userId: string, refreshTokenStr: string) : Promise<ApiResponse<string>> {
     const userResult =
-      await this.usersService.findOneByRefreshToken(refreshTokenStr);
+      await this.usersService.findOneByRefreshToken(userId, refreshTokenStr);
     if (!userResult.isSuccess()) {
       return ApiResponse.empty<string>('Invalid refresh token');
     }
@@ -200,7 +200,7 @@ export class AuthService {
   }
 
   public generatePayload(user: User): UserDecoratorClass {
-    const userDecoratorClass = new UserDecoratorClass(user._id.toString(), user.email, user.roles, user.name, user.isVerified, user.isActive);
+    const userDecoratorClass = new UserDecoratorClass(user._id!.toString(), user.email, user.roles, user.name, user.isVerified, user.isActive);
     return userDecoratorClass;
   }
 }

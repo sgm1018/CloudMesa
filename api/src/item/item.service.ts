@@ -14,6 +14,25 @@ export class ItemsService extends BaseService<Item> {
   }
 
 
+  async findContainName(userid : string, name: string): Promise<ApiResponse<Item>> {
+    const result = await this.ItemModel.find({ userId: userid, name: { $regex: name, $options: 'i' } }).limit(8);
+    if (!result || result.length === 0) {
+      return ApiResponse.empty();
+    }
+    return ApiResponse.list(result);
+  }
+
+  async countItems(userid: string, type: string[], parentId: string = ''): Promise<ApiResponse<number>> {
+    const filter = { userId: userid, parentId: parentId, type: { $in: type } };
+    const count = await this.ItemModel.countDocuments(filter).exec();
+    if (count === 0) {
+      return ApiResponse.empty();
+    }
+    return ApiResponse.item(count);
+  }
+
+
+
   // async findItemByUser(userId : string, itemId : string) : Promise<ApiResponse<Item>>{
   //   const item = await this.findOne({ _id: itemId, userId: userId });
   //   if (!item.isSuccess()){

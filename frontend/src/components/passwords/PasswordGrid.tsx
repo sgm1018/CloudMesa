@@ -288,6 +288,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
                   if (item?.encryptedMetadata.username) {
                     copyToClipboard(item.encryptedMetadata.username, 'username');
                   }
+                  setOpenMenuId(null);
                 }}
               >
                 <Copy className="h-4 w-4 mr-2" />
@@ -302,6 +303,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
                   if (item?.encryptedMetadata.password) {
                     copyToClipboard(item.encryptedMetadata.password, 'password');
                   }
+                  setOpenMenuId(null);
                 }}
               >
                 <Copy className="h-4 w-4 mr-2" />
@@ -317,6 +319,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
                     if (item?.encryptedMetadata.url) {
                       window.open(item.encryptedMetadata.url, '_blank');
                     }
+                    setOpenMenuId(null);
                   }}
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
@@ -334,6 +337,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
               e.stopPropagation();
               const item = items.find(i => i._id === openMenuId);
               if (item) handleShare(item);
+              setOpenMenuId(null);
             }}
           >
             <Share className="h-4 w-4 mr-2" />
@@ -348,13 +352,23 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
               if (item?.type === 'password') {
                 onPasswordSelect(item);
               }
+            setOpenMenuId(null);
+
             }}
           >
             <Edit className="h-4 w-4 mr-2" />
             <span>Edit</span>
           </button>
           
-          <button className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <button className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+          onClick={(e) => {
+            e.stopPropagation();
+            // Here you would call the delete function from your service
+            // For example: PasswordService.delete(item._id);
+            
+            showToast('Not implemented yet', 'error');
+            setOpenMenuId(null);
+          }}>
             <Trash className="h-4 w-4 mr-2" />
             <span>Delete</span>
           </button>

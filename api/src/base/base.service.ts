@@ -1,6 +1,6 @@
 import { PaginationParams } from './../shared/responses/paginationParams';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { Document, FilterQuery, Model, UpdateQuery } from 'mongoose';
+import { Document, FilterQuery, Model, UpdateQuery, Types } from 'mongoose';
 import { Entity } from './entities/entity';
 import { ApiResponse } from 'src/shared/responses/ApiResponse';
 
@@ -18,7 +18,7 @@ export class BaseService<T extends Entity> {
       const creado = await this.model.create(entity);
       return ApiResponse.item(creado);
     } catch (error) {
-      throw new BadRequestException(`Error creating entity: ${error.message}`);
+        return ApiResponse.error(-1, `Error creating entity: ${error.message}`);
     }
   }
 
@@ -32,7 +32,7 @@ export class BaseService<T extends Entity> {
   }
 
   async findById(id: string): Promise<ApiResponse<T>> {
-    const entity = await this.model.findById(id).exec();
+    const entity = await this.model.findById(new Types.ObjectId(id)).exec();
     if (!entity) {
       return ApiResponse.empty();
     }
