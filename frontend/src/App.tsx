@@ -15,20 +15,20 @@ function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
-        <AuthProvider>
           <EncriptionProvider>
-            <AppProvider>
-              <ToastProvider>
-              <Routes>
-                <Route path="/login" element={<AuthPage />} />
-                <Route path="/dashboard/*" element={<MainLayout />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-              </ToastProvider>
-            </AppProvider>
+            <AuthProvider>
+              <AppProvider>
+                <ToastProvider>
+                  <Routes>
+                    <Route path="/login" element={<AuthPage />} />
+                    <Route path="/dashboard/*" element={<MainLayout />} />
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  </Routes>
+                </ToastProvider>
+              </AppProvider>
+           </AuthProvider>
           </EncriptionProvider>
-        </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
   );

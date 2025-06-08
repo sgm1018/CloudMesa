@@ -13,8 +13,8 @@ const RegisterForm: React.FC<{ onToggleForm: () => void }> = ({ onToggleForm }) 
   const {register} = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    await register(firstName, lastName, email, password);
     e.preventDefault();
+    await register(firstName, lastName, email, password);
     setError('');
     setIsLoading(true);
     

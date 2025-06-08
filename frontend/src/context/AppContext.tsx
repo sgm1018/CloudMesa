@@ -24,6 +24,7 @@ type AppContextType = {
   setIsSearching: (searching: boolean) => void;
   getItemsByParentId: (paginationParams : PaginationParams) => Promise<Item[]>;
   countItems: (type: string[], parentId: string) => Promise<number>;
+
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -42,6 +43,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prev) => !prev);
   };
+
 
   const setCurrentFolder = (folderId: string | null) => {
     if (currentView === 'files') {
@@ -81,7 +83,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleSidebar,
         isSearching,
         setIsSearching,
-        countItems
+        countItems,
+
       }}
     >
       {children}

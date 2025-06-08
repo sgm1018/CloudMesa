@@ -7,11 +7,13 @@ import PasswordsView from '../passwords/PasswordsView';
 import SettingsView from '../settings/SettingsView';
 import { useAuth } from '../../context/AuthContext';
 import AuthPage from '../auth/AuthPage';
+import PrivateKeyModal from '../shared/privateKeyModal';
 
 const MainLayout: React.FC = () => {
   const { currentView, isSidebarCollapsed } = useAppContext();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isShowPrivateKey , setShowPrivateKey } = useAuth();
   const auth : boolean = isAuthenticated();
+
   if (!auth) return <AuthPage/>
   return (
     <div className="min-h-screen flex bg-background-primary">
@@ -28,6 +30,11 @@ const MainLayout: React.FC = () => {
           {currentView === 'settings' && <SettingsView />}
         </main>
       </div>
+            {/* Modal de Clave Privada */}
+      <PrivateKeyModal
+        isOpen={isShowPrivateKey}
+        onClose={() => setShowPrivateKey(false)}
+      />
     </div>
   );
 };
