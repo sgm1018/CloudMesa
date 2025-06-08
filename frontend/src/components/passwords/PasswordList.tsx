@@ -19,7 +19,6 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
   const [selectedPasswordId, setSelectedPasswordId] = useState<string | null>(null);
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
 
-  // Add keyboard shortcut handler for hover functionality
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!hoveredItemId || !event.ctrlKey) return;
@@ -43,27 +42,27 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [hoveredItemId, items]);
+  const handleKeyDown = async (e: KeyboardEvent) => {
+    if (!selectedPasswordId) return;
+    
+    const item = items.find(i => i._id === selectedPasswordId);
+    if (!item || item.type !== 'password') return;
+
+    if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
+      e.preventDefault();
+      if (item.encryptedMetadata.username) {
+        await copyToClipboard(item.encryptedMetadata.username, 'username');
+      }
+    } else if (e.ctrlKey && (e.key === 'c' || e.key === 'C')) {
+      e.preventDefault();
+      if (item.encryptedMetadata.password) {
+        await copyToClipboard(item.encryptedMetadata.password, 'password');
+      }
+    }
+  };
 
   // Keep the existing keyboard shortcut handler for selected items
   useEffect(() => {
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if (!selectedPasswordId) return;
-      
-      const item = items.find(i => i._id === selectedPasswordId);
-      if (!item || item.type !== 'password') return;
-
-      if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
-        e.preventDefault();
-        if (item.encryptedMetadata.username) {
-          await copyToClipboard(item.encryptedMetadata.username, 'username');
-        }
-      } else if (e.ctrlKey && (e.key === 'c' || e.key === 'C')) {
-        e.preventDefault();
-        if (item.encryptedMetadata.password) {
-          await copyToClipboard(item.encryptedMetadata.password, 'password');
-        }
-      }
-    };
 
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
