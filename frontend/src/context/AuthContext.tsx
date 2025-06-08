@@ -33,7 +33,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const userData = await authService.login(email, password);
             sessionStorage.setItem('publicKey', userData!.user.publicKey);
             setUser(userData as UserLoginDto); // Cast to UserLoginDto
-            console.log(userData);
+            // console.log(userData);
+            console.log("Inicio de sesión exitoso:", userData);
             navigate("/dashboard");
         } catch (error) {
             // Re-lanzar el error para que el componente lo maneje
@@ -52,7 +53,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
             const userData = await authService.register(name, surname, email, password);
             setUser(userData);
-            navigate("/dashboard");
+            console.log("Inicio de sesión exitoso:", userData);
+
+            // navigate("/dashboard");
             
         } catch (error) {
             // Re-lanzar el error para que el componente lo maneje

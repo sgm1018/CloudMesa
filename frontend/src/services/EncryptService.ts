@@ -16,7 +16,7 @@ public async generateKeys(): Promise<{
   publicKey: string;
   privateKey: string;
 }> {
-  console.log('🚀 [1] Starting generateKeys method...');
+  console.log('🚀 [1] Starting generateKeys method with ECC...');
   
   try {
     console.log('🔍 [2] Checking crypto availability...');
@@ -39,30 +39,25 @@ public async generateKeys(): Promise<{
     console.log('   - Hostname:', window.location.hostname);
     console.log('   - Secure Context:', window.isSecureContext);
     
-    console.log('🔐 [6] Starting key generation...');
-    console.log('   - Algorithm: RSA-OAEP');
-    console.log('   - Modulus Length: 2048');
-    console.log('   - Hash: SHA-256');
+    console.log('🔐 [6] Starting ECC key generation...');
+    console.log('   - Algorithm: ECDH');
+    console.log('   - Named Curve: P-256');
     
-    // Dividir la operación para identificar dónde falla
     const keyGenerationParams = {
-      name: "RSA-OAEP",
-      modulusLength: 512,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: "SHA-256",
+      name: "ECDH",
+      namedCurve: "P-256" // También disponibles: P-384, P-521
     };
     
     console.log('📋 [7] Key generation parameters:', keyGenerationParams);
     console.log('🔄 [8] Calling crypto.subtle.generateKey...');
     
-    // Esta línea es donde probablemente se cuelga
     const keyPair = await crypto.subtle.generateKey(
       keyGenerationParams,
       true,
-      ["encrypt", "decrypt"]
+      ["deriveBits", "deriveKey"]
     );
     
-    console.log('✅ [9] Key generation completed!');
+    console.log('✅ [9] ECC key generation completed!');
     console.log('🔑 [10] Key pair:', keyPair);
     console.log('   - Public key type:', keyPair.publicKey.type);
     console.log('   - Private key type:', keyPair.privateKey.type);
@@ -90,19 +85,20 @@ public async generateKeys(): Promise<{
     console.log('📏 Public key length:', result.publicKey.length);
     console.log('📏 Private key length:', result.privateKey.length);
     
-    console.log('🎉 [17] generateKeys completed successfully!');
+    console.log('🎉 [17] generateKeys completed successfully with ECC!');
     return result;
     
   } catch (error) {
-    console.error('💥 [ERROR] Key generation failed at step:', error);
+    console.error('💥 [ERROR] ECC key generation failed at step:', error);
     console.error('📍 Error details:', {
       name: error instanceof Error ? error.name : 'Unknown',
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined
     });
-    throw new Error(`Key generation failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`ECC key generation failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
+
 
   public async importPublicKey(publicKeyBase64: string): Promise<CryptoKey> {
     try {

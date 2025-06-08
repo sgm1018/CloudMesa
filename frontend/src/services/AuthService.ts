@@ -1,3 +1,4 @@
+import { log } from "console";
 import { Enviroment } from "../../enviroment";
 import { LoginDto } from "../dto/auth/Login.dto";
 import { RefreshTokenDto } from "../dto/auth/RefreshTokenDto";
@@ -59,6 +60,7 @@ class AuthService {
             registerDto.email = email;
             registerDto.password = password;
             const {publicKey, privateKey} = await encryptService.generateKeys(); 
+            // const {publicKey, privateKey, keySize} = await encryptService.generateKeysWithWorker();
             registerDto.publicKey = publicKey; // Assuming publicKey is optional or not used in this demo
             const response = await fetch(`${Enviroment.API_URL}${this.controller}/register`, {
                 method: 'POST',
@@ -71,7 +73,7 @@ class AuthService {
             // await userService.updatePublicKey(publicKey);
             
 
-
+            console.log('User registered successfully');
             const user: UserLoginDto = await response.json();
             sessionStorage.setItem('accesToken', user.accessToken);
             sessionStorage.setItem('refreshToken', user.refreshToken);

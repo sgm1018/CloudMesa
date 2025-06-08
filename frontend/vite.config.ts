@@ -10,6 +10,13 @@ export default defineConfig({
   server: {
     host: 'localhost',
     port: 5173,
-    hmr: false, // Desactivar HMR para evitar problemas con el servidor de desarrollo
-  }
+    // hmr: false, // ← Mantener esto
+    // watch: {
+    //   ignored: ['**/.git/**', '**/node_modules/**'], // ← Ignorar archivos
+    // },
+  },
+  // Deshabilitar también el cliente de HMR
+  // define: {
+  //   __VITE_HMR__: false,
+  // },
 });
