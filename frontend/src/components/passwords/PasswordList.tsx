@@ -17,7 +17,34 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
   const menuRef = React.useRef<HTMLDivElement>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [selectedPasswordId, setSelectedPasswordId] = useState<string | null>(null);
+  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
 
+  // Add keyboard shortcut handler for hover functionality
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!hoveredItemId || !event.ctrlKey) return;
+      
+      const hoveredItem = items.find(item => item._id === hoveredItemId);
+      if (!hoveredItem || hoveredItem.type !== 'password') return;
+
+      if (event.key.toLowerCase() === 'u') {
+        event.preventDefault();
+        if (hoveredItem.encryptedMetadata.username) {
+          copyToClipboard(hoveredItem.encryptedMetadata.username, 'username');
+        }
+      } else if (event.key.toLowerCase() === 'c') {
+        event.preventDefault();
+        if (hoveredItem.encryptedMetadata.password) {
+          copyToClipboard(hoveredItem.encryptedMetadata.password, 'password');
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [hoveredItemId, items]);
+
+  // Keep the existing keyboard shortcut handler for selected items
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (!selectedPasswordId) return;
@@ -93,7 +120,6 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
     }
   };
 
-
   const handleDoubleClick = (item: Item) => {
     if (item.type === 'password') {
       onPasswordSelect(item);
@@ -138,36 +164,34 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
     setOpenMenuId(id);
   };
 
-// Update the rightClickOnElement function to accept itemId parameter
-const rightClickOnElement = (event: React.MouseEvent, itemId: string) => {
-  event.preventDefault();
-  event.stopPropagation();
+  // Update the rightClickOnElement function to accept itemId parameter
+  const rightClickOnElement = (event: React.MouseEvent, itemId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
 
-  setMenuPosition({
-    top: event.clientY,
-    left: event.clientX
-  });
-  
-  setOpenMenuId(itemId);
-};
+    setMenuPosition({
+      top: event.clientY,
+      left: event.clientX
+    });
+    
+    setOpenMenuId(itemId);
+  };
 
-// Fix the handleItemClick function
-const handleItemClick = (item: Item, event: React.MouseEvent) => {
-  // Handle right click to show context menu
-  if (event.button === 2) {
-    rightClickOnElement(event, item._id);
-    return;
-  }
-  
-  // Handle normal left click
-  if (item.type === 'group') {
-    setCurrentFolder(item._id);
-  } else {
-    setSelectedPasswordId(prevId => prevId === item._id ? null : item._id);
-  }
-};
-
-
+  // Fix the handleItemClick function
+  const handleItemClick = (item: Item, event: React.MouseEvent) => {
+    // Handle right click to show context menu
+    if (event.button === 2) {
+      rightClickOnElement(event, item._id);
+      return;
+    }
+    
+    // Handle normal left click
+    if (item.type === 'group') {
+      setCurrentFolder(item._id);
+    } else {
+      setSelectedPasswordId(prevId => prevId === item._id ? null : item._id);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -217,13 +241,15 @@ const handleItemClick = (item: Item, event: React.MouseEvent) => {
                 handleItemClick(item, event);
               }}
               onDoubleClick={() => handleDoubleClick(item)}
+              onMouseEnter={() => setHoveredItemId(item._id)}
+              onMouseLeave={() => setHoveredItemId(null)}
               className={`hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer group ${
                 selectedItems.includes(item._id)
                   ? 'bg-primary-50 dark:bg-primary-900/20'
                   : ''
               } ${
                 selectedPasswordId === item._id
-                  ? 'bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-500 dark:ring-blue-400'
+                  ? 'bg-blue-50 dark:bg-blue-900/30'
                   : ''
               }`}
             >

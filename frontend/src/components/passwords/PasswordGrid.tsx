@@ -22,6 +22,31 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   const [selectedPasswordId, setSelectedPasswordId] = useState<string | null>(null);
 
+  // Add keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!hoveredItemId || !event.ctrlKey) return;
+      
+      const hoveredItem = items.find(item => item._id === hoveredItemId);
+      if (!hoveredItem || hoveredItem.type !== 'password') return;
+
+      if (event.key.toLowerCase() === 'u') {
+        event.preventDefault();
+        if (hoveredItem.encryptedMetadata.username) {
+          copyToClipboard(hoveredItem.encryptedMetadata.username, 'username');
+        }
+      } else if (event.key.toLowerCase() === 'c') {
+        event.preventDefault();
+        if (hoveredItem.encryptedMetadata.password) {
+          copyToClipboard(hoveredItem.encryptedMetadata.password, 'password');
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [hoveredItemId, items]);
+
   const getItemIcon = (item: Item) => {
     if (item.type === 'group') return <Folder className="h-12 w-12 text-primary-500" />;
     

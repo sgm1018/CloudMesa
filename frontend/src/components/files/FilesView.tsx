@@ -119,7 +119,7 @@ const FilesView: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [currentFolder, searchQuery, sortBy, sortOrder, filterType, currentPage]);
+  }, [currentFolder, sortBy, sortOrder, filterType, currentPage]);
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
