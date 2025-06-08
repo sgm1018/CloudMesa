@@ -4,7 +4,8 @@ import { RefreshTokenDto } from "../dto/auth/RefreshTokenDto";
 import { RegisterDto } from "../dto/auth/Register.dto";
 import { UserLoginDto } from "../dto/auth/UserLoginDto";
 import { RefreshToken } from "../types";
-
+import { encryptService } from "./EncryptService";
+import { userService } from "./UserService";
 class AuthService {
     public static instance: AuthService;
     private controller: string;
@@ -57,14 +58,19 @@ class AuthService {
             registerDto.surname = surname;
             registerDto.email = email;
             registerDto.password = password;
-            registerDto.publicKey = "publicKey"; // Assuming publicKey is optional or not used in this demo
+            const {publicKey, privateKey} = await encryptService.generateKeys(); 
+            registerDto.publicKey = publicKey; // Assuming publicKey is optional or not used in this demo
             const response = await fetch(`${Enviroment.API_URL}${this.controller}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, surname, email, password }),
+                body: JSON.stringify({ name, surname, email, password , publicKey }),
             });
             
             if (!response.ok) throw new Error(response.statusText);
+
+            // await userService.updatePublicKey(publicKey);
+            
+
 
             const user: UserLoginDto = await response.json();
             sessionStorage.setItem('accesToken', user.accessToken);

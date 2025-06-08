@@ -16,6 +16,27 @@ class UserService extends BaseService{
         return UserService.instance;
     }
 
+    public async updatePublicKey(publicKey: string): Promise<User | null> {
+        try {
+            const response = await fetch(`${this.baseUrl}/publicKey`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('accesToken')}`
+                },
+                body: JSON.stringify({ publicKey }),
+            });
+            if (!response.ok) {
+                console.error(`Error updating public key: ${response.statusText}`);
+                return null;
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`Error updating public key: ${error}`);
+            return null;
+        }
+    }
+
 
 
     async findUsersPaginated(paginationParams: PaginationParams) {

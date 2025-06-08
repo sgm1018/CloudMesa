@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { LockIcon, Mail, Lock, User, EyeIcon, EyeOffIcon } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const RegisterForm: React.FC<{ onToggleForm: () => void }> = ({ onToggleForm }) => {
   const [firstName, setFirstName] = useState('');
@@ -9,14 +10,16 @@ const RegisterForm: React.FC<{ onToggleForm: () => void }> = ({ onToggleForm }) 
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const {register} = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
+    await register(firstName, lastName, email, password);
     e.preventDefault();
     setError('');
     setIsLoading(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
       onToggleForm();
     } catch (err) {
       setError('An error occurred during registration');

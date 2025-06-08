@@ -3,7 +3,6 @@ import { UserLoginDto } from '../dto/auth/UserLoginDto';
 import { authService } from '../services/AuthService';
 import { log } from 'console';
 import { useNavigate } from 'react-router-dom';
-import { encryptService } from '../services/EncryptService';
 
 
 interface AuthContextType {
@@ -32,8 +31,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(true);
         try {
             const userData = await authService.login(email, password);
-            const publicKey = await encryptService.getPublicKey();
-            sessionStorage.setItem('publicKey', publicKey);
+            sessionStorage.setItem('publicKey', userData!.user.publicKey);
             setUser(userData as UserLoginDto); // Cast to UserLoginDto
             console.log(userData);
             navigate("/dashboard");
@@ -85,7 +83,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 };
 
-export const    useAuth = () => {
+export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {
         throw new Error('useAuth must be used within an AuthProvider');

@@ -83,8 +83,8 @@ export const EncriptionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   const clearKeyCache = useCallback(() => {
-    console.log('🧹 Clearing key cache');
-    EncryptionRef.current = {};
+    // console.log('🧹 Clearing key cache');
+    // EncryptionRef.current = {};
   }, []);
 
   const isKeyCached = (type: 'public' | 'private', keyBase64: string): boolean => {
@@ -98,25 +98,25 @@ export const EncriptionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   // Limpiar cache automáticamente
-  React.useEffect(() => {
-    const handleBeforeUnload = () => { // Limpiar cache al cerrar la ventana
-      clearKeyCache();
-    };
+  // React.useEffect(() => {
+  //   const handleBeforeUnload = () => { // Limpiar cache al cerrar la ventana
+  //     clearKeyCache();
+  //   };
 
-    const intervalId = setInterval(() => { 
-      if (!isCacheValid()) {
-        clearKeyCache();
-      }
-    }, 60000); // Verificar cada minuto
+  //   const intervalId = setInterval(() => { 
+  //     if (!isCacheValid()) {
+  //       clearKeyCache();
+  //     }
+  //   }, 60000); // Verificar cada minuto
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+  //   window.addEventListener('beforeunload', handleBeforeUnload);
 
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      clearInterval(intervalId);
-      clearKeyCache();
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('beforeunload', handleBeforeUnload);
+  //     clearInterval(intervalId);
+  //     clearKeyCache();
+  //   };
+  // }, []);
 
 
 

@@ -12,40 +12,97 @@ class EncryptService {
     return EncryptService.instance;
   }
 
-  public async generateKeys(): Promise<{
-    publicKey: string;
-    privateKey: string;
-  }> {
-    try {
-      // ✅ Usar crypto global del navegador (sin import)
-      const keyPair = await crypto.subtle.generateKey(
-        {
-          name: "RSA-OAEP",
-          modulusLength: 2048,
-          publicExponent: new Uint8Array([1, 0, 1]),
-          hash: "SHA-256",
-        },
-        true,
-        ["encrypt", "decrypt"]
-      );
-
-      const publicKeyBuffer = await crypto.subtle.exportKey(
-        "spki",
-        keyPair.publicKey
-      );
-      const privateKeyBuffer = await crypto.subtle.exportKey(
-        "pkcs8",
-        keyPair.privateKey
-      );
-
-      return {
-        publicKey: this.arrayBufferToBase64(publicKeyBuffer),
-        privateKey: this.arrayBufferToBase64(privateKeyBuffer),
-      };
-    } catch (error) {
-      throw new Error(`Key generation failed: ${error}`);
+public async generateKeys(): Promise<{
+  publicKey: string;
+  privateKey: string;
+}> {
+  console.log('🚀 [1] Starting generateKeys method...');
+  
+  try {
+    console.log('🔍 [2] Checking crypto availability...');
+    
+    if (!crypto) {
+      console.error('❌ crypto object not available');
+      throw new Error('crypto object not available');
     }
+    console.log('✅ [3] crypto object available');
+    
+    if (!crypto.subtle) {
+      console.error('❌ crypto.subtle not available');
+      throw new Error('crypto.subtle not available');
+    }
+    console.log('✅ [4] crypto.subtle available');
+    
+    console.log('🌍 [5] Environment check:');
+    console.log('   - URL:', window.location.href);
+    console.log('   - Protocol:', window.location.protocol);
+    console.log('   - Hostname:', window.location.hostname);
+    console.log('   - Secure Context:', window.isSecureContext);
+    
+    console.log('🔐 [6] Starting key generation...');
+    console.log('   - Algorithm: RSA-OAEP');
+    console.log('   - Modulus Length: 2048');
+    console.log('   - Hash: SHA-256');
+    
+    // Dividir la operación para identificar dónde falla
+    const keyGenerationParams = {
+      name: "RSA-OAEP",
+      modulusLength: 512,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256",
+    };
+    
+    console.log('📋 [7] Key generation parameters:', keyGenerationParams);
+    console.log('🔄 [8] Calling crypto.subtle.generateKey...');
+    
+    // Esta línea es donde probablemente se cuelga
+    const keyPair = await crypto.subtle.generateKey(
+      keyGenerationParams,
+      true,
+      ["encrypt", "decrypt"]
+    );
+    
+    console.log('✅ [9] Key generation completed!');
+    console.log('🔑 [10] Key pair:', keyPair);
+    console.log('   - Public key type:', keyPair.publicKey.type);
+    console.log('   - Private key type:', keyPair.privateKey.type);
+    
+    console.log('📤 [11] Exporting public key...');
+    const publicKeyBuffer = await crypto.subtle.exportKey(
+      "spki",
+      keyPair.publicKey
+    );
+    console.log('✅ [12] Public key exported, buffer size:', publicKeyBuffer.byteLength);
+    
+    console.log('📤 [13] Exporting private key...');
+    const privateKeyBuffer = await crypto.subtle.exportKey(
+      "pkcs8",
+      keyPair.privateKey
+    );
+    console.log('✅ [14] Private key exported, buffer size:', privateKeyBuffer.byteLength);
+    
+    console.log('🔄 [15] Converting to base64...');
+    const result = {
+      publicKey: this.arrayBufferToBase64(publicKeyBuffer),
+      privateKey: this.arrayBufferToBase64(privateKeyBuffer),
+    };
+    console.log('✅ [16] Base64 conversion completed');
+    console.log('📏 Public key length:', result.publicKey.length);
+    console.log('📏 Private key length:', result.privateKey.length);
+    
+    console.log('🎉 [17] generateKeys completed successfully!');
+    return result;
+    
+  } catch (error) {
+    console.error('💥 [ERROR] Key generation failed at step:', error);
+    console.error('📍 Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    throw new Error(`Key generation failed: ${error instanceof Error ? error.message : String(error)}`);
   }
+}
 
   public async importPublicKey(publicKeyBase64: string): Promise<CryptoKey> {
     try {
