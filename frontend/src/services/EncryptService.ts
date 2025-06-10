@@ -25,39 +25,15 @@ class EncryptService {
         console.error("❌ TweetNaCl not available");
         throw new Error("TweetNaCl not available");
       }
-      // console.log('✅ [3] TweetNaCl available');
 
-      // console.log('🌍 [4] Environment check:');
-      // console.log('   - URL:', window.location.href);
-      // console.log('   - Protocol:', window.location.protocol);
-      // console.log('   - Hostname:', window.location.hostname);
-      // console.log('   - Secure Context:', window.isSecureContext);
-
-      // console.log('🔐 [5] Starting NaCl key generation...');
-      // console.log('   - Algorithm: Curve25519 (NaCl Box)');
-      // console.log('   - Key Length: 32 bytes each');
-
-      // console.log('🔄 [6] Calling nacl.box.keyPair...');
 
       const keyPair = nacl.box.keyPair();
 
-      // console.log('✅ [7] NaCl key generation completed!');
-      // console.log('🔑 [8] Key pair generated');
-      // console.log('   - Public key length:', keyPair.publicKey.length, 'bytes');
-      // console.log('   - Secret key length:', keyPair.secretKey.length, 'bytes');
 
-      // console.log('🔄 [9] Converting to base64...');
       const result = {
         publicKey: this.uint8ArrayToBase64(keyPair.publicKey),
         privateKey: this.uint8ArrayToBase64(keyPair.secretKey),
       };
-      // console.log('✅ [10] Base64 conversion completed');
-      // console.log('📏 Public key length:', result.publicKey.length, 'chars');
-      // console.log('📏 Private key length:', result.privateKey.length, 'chars');
-
-      // console.log('🎉 [11] generateKeys completed successfully with TweetNaCl!');
-      // console.log('🛡️ Security: Curve25519 - High security, fast performance');
-
       return result;
     } catch (error) {
       console.error("💥 [ERROR] TweetNaCl key generation failed:", error);
@@ -127,42 +103,6 @@ class EncryptService {
       binary += String.fromCharCode(bytes[i]);
     }
     return btoa(binary);
-  }
-
-  public async generateAESKey(): Promise<string> {
-    try {
-      const key = await crypto.subtle.generateKey(
-        {
-          name: "AES-GCM",
-          length: 256,
-        },
-        true,
-        ["encrypt", "decrypt"]
-      );
-
-      const keyBuffer = await crypto.subtle.exportKey("raw", key);
-      return this.arrayBufferToBase64(keyBuffer);
-    } catch (error) {
-      throw new Error(`AES key generation failed: ${error}`);
-    }
-  }
-
-  // Método para importar clave AES desde base64
-  public async importAESKey(aesKeyBase64: string): Promise<CryptoKey> {
-    try {
-      const keyBuffer = this.base64ToArrayBuffer(aesKeyBase64);
-      return await crypto.subtle.importKey(
-        "raw",
-        keyBuffer,
-        {
-          name: "AES-GCM",
-        },
-        false,
-        ["encrypt", "decrypt"]
-      );
-    } catch (error) {
-      throw new Error(`Failed to import AES key: ${error}`);
-    }
   }
 
   // Cifrar datos con AES-GCM
@@ -240,7 +180,7 @@ class EncryptService {
     );
   }
 
-  // Tu método actual: Base64 string → ArrayBuffer
+  // Base64 string → ArrayBuffer
   public base64ToArrayBuffer(base64: string): ArrayBuffer {
     const binaryString = atob(base64);
     const bytes = new Uint8Array(binaryString.length);
@@ -250,43 +190,108 @@ class EncryptService {
     return bytes.buffer; // ← Retorna ArrayBuffer, no Uint8Array
   }
 
-  // Cifrar clave AES con RSA
-  public async encryptAESKey(
-    aesKeyBase64: string,
-    publicKey: CryptoKey
-  ): Promise<string> {
+  async generateAESKey(): Promise<string> {
     try {
-      const keyBuffer = this.base64ToArrayBuffer(aesKeyBase64);
-
-      const encrypted = await crypto.subtle.encrypt(
-        { name: "RSA-OAEP" },
-        publicKey,
-        keyBuffer
-      );
-
-      return this.arrayBufferToBase64(encrypted);
+      // Generate a 32-byte (256-bit) random key for AES-256
+      const aesKey = nacl.randomBytes(32);
+      return this.uint8ArrayToBase64(aesKey);
     } catch (error) {
-      throw new Error(`Failed to encrypt AES key: ${error}`);
+      throw new Error(`Failed to generate AES key: ${error}`);
     }
   }
 
-  // Descifrar clave AES con RSA
+  async importAESKey(aesKeyBase64: string): Promise<CryptoKey> {
+    try {
+      const keyBytes = this.base64ToUint8Array(aesKeyBase64);
+      return await crypto.subtle.importKey(
+        "raw",
+        keyBytes,
+        {
+          name: "AES-GCM",
+        },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    } catch (error) {
+      throw new Error(`Failed to import AES key: ${error}`);
+    }
+  }
+
+  /* 
+    Genero la clave AES.
+    Genero secreto comparido => 
+        autogenero claves temporales
+        genero secreoto compartido con mi clave publica y la clave privada temporal generada 
+    Cifrar + autenticar (ChaCha20-Poly1305)
+      encripto la clave aes con el nonce y el secreto compartido
+
+    Envio la clave AES encriptada, el nonce y la clave publica terporal al destinatario al destinatario.
+    
+
+    Para desencriptar:
+       Necesita la clave privada del destinatario y la clave publica temporal del secreto compartido + el nonce (salt para cifrados).
+
+    Ventajas de este enfoque:
+        - SI roban la clave privada, no pueden descifrar los mensajes anteriores porque cada mensaje usa una clave publica temporal diferente.
+  // Encripto la clave AES con el secreto compartido. (mi clave privada y la clave pública del destinatario)
+
+  // Guardar en la BBDD la clave AES encriptada, el nonce y la clave pública temporal por cada ITEM.
+  */
+public async encryptAESKey(
+    aesKeyBase64: string,
+    theirPublicKeyBase64: string
+): Promise<{ encrypted: string; nonce: string; ephemeralPublicKey: string }> {
+    try {
+        const aesKeyBytes = this.base64ToUint8Array(aesKeyBase64);
+        const theirPublicKey = this.base64ToUint8Array(theirPublicKeyBase64);
+        
+        // Generar par de claves temporal solo para este cifrado
+        const ephemeralKeyPair = nacl.box.keyPair();
+        const sharedSecret = nacl.box.before(theirPublicKey, ephemeralKeyPair.secretKey);
+        
+        const nonce = nacl.randomBytes(24);
+        const encrypted = nacl.box.after(aesKeyBytes, nonce, sharedSecret);
+        
+        if (!encrypted) {
+            throw new Error("AES key encryption failed");
+        }
+        
+        return {
+            encrypted: this.uint8ArrayToBase64(encrypted),
+            nonce: this.uint8ArrayToBase64(nonce),
+            ephemeralPublicKey: this.uint8ArrayToBase64(ephemeralKeyPair.publicKey)
+        };
+    } catch (error) {
+        throw new Error(`Failed to encrypt AES key anonymously: ${error}`);
+    }
+}
+  // Descifrar clave AES con NaCl
   public async decryptAESKey(
     encryptedKeyBase64: string,
-    privateKey: CryptoKey
+    nonceBase64: string,
+    ephemeralPublicKey: string,
+    myPrivateKeyBase64: string
   ): Promise<string> {
     try {
-      const encryptedBuffer = this.base64ToArrayBuffer(encryptedKeyBase64);
+      const encrypted = this.base64ToUint8Array(encryptedKeyBase64);
+      const nonce = this.base64ToUint8Array(nonceBase64);
+      const theirPublicKey = this.base64ToUint8Array(ephemeralPublicKey);
+      const myPrivateKey = this.base64ToUint8Array(myPrivateKeyBase64);
 
-      const decrypted = await crypto.subtle.decrypt(
-        { name: "RSA-OAEP" },
-        privateKey,
-        encryptedBuffer
+      const decrypted = nacl.box.open(
+        encrypted,
+        nonce,
+        theirPublicKey,
+        myPrivateKey
       );
 
-      return this.arrayBufferToBase64(decrypted);
+      if (!decrypted) {
+        throw new Error("AES key decryption failed - invalid ciphertext or keys");
+      }
+
+      return this.uint8ArrayToBase64(decrypted);
     } catch (error) {
-      throw new Error(`Failed to decrypt AES key: ${error}`);
+      throw new Error(`Failed to decrypt AES key with NaCl: ${error}`);
     }
   }
 
@@ -308,8 +313,32 @@ class EncryptService {
     return publicKey; // Asumiendo que la respuesta tiene formato { publicKey: "..." }
   }
 
-  public async encriptData(item: Item) {
-    // TODO: Implementar cifrado completo del item
+  public async encriptData(item: Item, publicKey: string): Promise<{ encryptedData: string; encryptedAESKey: string; nonce: string; aesNonce: string }> {
+    try {
+      // 1. Obtener la clave pública del destinatario
+      const theirPublicKey = publicKey;
+            // 3. Generar clave AES
+      const aesKey = await this.generateAESKey();
+      
+      // 4. Encriptar los datos del item con AES
+      this.encryptAESKey()
+      
+      // 5. Encriptar la clave AES con NaCl usando las claves públicas/privadas
+      const encryptedAESResult = await this.encryptAESKey(
+        aesKey,
+        theirPublicKey,
+        myKeys.privateKey
+      );
+      
+      return {
+        encryptedData: this.arrayBufferToBase64(encryptedDataBuffer),
+        encryptedAESKey: encryptedAESResult.encrypted,
+        nonce: encryptedAESResult.nonce,
+        aesNonce: this.uint8ArrayToBase64(aesNonce)
+      };
+    } catch (error) {
+      throw new Error(`Failed to encrypt data: ${error}`);
+    }
   }
 }
 
