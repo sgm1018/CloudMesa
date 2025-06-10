@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { LockIcon, Shield, Key, Server } from 'lucide-react';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
-import logoImagen from '../../assets/images/logos/logo.png';
-
+import logoImagen from '../../assets/images/logos/logo.webp';
+import logoSoloTitulo from '../../assets/images/logos/logo-only-name.webp';
+import logoSoloImagen from '../../assets/images/logos/logo-only-logo.webp';
+import AnimatedLogo from '../shared/AnimatedLogo';
 const AuthPage: React.FC = () => {
   const [isRegister, setIsRegister] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -91,7 +93,13 @@ const AuthPage: React.FC = () => {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="flex bg-background items-center justify-center mb-2">
-            <img src={logoImagen} alt="CloudMesa Logo" className="h-16 w-auto" />
+            <AnimatedLogo 
+                src={logoSoloImagen} 
+                alt="Expand sidebar" 
+                shouldAnimate={true}
+                size='xl'
+              />
+            <img src={logoSoloTitulo} alt="CloudMesa Logo" className="h-16 w-auto" />
           </div>
 
           <div className="text-center mb-8">

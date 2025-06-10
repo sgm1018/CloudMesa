@@ -13,8 +13,9 @@ import {
   ChevronRightIcon,
 } from 'lucide-react';
 
-import logoImagen from '../../assets/images/logos/logo.png';
-import logoSoloImagen from '../../assets/images/logos/logo-solo.png';
+import logoSoloTitulo from '../../assets/images/logos/logo-only-name.webp';
+import logoSoloImagen from '../../assets/images/logos/logo-only-logo.webp';
+import AnimatedLogo from '../shared/AnimatedLogo';
 
 const Sidebar: React.FC = () => {
   const { currentView, setCurrentView, isSidebarCollapsed, toggleSidebar, setCurrentFolder } = useAppContext();
@@ -32,20 +33,45 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out flex flex-col overflow-hidden
+    className={`h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out flex flex-col overflow-hidden
       ${isSidebarCollapsed ? 'w-16' : 'w-64'} fixed left-0 top-0 z-20`}
-    >
+      >
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes spinSlowDown {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(1800deg); }
+            100% { transform: rotate(3600deg); }
+          }
+        `
+        }} />
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <div onClick={toggleSidebar} className="flex items-center cursor-pointer">
           {!isSidebarCollapsed ? (
-        <img src={logoImagen} alt="CloudMesa Logo" className="h-8 w-auto" />
+            <>
+              <AnimatedLogo 
+                src={logoSoloImagen} 
+                alt="Expand sidebar" 
+                shouldAnimate={!isSidebarCollapsed}
+              />
+              <img src={logoSoloTitulo} alt="CloudMesa Logo" className="h-8 w-auto" />
+            </>
           ) : (
         <button
-          className="w-8 h-8 flex items-center justify-center  rounded transition-colors duration-200"
+          className="w-8 h-8 flex items-center justify-center rounded transition-colors duration-200"
           title="Expand Sidebar"
         >
-          <img src={logoSoloImagen} alt="Expand sidebar" className="h-8 w-auto" />
+          <img 
+            src={logoSoloImagen} 
+            alt="Expand sidebar" 
+            className="h-8 w-auto"
+            style={{
+              animation: isSidebarCollapsed 
+                ? 'spinSlowDown 2s cubic-bezier(0.4, 0, 0.2, 1) forwards' 
+                : 'none'
+            }}
+          />
 
         </button>
           )}
