@@ -62,15 +62,10 @@ const Sidebar: React.FC = () => {
           className="w-8 h-8 flex items-center justify-center rounded transition-colors duration-200"
           title="Expand Sidebar"
         >
-          <img 
+          <AnimatedLogo 
             src={logoSoloImagen} 
             alt="Expand sidebar" 
-            className="h-8 w-auto"
-            style={{
-              animation: isSidebarCollapsed 
-                ? 'spinSlowDown 2s cubic-bezier(0.4, 0, 0.2, 1) forwards' 
-                : 'none'
-            }}
+            shouldAnimate={isSidebarCollapsed}
           />
 
         </button>

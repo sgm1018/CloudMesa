@@ -28,8 +28,8 @@ const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
         __html: `
           @keyframes spinSlowDown {
             0% { transform: rotate(0deg); }
-            50% { transform: rotate(1800deg); }
-            100% { transform: rotate(3600deg); }
+            100% { transform: rotate(1800deg); }
+            // 100% { transform: rotate(3600deg); }
           }
         `
       }} />
