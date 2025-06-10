@@ -313,7 +313,7 @@ public async encryptAESKey(
     return publicKey; // Asumiendo que la respuesta tiene formato { publicKey: "..." }
   }
 
-  public async encriptData(item: Item, publicKey: string): Promise<{ encryptedData: string; encryptedAESKey: string; nonce: string; aesNonce: string }> {
+  public async encriptData(item: Item, publicKey: string): Promise<{ encrypted: string; nonce: string; ephemeralPublicKey: string; }> {
     try {
       // 1. Obtener la clave pública del destinatario
       const theirPublicKey = publicKey;
@@ -321,21 +321,9 @@ public async encryptAESKey(
       const aesKey = await this.generateAESKey();
       
       // 4. Encriptar los datos del item con AES
-      this.encryptAESKey()
+      return this.encryptAESKey(aesKey, theirPublicKey);
       
-      // 5. Encriptar la clave AES con NaCl usando las claves públicas/privadas
-      const encryptedAESResult = await this.encryptAESKey(
-        aesKey,
-        theirPublicKey,
-        myKeys.privateKey
-      );
       
-      return {
-        encryptedData: this.arrayBufferToBase64(encryptedDataBuffer),
-        encryptedAESKey: encryptedAESResult.encrypted,
-        nonce: encryptedAESResult.nonce,
-        aesNonce: this.uint8ArrayToBase64(aesNonce)
-      };
     } catch (error) {
       throw new Error(`Failed to encrypt data: ${error}`);
     }
