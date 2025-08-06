@@ -51,13 +51,17 @@ export class BaseService<T extends Entity> {
     filter: FilterQuery<T> = {},
     paginationParams: PaginationParams
   ): Promise<ApiResponse<T>> {
-    const total = await this.model.countDocuments(filter).exec();
-    const items = await this.model
-      .find(filter)
-      .skip((paginationParams.page - 1) * paginationParams.limit)
-      .limit(paginationParams.limit)
-      .exec();
-    return ApiResponse.paginated(items, total, paginationParams);
+    try{
+      const total = await this.model.countDocuments(filter).exec();
+      const items = await this.model
+        .find(filter)
+        .skip((paginationParams.page - 1) * paginationParams.limit)
+        .limit(paginationParams.limit)
+        .exec();
+      return ApiResponse.paginated(items, total, paginationParams);
+    }catch (error) {
+      return ApiResponse.error(-1, `Error finding paginated entities: ${error.message}`);
+    } 
   }
 
   async update(entidad : T): Promise<ApiResponse<T>> {

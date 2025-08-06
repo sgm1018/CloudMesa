@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, BadRequestException, UploadedFile } from '@nestjs/common';
 import { ItemsService } from './item.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
@@ -8,6 +8,7 @@ import { User, UserDecoratorClass } from 'src/auth/decorators/user.decorator';
 import { ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { PaginationParams } from 'src/shared/responses/paginationParams';
 import { Item } from './entities/item.entity';
+import { Types } from 'mongoose';
 @Controller('items')
 @ApiBearerAuth('JWT-auth')  
 export class ItemsController {
@@ -83,10 +84,10 @@ export class ItemsController {
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
   @Get('find/:id')
-  async findOne(@Param('id') id: string, @User() user: string) {
-    const result = await this.itemsService.findOne({userId: id});
+  async findOne(@Param('id') id: string, @User() user: UserDecoratorClass) {
+    const result = await this.itemsService.findOne({_id: new Types.ObjectId(id), userId: user.userId});
     if (!result.isSuccess()) {
-      throw new BadRequestException(`Item with ID "${id}" not found for user "${user}"`);
+      throw new BadRequestException(`Item with ID "${id}" not found for user "${user.userId}"`);
     }
     return result.value;
 
@@ -120,6 +121,17 @@ export class ItemsController {
   @Post('create')
   async create(@User() user , @Body() createItem: Item) {
     const result = await this.itemsService.create(createItem);
+    if (!result.isSuccess()) {
+      throw new BadRequestException('Error creating item');
+    }
+    return result.value;
+  }
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @Post('upload')
+  async uploadFile(@User() user : UserDecoratorClass , @Body() createItem: Item, @UploadedFile() file: Express.Multer.File) {
+    const result = await this.itemsService.uploadFile(user.userId , createItem, file);
     if (!result.isSuccess()) {
       throw new BadRequestException('Error creating item');
     }

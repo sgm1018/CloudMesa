@@ -13,15 +13,7 @@ import { Type } from 'class-transformer';
  * It stores encrypted content and metadata, along with sharing configurations.
  */
 export class Item extends Entity {
-  @ApiProperty({
-    description: 'Name of the item',
-    type: String,
-    example: 'My File'
-  })
-  @IsString()
-  @IsNotEmpty()
-  @Prop({ required: true })
-  name: string;
+
 
   @ApiProperty({
     description: 'ID of the user who owns the item',

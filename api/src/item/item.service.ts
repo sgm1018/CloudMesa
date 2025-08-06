@@ -5,7 +5,8 @@ import { Item } from './entities/item.entity';
 
 import { BaseService } from 'src/base/base.service';
 import { ApiResponse } from 'src/shared/responses/ApiResponse';
-import { PaginationParams } from 'src/shared/responses/paginationParams';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class ItemsService extends BaseService<Item> {
@@ -14,7 +15,7 @@ export class ItemsService extends BaseService<Item> {
   }
 
 
-  async findContainName(userid : string, name: string): Promise<ApiResponse<Item>> {
+  async findContainName(userid: string, name: string): Promise<ApiResponse<Item>> {
     const result = await this.ItemModel.find({ userId: userid, name: { $regex: name, $options: 'i' } }).limit(8);
     if (!result || result.length === 0) {
       return ApiResponse.empty();
@@ -31,6 +32,45 @@ export class ItemsService extends BaseService<Item> {
     return ApiResponse.item(count);
   }
 
+  async uploadFile(userId: string, createItem: Item, file: Express.Multer.File): Promise<ApiResponse<Item>> {
+    if (!file) {
+      return ApiResponse.error(-1, 'File is required');
+    }
+    if (!userId) {
+      return ApiResponse.error(-1, 'User ID is required');
+    }
+    if (!createItem.encryptedMetadata.name) {
+      return ApiResponse.error(-1, 'Item name is required');
+    }
+    if (!createItem.type) {
+      return ApiResponse.error(-1, 'Item type is required');
+    }
+    if (createItem.type !== 'file') {
+      return ApiResponse.error(-1, 'Invalid item type. Only "file" and "folder" are allowed');
+    }
+    try {
+      const checkIfExists = await this.ItemModel.findOne({ userId: userId, name: createItem.encryptedMetadata.name, parentId: createItem.parentId }).exec();
+      if (checkIfExists) {
+        return ApiResponse.error(-1, 'File with the same name already exists in this folder');
+      }
+      const item = new this.ItemModel({ ...createItem, userId: userId });
+      await this.ItemModel.create(item);
+      await this.saveFileOnStorage(userId, item._id.toString(), file);
+      return ApiResponse.item(createItem);
+    } catch (error) {
+      return ApiResponse.error(-1, `Error uploading file: ${error.message}`);
+    }
+  }
+
+
+  async saveFileOnStorage(userid: string, itemId: string, file: Express.Multer.File): Promise<string> {
+    const dirPath = path.join('data', userid);
+    const filePath = path.join(dirPath, itemId); // El nombre del archivo es itemId
+
+    await fs.promises.mkdir(dirPath, { recursive: true });
+    await fs.promises.writeFile(filePath, file.buffer);
+    return filePath;
+  }
 
 
   // async findItemByUser(userId : string, itemId : string) : Promise<ApiResponse<Item>>{
