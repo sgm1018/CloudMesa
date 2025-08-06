@@ -11,7 +11,7 @@ interface PasswordGridProps {
 }
 
 const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) => {
-  const { selectedItems, setSelectedItems, setCurrentFolder } = useAppContext();
+  const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const { showToast } = useToast();
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
@@ -98,7 +98,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
     
     // Handle normal left click
     if (item.type === 'group') {
-      setCurrentFolder(item._id);
+      navigateToFolder(item._id);
     } else {
       setSelectedPasswordId(prevId => prevId === item._id ? null : item._id);
     }

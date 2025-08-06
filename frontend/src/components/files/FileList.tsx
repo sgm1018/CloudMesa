@@ -10,7 +10,7 @@ interface FileListProps {
 }
 
 const FileList: React.FC<FileListProps> = ({ items }) => {
-  const { selectedItems, setSelectedItems, setCurrentFolder } = useAppContext();
+  const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
@@ -90,7 +90,7 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
     
     // Handle normal left click
     if (item.type === 'folder') {
-      setCurrentFolder(item._id);
+      navigateToFolder(item._id);
     }
   };
 

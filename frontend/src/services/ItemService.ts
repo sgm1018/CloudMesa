@@ -1,7 +1,5 @@
-import { error } from "console";
 import { BaseService, PaginationParams } from "./BaseService";
 import { Item } from "../types";
-import { json } from "stream/consumers";
 
 class ItemService extends BaseService {
     private static instance: ItemService;
@@ -17,7 +15,7 @@ class ItemService extends BaseService {
     }
     
     async findItemwByUserByParentIdPagination(paginationParams: PaginationParams) {
-        const url = new URL(`${this.baseUrl}/parent`);
+        const url = new URL(`${this.baseUrl}${this.controller}/parent`);
         url.searchParams.append('parentId', paginationParams.parentId!);
         url.searchParams.append('itemTypes', JSON.stringify(paginationParams.itemTypes || []));
         url.searchParams.append('page', paginationParams.page?.toString() || '1');
@@ -71,6 +69,32 @@ class ItemService extends BaseService {
         const items : number = await response.json();
         return items;
 
+    }
+
+    async getBreadcrumbPath(itemId: string): Promise<Item[]> {
+        try {
+            const path: Item[] = [];
+            let currentItemId: string | null = itemId;
+            let depth = 0;
+            const maxDepth = 10; // Prevenir loops infinitos
+            
+            while (currentItemId && depth < maxDepth) {
+                const item = await this.findById(currentItemId);
+                
+                if (!item) {
+                    break;
+                }
+                
+                path.unshift(item); // Añadir al inicio para mantener el orden correcto
+                currentItemId = item.parentId || null;
+                depth++;
+            }
+            
+            return path;
+        } catch (error) {
+            console.error(`Error fetching breadcrumb path: ${error}`);
+            return [];
+        }
     }
 }
 

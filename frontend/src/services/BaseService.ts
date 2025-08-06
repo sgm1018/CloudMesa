@@ -16,7 +16,7 @@ export abstract class BaseService {
     protected controller: string;
 
     constructor(endpoint: string) {
-        this.baseUrl = `${Enviroment.API_URL}${endpoint}`;
+        this.baseUrl = `${Enviroment.API_URL}`;
         this.controller = endpoint;
     }
 
@@ -54,7 +54,7 @@ export abstract class BaseService {
 
     async findById(id: string): Promise<any> {
         try {
-            const response = await fetch(`${this.baseUrl}${this.controller}/${id}`, {
+            const response = await fetch(`${this.baseUrl}${this.controller}/find/${id}`, {
                 method: 'GET',
                 headers: this.getAuthHeaders(),
             });

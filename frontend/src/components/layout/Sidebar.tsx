@@ -18,13 +18,13 @@ import logoSoloImagen from '../../assets/images/logos/logo-only-logo.webp';
 import AnimatedLogo from '../shared/AnimatedLogo';
 
 const Sidebar: React.FC = () => {
-  const { currentView, setCurrentView, isSidebarCollapsed, toggleSidebar, setCurrentFolder } = useAppContext();
+  const { currentView, setCurrentView, isSidebarCollapsed, toggleSidebar, navigateToFolder } = useAppContext();
   const { isDarkMode, toggleTheme } = useTheme();
   const { logout } = useAuth();
 
   const handleViewChange = (view: 'files' | 'passwords') => {
     setCurrentView(view);
-    setCurrentFolder('');
+    navigateToFolder(null);
   };
 
   const handleLogout = () => {

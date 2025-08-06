@@ -28,7 +28,7 @@ const Header: React.FC = () => {
     setIsSearching,
     currentView,
     setCurrentView,
-    setCurrentFolder,
+    navigateToFolder,
   } = useAppContext();
   
   const { user, logout } = useAuth();
@@ -129,9 +129,9 @@ const Header: React.FC = () => {
 
     // Navigate to the parent folder if it exists
     if (item.parentId) {
-      setCurrentFolder(item.parentId);
+      navigateToFolder(item.parentId);
     } else {
-      setCurrentFolder('');
+      navigateToFolder(null);
     }
 
     clearSearch();

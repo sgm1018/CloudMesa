@@ -7,6 +7,7 @@ type View = 'files' | 'passwords' | 'settings';
 type AppContextType = {
   currentView: View;
   setCurrentView: (view: View) => void;
+  setCurrentViewWithBreadcrumbs: (view: View) => Promise<void>;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
   currentFileFolder: string | null;
@@ -24,7 +25,10 @@ type AppContextType = {
   setIsSearching: (searching: boolean) => void;
   getItemsByParentId: (paginationParams : PaginationParams) => Promise<Item[]>;
   countItems: (type: string[], parentId: string) => Promise<number>;
-
+  breadcrumbPath: Item[];
+  setBreadcrumbPath: (path: Item[]) => void;
+  loadBreadcrumbPath: (itemId: string | null) => Promise<void>;
+  navigateToFolder: (folderId: string | null) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -32,18 +36,45 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentView, setCurrentView] = useState<View>('files');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [currentFileFolder, setCurrentFileFolder] = useState<string | null>('');
-  const [currentPasswordFolder, setCurrentPasswordFolder] = useState<string | null>('');
+  const [currentFileFolder, setCurrentFileFolder] = useState<string | null>(null);
+  const [currentPasswordFolder, setCurrentPasswordFolder] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isAddingNewItem, setIsAddingNewItem] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [breadcrumbPath, setBreadcrumbPath] = useState<Item[]>([]);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prev) => !prev);
   };
 
+  const loadBreadcrumbPath = async (itemId: string | null) => {
+    if (!itemId || itemId === '') {
+      setBreadcrumbPath([]);
+      return;
+    }
+    
+    try {
+      const path = await itemService.getBreadcrumbPath(itemId);
+      setBreadcrumbPath(path);
+    } catch (error) {
+      console.error('Error loading breadcrumb path:', error);
+      setBreadcrumbPath([]);
+    }
+  };
+
+  const navigateToFolder = async (folderId: string | null) => {
+    setCurrentFolder(folderId);
+    await loadBreadcrumbPath(folderId);
+  };
+
+  // Update breadcrumbs when current view changes
+  const setCurrentViewWithBreadcrumbs = async (view: View) => {
+    setCurrentView(view);
+    const currentFolder = view === 'files' ? currentFileFolder : currentPasswordFolder;
+    await loadBreadcrumbPath(currentFolder);
+  };
 
   const setCurrentFolder = (folderId: string | null) => {
     if (currentView === 'files') {
@@ -67,6 +98,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         currentView,
         setCurrentView,
+        setCurrentViewWithBreadcrumbs,
         viewMode,
         setViewMode,
         currentFileFolder,
@@ -84,7 +116,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isSearching,
         setIsSearching,
         countItems,
-
+        breadcrumbPath,
+        setBreadcrumbPath,
+        loadBreadcrumbPath,
+        navigateToFolder,
       }}
     >
       {children}

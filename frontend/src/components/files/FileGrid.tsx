@@ -10,7 +10,7 @@ interface FileGridProps {
 }
 
 const FileGrid: React.FC<FileGridProps> = ({ items }) => {
-  const { selectedItems, setSelectedItems, setCurrentFolder } = useAppContext();
+  const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [showShareModal, setShowShareModal] = React.useState(false);
@@ -80,7 +80,7 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
     
     // Handle normal left click
     if (item.type === 'folder') {
-      setCurrentFolder(item._id);
+      navigateToFolder(item._id);
     }
   };
 
