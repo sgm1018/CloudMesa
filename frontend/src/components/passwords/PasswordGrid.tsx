@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Item } from '../../types';
+import { Item, ItemType } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { Lock, Key, Folder, MoreVertical, Share, Trash, Edit, Eye, EyeOff, Copy, ExternalLink } from 'lucide-react';
@@ -48,7 +48,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
   }, [hoveredItemId, items]);
 
   const getItemIcon = (item: Item) => {
-    if (item.type === 'group') return <Folder className="h-12 w-12 text-primary-500" />;
+    if (item.type === ItemType.GROUP) return <Folder className="h-12 w-12 text-primary-500" />;
     
     const icon = item.encryptedMetadata.icon;
     switch(icon) {
@@ -97,7 +97,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
     }
     
     // Handle normal left click
-    if (item.type === 'group') {
+    if (item.type === ItemType.GROUP) {
       navigateToFolder(item._id);
     } else {
       setSelectedPasswordId(prevId => prevId === item._id ? null : item._id);
@@ -105,7 +105,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
   };
 
   const handleDoubleClick = (item: Item) => {
-    if (item.type === 'password') {
+    if (item.type === ItemType.PASSWORD) {
       onPasswordSelect(item);
     }
   };
@@ -225,15 +225,15 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
               </div>
               
               <div className="mt-2 text-center">
-                <h3 className="text-sm font-medium truncate w-full max-w-[160px]">{item.name}</h3>
+                <h3 className="text-sm font-medium truncate w-full max-w-[160px]">{item.encryptedMetadata.name}</h3>
                 
-                {item.type === 'password' && item.encryptedMetadata.username && (
+                {item.type === ItemType.PASSWORD && item.encryptedMetadata.username && (
                   <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate max-w-[160px]">
                     {item.encryptedMetadata.username}
                   </div>
                 )}
                 
-                {item.type === 'password' && item.encryptedMetadata.password && (
+                {item.type === ItemType.PASSWORD && item.encryptedMetadata.password && (
                   <div className="mt-2 flex justify-center items-center">
                     <div className="text-xs font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded max-w-[120px] truncate">
                       {visiblePasswords[item._id] 
@@ -278,7 +278,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
           }}
           className="w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown"
         >
-          {items.find(item => item._id === openMenuId)?.type === 'password' && (
+          {items.find(item => item._id === openMenuId)?.type === ItemType.PASSWORD && (
             <>
               <button
                 className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -349,7 +349,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
             onClick={(e) => {
               e.stopPropagation();
               const item = items.find(i => i._id === openMenuId);
-              if (item?.type === 'password') {
+              if (item?.type === ItemType.PASSWORD) {
                 onPasswordSelect(item);
               }
             setOpenMenuId(null);

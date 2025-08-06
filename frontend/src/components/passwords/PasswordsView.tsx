@@ -32,12 +32,12 @@ const PasswordsView: React.FC = () => {
   const fetchItems = async () => {
     setIsLoading(true);
 
-    const contItems: number = await countItems(['password', 'group'], currentFolder || '');
+    const contItems: number = await countItems([ItemType.PASSWORD, ItemType.GROUP], currentFolder || '');
     setTotalPages(Math.ceil(contItems / items4Page));
     
     const params: PaginationParams = {
       parentId: currentFolder || '',
-      itemTypes: ['password', 'group'],
+      itemTypes: [ItemType.PASSWORD, ItemType.GROUP],
       page: currentPage,
       limit: items4Page,
     };
@@ -50,7 +50,7 @@ const PasswordsView: React.FC = () => {
       
       switch (sortBy) {
         case 'name':
-          comparison = a.name.localeCompare(b.name);
+          comparison = a.encryptedMetadata.name!.localeCompare(b.encryptedMetadata.name!);
           break;
         case 'date':
           if (!a.updatedAt || !b.updatedAt) return 0;
@@ -164,7 +164,6 @@ const PasswordsView: React.FC = () => {
 
     const updatedPassword: Item = {
       ...selectedPassword,
-      name: data.name,
       encryptedMetadata: {
         ...selectedPassword.encryptedMetadata,
         name: data.name,
@@ -184,7 +183,7 @@ const PasswordsView: React.FC = () => {
   };
 
   const handlePasswordSelect = (password: Item) => {
-    if (password.type === 'password') {
+    if (password.type === ItemType.PASSWORD) {
       setSelectedPassword(password);
     }
   };

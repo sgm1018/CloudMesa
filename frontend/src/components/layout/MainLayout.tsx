@@ -7,7 +7,7 @@ import PasswordsView from '../passwords/PasswordsView';
 import SettingsView from '../settings/SettingsView';
 import { useAuth } from '../../context/AuthContext';
 import AuthPage from '../auth/AuthPage';
-import PrivateKeyModal from '../shared/privateKeyModal';
+import PrivateKeyModal from '../shared/PrivateKeyModal';
 
 const MainLayout: React.FC = () => {
   const { currentView, isSidebarCollapsed } = useAppContext();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Item, User } from '../../types';
+import { Item, User, ItemType } from '../../types';
 import { useToast } from '../../context/ToastContext';
 import { X, Users, Link2, Copy, Check, Search, Trash2 } from 'lucide-react';
 import { mockUsers } from '../../data/mockData';
@@ -143,7 +143,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, items, onShare
           <div className="flex items-center space-x-2">
             <Users className="h-5 w-5 text-primary-500" />
             <h2 className="text-lg font-semibold">
-              Share {items.length > 1 ? `${items.length} items` : items[0].name}
+              Share {items.length > 1 ? `${items.length} items` : items[0].encryptedMetadata.name}
             </h2>
           </div>
           <button
@@ -262,7 +262,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, items, onShare
           )}
 
           {/* Public link section (only for single file/folder) */}
-          {items.length === 1 && items[0].type === 'file' && (
+          {items.length === 1 && items[0].type === ItemType.FILE && (
             <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">

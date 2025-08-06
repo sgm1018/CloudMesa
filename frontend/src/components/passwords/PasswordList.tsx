@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Item } from '../../types';
+import { Item, ItemType } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { Lock, Key, Folder, MoreVertical, Share, Eye, EyeOff, Copy, ExternalLink as External } from 'lucide-react';
@@ -24,7 +24,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
       if (!hoveredItemId || !event.ctrlKey) return;
       
       const hoveredItem = items.find(item => item._id === hoveredItemId);
-      if (!hoveredItem || hoveredItem.type !== 'password') return;
+      if (!hoveredItem || hoveredItem.type !== ItemType.PASSWORD) return;
 
       if (event.key.toLowerCase() === 'u') {
         event.preventDefault();
@@ -46,7 +46,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
     if (!selectedPasswordId) return;
     
     const item = items.find(i => i._id === selectedPasswordId);
-    if (!item || item.type !== 'password') return;
+    if (!item || item.type !== ItemType.PASSWORD) return;
 
     if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
       e.preventDefault();
@@ -92,7 +92,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
   };
 
   const getItemIcon = (item: Item) => {
-    if (item.type === 'group') return <Folder className="h-5 w-5 text-primary-500" />;
+    if (item.type === ItemType.GROUP) return <Folder className="h-5 w-5 text-primary-500" />;
     
     const icon = item.encryptedMetadata.icon;
     switch(icon) {
@@ -120,7 +120,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
   };
 
   const handleDoubleClick = (item: Item) => {
-    if (item.type === 'password') {
+    if (item.type === ItemType.PASSWORD) {
       onPasswordSelect(item);
     }
   };
@@ -185,7 +185,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
     }
     
     // Handle normal left click
-    if (item.type === 'group') {
+    if (item.type === ItemType.GROUP) {
       navigateToFolder(item._id);
     } else {
       setSelectedPasswordId(prevId => prevId === item._id ? null : item._id);
@@ -265,7 +265,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
               <td className="px-4 py-3">
                 <div className="flex items-center">
                   {getItemIcon(item)}
-                  <span className="ml-3 font-medium">{item.name}</span>
+                  <span className="ml-3 font-medium">{item.encryptedMetadata.name}</span>
                   {item.sharedWith && item.sharedWith.length > 0 && (
                     <div className="ml-2">
                       <Share className="h-3.5 w-3.5 text-primary-500" />
@@ -274,7 +274,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                 </div>
               </td>
               <td className="px-4 py-3">
-                {item.type === 'password' && item.encryptedMetadata.username ? (
+                {item.type === ItemType.PASSWORD && item.encryptedMetadata.username ? (
                   <div className="flex items-center space-x-1">
                     <span className="text-gray-600 dark:text-gray-300">
                       {item.encryptedMetadata.username}
@@ -291,7 +291,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                 )}
               </td>
               <td className="px-4 py-3 hidden md:table-cell">
-                {item.type === 'password' && item.encryptedMetadata.password ? (
+                {item.type === ItemType.PASSWORD && item.encryptedMetadata.password ? (
                   <div className="flex items-center space-x-1">
                     <span className="font-mono text-sm bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
                       {visiblePasswords[item._id] 
@@ -341,7 +341,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                       }}
                       className="w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown"
                     >
-                      {item.type === 'password' && (
+                      {item.type === ItemType.PASSWORD && (
                         <>
                           <button
                             className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -398,7 +398,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                         className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (item.type === 'password') {
+                          if (item.type === ItemType.PASSWORD) {
                             onPasswordSelect(item);
                           }
                           setOpenMenuId(null);

@@ -46,32 +46,9 @@ const FilesView: React.FC = () => {
   const handleFileUpload = async (files: File[]) => {
     setIsLoading(true);
     try {
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-      // showToast(`Successfully uploaded ${files.length} file(s)`);
-      
-      // const newItems = files.map(file => ({
-      //   _id: `file-${Date.now()}-${file.name}`,
-      //   name: file.name,
-      //   userId: 'user-1',
-      //   type: 'file' as const,
-      //   parentId: currentFolder || undefined,
-      //   encryptedMetadata: {
-      //     name: file.name,
-      //     mimeType: file.type,
-      //   },
-      //   encryption: {
-      //     iv: 'mock_iv',
-      //     algorithm: 'AES-GCM',
-      //     encryptedKey: 'mock_encrypted_key'
-      //   },
-      //   size: file.size,
-      //   extension: file.name.split('.').pop(),
-      //   createdAt: new Date(),
-      //   updatedAt: new Date(),
-      //   path: currentFolder ? ['Documents'] : []
-      // }));
-
-      // setItems(prev => [...prev, ...newItems]);
+      if (files.length > 1) {
+        
+      }
     } catch (error) {
       showToast('Failed to upload files', 'error');
     } finally {
@@ -79,15 +56,27 @@ const FilesView: React.FC = () => {
     }
   };
 
+  const generateItem = (file: File): Item => {
+    return {
+      id: crypto.randomUUID(),
+      name: file.name,
+      type: file.type.startsWith('image/') ? 'image' : 'file',
+      size: file.size,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      parentId: currentFolder || null,
+    };
+  };
+
   const fetchItems = async () => {
       setIsLoading(true);
 
-      const contItems : number = await countItems(['file', 'folder'], currentFolder || '');
+      const contItems : number = await countItems([ItemType.FILE, ItemType.FOLDER], currentFolder || '');
       setTotalPages(Math.ceil(contItems / items4Page));
       
       const params : PaginationParams = {
         parentId: currentFolder || '',
-        itemTypes: ['file', 'folder'],
+        itemTypes: [ItemType.FILE, ItemType.FOLDER],
         page: currentPage,
         limit: items4Page, 
       }
@@ -99,7 +88,7 @@ const FilesView: React.FC = () => {
         
         switch (sortBy) {
           case 'name':
-            comparison = a.name.localeCompare(b.name);
+            comparison = a.encryptedMetadata.name!.localeCompare(b.encryptedMetadata.name!);
             break;
           case 'date':
             if (!a.updatedAt || !b.updatedAt) return 0;

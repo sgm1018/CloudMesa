@@ -1,5 +1,6 @@
 import { BaseService, PaginationParams } from "./BaseService";
-import { Item } from "../types";
+import { Item, ItemType } from "../types";
+import { encryptService } from "./EncryptService";
 
 class ItemService extends BaseService {
     private static instance: ItemService;
@@ -69,6 +70,176 @@ class ItemService extends BaseService {
         const items : number = await response.json();
         return items;
 
+    }
+
+    async uploadFile(file: File, parentId: string): Promise<Item> {
+        const formData = new FormData();
+        
+
+
+        const itemData = this.initializeItem(file, parentId);
+        formData.append('file', file);
+        
+        // Append item data as JSON string or individual fields
+        Object.keys(itemData).forEach(key => {
+            const value = itemData[key as keyof Item];
+            if (value !== undefined && value !== null) {
+                formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
+            }
+        });
+
+        const response = await fetch(`${this.baseUrl}${this.controller}/upload`, {
+            method: 'POST',
+            headers: {
+                ...this.getAuthHeaders(),
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            console.error(`Error uploading file: ${response.statusText}`);
+            throw new Error(`Upload failed: ${response.statusText}`);
+        }
+
+        const result: Item = await response.json();
+        return result;
+    }
+
+
+    initializeItem(file: File, parentId: string): Item {
+        const item: Item = {
+            _id: '',
+            name: file.name,
+            type: ItemType.FILE,
+            parentId: parentId,
+            userId: '', // Se asignará en el servidor
+            encryptedMetadata: {
+                name: file.name,
+                description: '',
+                notes: '',
+            },
+            encryption: {
+                encryptedKey: undefined,
+                nonce: undefined,
+                ephemeralPublicKey: undefined
+            },
+            sharedWith: [],
+            size: undefined, // Tamaño del archivo
+            createdAt: new Date(),
+            updatedAt: undefined,
+            userCreator: undefined,
+            userUpdater: undefined
+        };
+        
+        return item;
+    }
+
+    initializeFolder(name: string, parentId: string = ''): Item {
+        const item: Item = {
+            _id: '',
+            name: name,
+            type: ItemType.FOLDER,
+            parentId: parentId,
+            userId: '', // Se asignará en el servidor
+            encryptedMetadata: {
+                name: name,
+                description: '',
+                notes: '',
+                username: undefined,
+                password: undefined,
+                url: undefined,
+                color: undefined,
+                icon: 'folder'
+            },
+            encryption: {
+                encryptedKey: undefined,
+                nonce: undefined,
+                ephemeralPublicKey: undefined
+            },
+            sharedWith: [],
+            size: undefined, // Las carpetas no tienen tamaño
+            createdAt: new Date(),
+            updatedAt: undefined,
+            userCreator: undefined,
+            userUpdater: undefined
+        };
+        
+        return item;
+    }
+
+    initializePassword(data: {
+        name: string;
+        username?: string;
+        password?: string;
+        url?: string;
+        notes?: string;
+        color?: string;
+        icon?: string;
+        parentId?: string;
+    }): Item {
+        const item: Item = {
+            _id: '',
+            name: data.name,
+            type: ItemType.PASSWORD,
+            parentId: data.parentId || '',
+            userId: '', // Se asignará en el servidor
+            encryptedMetadata: {
+                name: data.name,
+                username: data.username || '',
+                password: data.password || '',
+                url: data.url || '',
+                notes: data.notes || '',
+                description: '',
+                color: data.color || 'blue',
+                icon: data.icon || 'key'
+            },
+            encryption: {
+                encryptedKey: undefined,
+                nonce: undefined,
+                ephemeralPublicKey: undefined
+            },
+            sharedWith: [],
+            size: undefined, // Las contraseñas no tienen tamaño
+            createdAt: new Date(),
+            updatedAt: undefined,
+            userCreator: undefined,
+            userUpdater: undefined
+        };
+        
+        return item;
+    }
+
+    initializeGroup(name: string, parentId: string = ''): Item {
+        const item: Item = {
+            _id: '',
+            name: name,
+            type: ItemType.GROUP,
+            parentId: parentId,
+            userId: '', // Se asignará en el servidor
+            encryptedMetadata: {
+                name: name,
+                description: '',
+                notes: '',
+                username: undefined,
+                password: undefined,
+                url: undefined,
+                color: 'purple',
+                icon: 'folder'
+            },
+            encryption: {
+                encryptedKey: undefined,
+                nonce: undefined,
+                ephemeralPublicKey: undefined
+            },
+            sharedWith: [],
+            size: undefined, // Los grupos no tienen tamaño
+            createdAt: new Date(),
+            updatedAt: undefined,
+            userCreator: undefined,
+            userUpdater: undefined
+        };
+        
+        return item;
     }
 
     async getBreadcrumbPath(itemId: string): Promise<Item[]> {

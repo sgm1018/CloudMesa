@@ -56,9 +56,9 @@ export class EncryptedMetadata {
 };
 
 export class Encryption {
-  iv!: string;
-  algorithm!: string;
-  encryptedKey!: string;
+  encryptedKey?: string;  // Clave de cifrado simétrico en base64
+  nonce?: string;  // Needed for chcha20 + poly1305
+  ephemeralPublicKey?: string;  // Needed for shared secret generation 
 };
 
 export enum ItemType {

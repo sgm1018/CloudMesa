@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { Item } from '../../types';
+import { Item, ItemType } from '../../types';
 import { searchItems } from '../../data/mockData';
 import {
   Search,
@@ -121,7 +121,7 @@ const Header: React.FC = () => {
 
   const handleResultClick = (item: Item) => {
     // Switch view based on item type
-    if (item.type === 'password' || item.type === 'group') {
+    if (item.type === ItemType.PASSWORD || item.type === ItemType.GROUP) {
       setCurrentView('passwords');
     } else {
       setCurrentView('files');
@@ -196,20 +196,20 @@ const Header: React.FC = () => {
                   }`}
                   onClick={() => handleResultClick(item)}
                 >
-                  {item.type === 'file' && (
+                  {item.type === ItemType.FILE && (
                     <FileIcon className="h-5 w-5 text-primary-500" />
                   )}
-                  {item.type === 'folder' && (
+                  {item.type === ItemType.FOLDER && (
                     <FileIcon className="h-5 w-5 text-yellow-500" />
                   )}
-                  {item.type === 'password' && (
+                  {item.type === ItemType.PASSWORD && (
                     <KeyIcon className="h-5 w-5 text-success-500" />
                   )}
-                  {item.type === 'group' && (
+                  {item.type === ItemType.GROUP && (
                     <KeyIcon className="h-5 w-5 text-secondary-500" />
                   )}
                   <div className="ml-3">
-                    <div className="text-sm font-medium">{item.name}</div>
+                    <div className="text-sm font-medium">{item.encryptedMetadata.name}</div>
                     {/* <div className="text-xs text-gray-500 dark:text-gray-400">
                       {item.path && item.path.length > 0
                         ? item.path.join(' > ')

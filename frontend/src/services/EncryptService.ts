@@ -11,7 +11,7 @@ class EncryptService {
     }
     return EncryptService.instance;
   }
-
+  // Genera un par de claves RSA y devuelve las claves pública y privada en formato Base64
   public async generateKeys(): Promise<{
     publicKey: string;
     privateKey: string;
@@ -190,13 +190,25 @@ class EncryptService {
     return bytes.buffer; // ← Retorna ArrayBuffer, no Uint8Array
   }
 
-  async generateAESKey(): Promise<string> {
+
+  public async readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(reader.result as ArrayBuffer);
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  async generateSymmetricKey(): Promise<string> {
     try {
-      // Generate a 32-byte (256-bit) random key for AES-256
-      const aesKey = nacl.randomBytes(32);
-      return this.uint8ArrayToBase64(aesKey);
+      // Generate a 32-byte (256-bit) random key for ChaCha20
+      const symmetricKey = nacl.randomBytes(32);
+      return this.uint8ArrayToBase64(symmetricKey);
     } catch (error) {
-      throw new Error(`Failed to generate AES key: ${error}`);
+      throw new Error(`Failed to generate symmetric key: ${error}`);
     }
   }
 
@@ -313,19 +325,231 @@ public async encryptAESKey(
     return publicKey; // Asumiendo que la respuesta tiene formato { publicKey: "..." }
   }
 
-  public async encriptData(item: Item, publicKey: string): Promise<{ encrypted: string; nonce: string; ephemeralPublicKey: string; }> {
+  public async generateEncryptionKeys(item: Item, publicKey: string): Promise<{ encrypted: string; nonce: string; ephemeralPublicKey: string; symmetricKey: string }> {
     try {
       // 1. Obtener la clave pública del destinatario
       const theirPublicKey = publicKey;
-            // 3. Generar clave AES
-      const aesKey = await this.generateAESKey();
-      
-      // 4. Encriptar los datos del item con AES
-      return this.encryptAESKey(aesKey, theirPublicKey);
-      
-      
+      // 3. Generar clave simétrica
+      const symmetricKey = await this.generateSymmetricKey();
+      // 4. Encriptar la clave simétrica con el nonce y el secreto compartido
+      const { encrypted: encrypted, nonce: nonce, ephemeralPublicKey: ephemeralPublicKey } = await this.encryptAESKey(symmetricKey, theirPublicKey);
+      return {
+        encrypted: encrypted, 
+        nonce: nonce,
+        ephemeralPublicKey: ephemeralPublicKey,
+        symmetricKey: symmetricKey
+      };
     } catch (error) {
       throw new Error(`Failed to encrypt data: ${error}`);
+    }
+  }
+
+
+  public async cipherFullFile(file: File, item: Item, AESKey: string): Promise<{ encryptedFile: Uint8Array; nonce: string }> {
+    try {
+      const fileData = await this.readFileAsArrayBuffer(file);
+      
+      // 1. Convertir la clave AES de Base64 a Uint8Array
+      const key = this.base64ToUint8Array(AESKey);
+      
+      // 2. Generar nonce para secretbox (24 bytes)
+      const nonce = nacl.randomBytes(24);
+      
+      // 3. Convertir ArrayBuffer a Uint8Array
+      const fileBytes = new Uint8Array(fileData);
+      
+      // 4. Cifrar el archivo con NaCl secretbox (ChaCha20-Poly1305)
+      const encryptedFile = nacl.secretbox(fileBytes, nonce, key);
+      
+      if (!encryptedFile) {
+        throw new Error("File encryption failed");
+      }
+
+      return {
+        encryptedFile: encryptedFile,
+        nonce: this.uint8ArrayToBase64(nonce)
+      };
+
+    } catch (error) {
+      throw new Error(`Failed to encrypt full file: ${error}`);
+    }
+  }
+
+  public async decipherFullFile(
+    encryptedFileData: Uint8Array, 
+    AESKey: string, 
+    nonceBase64: string
+  ): Promise<Uint8Array> {
+    try {
+      // 1. Convertir la clave AES de Base64 a Uint8Array
+      const key = this.base64ToUint8Array(AESKey);
+      
+      // 2. Convertir nonce de Base64 a Uint8Array
+      const nonce = this.base64ToUint8Array(nonceBase64);
+      
+      // 3. Descifrar el archivo con NaCl secretbox
+      const decryptedFile = nacl.secretbox.open(encryptedFileData, nonce, key);
+      
+      if (!decryptedFile) {
+        throw new Error("File decryption failed - invalid ciphertext or key");
+      }
+
+      return decryptedFile;
+      
+    } catch (error) {
+      throw new Error(`Failed to decrypt full file: ${error}`);
+    }
+  }
+
+  // Cifrar los metadatos del item con la misma clave AES
+  public async cipherItemMetadata(item: Item, AESKey: string): Promise<{ encryptedMetadata: string; nonce: string }> {
+    try {
+      // 1. Convertir la clave AES de Base64 a Uint8Array
+      const key = this.base64ToUint8Array(AESKey);
+      
+      // 2. Generar nonce para secretbox (24 bytes)
+      const nonce = nacl.randomBytes(24);
+      
+      // 3. Serializar los metadatos a JSON
+      const metadataString = JSON.stringify(item.encryptedMetadata);
+      const metadataBytes = new TextEncoder().encode(metadataString);
+      
+      // 4. Cifrar los metadatos con NaCl secretbox
+      const encryptedMetadata = nacl.secretbox(metadataBytes, nonce, key);
+      
+      if (!encryptedMetadata) {
+        throw new Error("Metadata encryption failed");
+      }
+
+      return {
+        encryptedMetadata: this.uint8ArrayToBase64(encryptedMetadata),
+        nonce: this.uint8ArrayToBase64(nonce)
+      };
+
+    } catch (error) {
+      throw new Error(`Failed to encrypt item metadata: ${error}`);
+    }
+  }
+
+  // Descifrar los metadatos del item
+  public async decipherItemMetadata(
+    encryptedMetadataBase64: string, 
+    AESKey: string, 
+    nonceBase64: string
+  ): Promise<any> {
+    try {
+      // 1. Convertir la clave AES de Base64 a Uint8Array
+      const key = this.base64ToUint8Array(AESKey);
+      
+      // 2. Convertir datos cifrados y nonce de Base64
+      const encryptedMetadata = this.base64ToUint8Array(encryptedMetadataBase64);
+      const nonce = this.base64ToUint8Array(nonceBase64);
+      
+      // 3. Descifrar los metadatos
+      const decryptedMetadata = nacl.secretbox.open(encryptedMetadata, nonce, key);
+      
+      if (!decryptedMetadata) {
+        throw new Error("Metadata decryption failed - invalid ciphertext or key");
+      }
+
+      // 4. Convertir de bytes a string y parsear JSON
+      const metadataString = new TextDecoder().decode(decryptedMetadata);
+      return JSON.parse(metadataString);
+      
+    } catch (error) {
+      throw new Error(`Failed to decrypt item metadata: ${error}`);
+    }
+  }
+
+  // Método completo para cifrar archivo y metadatos con la misma clave AES
+  public async encryptFileAndMetadata(
+    file: File, 
+    item: Item, 
+    publicKey: string
+  ): Promise<{
+    encryptedFileBlob: Blob;
+    encryptedAESKey: string;
+    keyNonce: string;
+    ephemeralPublicKey: string;
+    fileNonce: string;
+    encryptedMetadata: string;
+    metadataNonce: string;
+  }> {
+    try {
+      // 1. Generar claves de cifrado (clave AES + cifrarla con la clave pública)
+      const { encrypted, nonce: keyNonce, ephemeralPublicKey, symmetricKey } = await this.generateEncryptionKeys(item, publicKey);
+      
+      // 2. Cifrar el archivo con la clave AES
+      const { encryptedFile, nonce: fileNonce } = await this.cipherFullFile(file, item, symmetricKey);
+      
+      // 3. Cifrar los metadatos del item con la misma clave AES
+      const { encryptedMetadata, nonce: metadataNonce } = await this.cipherItemMetadata(item, symmetricKey);
+      
+      // 4. Convertir archivo cifrado a Blob para envío
+      const encryptedFileBlob = new Blob([encryptedFile], { type: 'application/octet-stream' });
+      
+      return {
+        encryptedFileBlob,           // Archivo cifrado listo para envío
+        encryptedAESKey: encrypted,  // Clave AES cifrada con clave pública
+        keyNonce,                    // Nonce para descifrar la clave AES
+        ephemeralPublicKey,          // Clave pública temporal
+        fileNonce,                   // Nonce para descifrar el archivo
+        encryptedMetadata,           // Metadatos cifrados
+        metadataNonce               // Nonce para descifrar metadatos
+      };
+      
+    } catch (error) {
+      throw new Error(`Failed to encrypt file and metadata: ${error}`);
+    }
+  }
+
+  // Método de utilidad para convertir ArrayBuffer cifrado a Blob para envío al servidor
+  public arrayBufferToBlob(buffer: ArrayBuffer, mimeType: string = 'application/octet-stream'): Blob {
+    return new Blob([buffer], { type: mimeType });
+  }
+
+  // Método de utilidad para crear un archivo descargable desde ArrayBuffer
+  public createDownloadableFile(
+    buffer: ArrayBuffer, 
+    filename: string, 
+    mimeType: string = 'application/octet-stream'
+  ): File {
+    const blob = this.arrayBufferToBlob(buffer, mimeType);
+    return new File([blob], filename, { type: mimeType });
+  }
+
+  // Método completo para cifrar archivo y preparar para upload
+  public async encryptFileForUpload(
+    file: File, 
+    item: Item, 
+    publicKey: string
+  ): Promise<{
+    encryptedFileBlob: Blob;
+    encryptedAESKey: string;
+    nonce: string;
+    ephemeralPublicKey: string;
+    fileNonce: string;
+  }> {
+    try {
+      // 1. Generar claves de cifrado
+      const { encrypted, nonce, ephemeralPublicKey, symmetricKey } = await this.generateEncryptionKeys(item, publicKey);
+      
+      // 2. Cifrar el archivo
+      const { encryptedFile, nonce: fileNonce } = await this.cipherFullFile(file, item, symmetricKey);
+      
+      // 3. Convertir a Blob para envío (de Uint8Array a Blob)
+      const encryptedFileBlob = new Blob([encryptedFile], { type: 'application/octet-stream' });
+      
+      return {
+        encryptedFileBlob,
+        encryptedAESKey: encrypted,
+        nonce,
+        ephemeralPublicKey,
+        fileNonce: fileNonce
+      };
+      
+    } catch (error) {
+      throw new Error(`Failed to encrypt file for upload: ${error}`);
     }
   }
 }
