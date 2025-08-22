@@ -1,22 +1,17 @@
-import React, { createContext, useContext, useCallback, useRef, useState } from 'react';
-
-
+import React, { createContext, useContext, useState } from 'react';
 
 interface EncryptionContextType {
   publicKey : string | null;
   privateKey : string | null;
   setPublicKey: (state : string | null) => void;
   setPrivateKey: (state : string | null) => void;
-
 }
 
-const EncrypytionContext = createContext<EncryptionContextType | undefined>(undefined);
+const EncryptionContext = createContext<EncryptionContextType | undefined>(undefined);
 
-
-export const EncriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const EncryptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [publicKey, setPublicKey] = useState<string | null>(null);
   const [privateKey, setPrivateKey] = useState<string | null>(null);
-
 
   const value: EncryptionContextType = {
       publicKey,
@@ -26,16 +21,16 @@ export const EncriptionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   return (
-    <EncrypytionContext.Provider value={value}>
+    <EncryptionContext.Provider value={value}>
       {children}
-    </EncrypytionContext.Provider>
+    </EncryptionContext.Provider>
   );
 };
 
 export const useEncryption = (): EncryptionContextType => {
-  const context = useContext(EncrypytionContext);
+  const context = useContext(EncryptionContext);
   if (context === undefined) {
-    throw new Error('useKeyCache must be used within a KeyCacheProvider');
+    throw new Error('useEncryption must be used within an EncryptionProvider');
   }
   return context;
 };

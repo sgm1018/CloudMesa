@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { UserLoginDto } from '../dto/auth/UserLoginDto';
 import { authService } from '../services/AuthService';
 import { useNavigate } from 'react-router-dom';
-import { useAppContext } from './AppContext';
 import { useEncryption } from './EncryptionContext';
 
 
@@ -21,17 +20,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<UserLoginDto | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false); // Cambiado a false por defecto
     const navigate = useNavigate();
     const [isShowPrivateKey, setShowPrivateKey] = useState(false);
     const {setPrivateKey, setPublicKey} = useEncryption();
 
-
     useEffect(() => {
-        // Verificar si hay un usuario ya logueado al inicializar
-        // setUser(currentUser);
+        // Verificar si hay un token en sessionStorage al inicializar
+        const token = sessionStorage.getItem('accessToken');
+        if (token) {
+            // Aquí podrías validar el token o cargar datos del usuario
+            // Por ahora simplemente establecemos que hay una sesión activa
+            console.log('Token encontrado en sessionStorage');
+        }
         setIsLoading(false);
-    }, [user]);
+    }, []);
 
     const login = async (email: string, password: string) => {
         setIsLoading(true);
@@ -51,7 +54,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const isAuthenticated = () => {
-        return !!sessionStorage.getItem('accesToken') || !!user;
+        return !!sessionStorage.getItem('accessToken') || !!user;
     };
 
     const register = async (name: string, surname: string, email: string, password: string) => {

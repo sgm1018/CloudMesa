@@ -1,5 +1,8 @@
 # Todo List
 
+
+Primero de todo, comprobar clases de backend con frontend
+
 ## Pending Tasks
 - [ ] Probar la subida de Files desde el frontend
         Comprobar que se genera:

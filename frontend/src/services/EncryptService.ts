@@ -11,7 +11,7 @@ class EncryptService {
     }
     return EncryptService.instance;
   }
-  // Genera un par de claves RSA y devuelve las claves pública y privada en formato Base64
+  // Genera un par de clave pública-privada y devuelve las claves pública y privada en formato Base64
   public async generateKeys(): Promise<{
     publicKey: string;
     privateKey: string;
@@ -50,41 +50,7 @@ class EncryptService {
     }
   }
 
-  public async importPublicKey(publicKeyBase64: string): Promise<CryptoKey> {
-    try {
-      const keyBuffer = this.base64ToArrayBuffer(publicKeyBase64);
-      return await crypto.subtle.importKey(
-        "spki",
-        keyBuffer,
-        {
-          name: "RSA-OAEP",
-          hash: "SHA-256",
-        },
-        false,
-        ["encrypt"]
-      );
-    } catch (error) {
-      throw new Error(`Failed to import public key: ${error}`);
-    }
-  }
 
-  public async importPrivateKey(privateKeyBase64: string): Promise<CryptoKey> {
-    try {
-      const keyBuffer = this.base64ToArrayBuffer(privateKeyBase64);
-      return await crypto.subtle.importKey(
-        "pkcs8",
-        keyBuffer,
-        {
-          name: "RSA-OAEP",
-          hash: "SHA-256",
-        },
-        false,
-        ["decrypt"]
-      );
-    } catch (error) {
-      throw new Error(`Failed to import private key: ${error}`);
-    }
-  }
 
   public base64ToPem(base64: string, label = "PRIVATE KEY") {
     const lines = [];
@@ -96,75 +62,67 @@ class EncryptService {
     )}\n-----END ${label}-----\n`;
   }
 
-  public arrayBufferToBase64(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
-    let binary = "";
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  }
 
-  // Cifrar datos con AES-GCM
-  public async encryptWithNaCl(
-    data: string,
-    theirPublicKeyBase64: string,
-    myPrivateKeyBase64: string
-  ): Promise<{ encrypted: string; nonce: string }> {
-    try {
-      const messageBytes = new TextEncoder().encode(data);
-      const theirPublicKey = this.base64ToUint8Array(theirPublicKeyBase64);
-      const myPrivateKey = this.base64ToUint8Array(myPrivateKeyBase64);
+  // // Cifrar datos con NaCl
+  // public async encryptWithNaCl(
+  //   data: string,
+  //   theirPublicKeyBase64: string,
+  //   myPrivateKeyBase64: string
+  // ): Promise<{ encrypted: string; nonce: string }> {
+  //   try {
+  //     const messageBytes = new TextEncoder().encode(data);
+  //     const theirPublicKey = this.base64ToUint8Array(theirPublicKeyBase64);
+  //     const myPrivateKey = this.base64ToUint8Array(myPrivateKeyBase64);
 
-      const nonce = nacl.randomBytes(24); // 24 bytes para NaCl box
-      const encrypted = nacl.box(
-        messageBytes,
-        nonce,
-        theirPublicKey,
-        myPrivateKey
-      );
+  //     const nonce = nacl.randomBytes(24); // 24 bytes para NaCl box
+  //     const encrypted = nacl.box(
+  //       messageBytes,
+  //       nonce,
+  //       theirPublicKey,
+  //       myPrivateKey
+  //     );
 
-      if (!encrypted) {
-        throw new Error("Encryption failed");
-      }
+  //     if (!encrypted) {
+  //       throw new Error("Encryption failed");
+  //     }
 
-      return {
-        encrypted: this.uint8ArrayToBase64(encrypted),
-        nonce: this.uint8ArrayToBase64(nonce),
-      };
-    } catch (error) {
-      throw new Error(`TweetNaCl encryption failed: ${error}`);
-    }
-  }
+  //     return {
+  //       encrypted: this.uint8ArrayToBase64(encrypted),
+  //       nonce: this.uint8ArrayToBase64(nonce),
+  //     };
+  //   } catch (error) {
+  //     throw new Error(`TweetNaCl encryption failed: ${error}`);
+  //   }
+  // }
 
-  public async decryptWithNaCl(
-    encryptedBase64: string,
-    nonceBase64: string,
-    theirPublicKeyBase64: string,
-    myPrivateKeyBase64: string
-  ): Promise<string> {
-    try {
-      const encrypted = this.base64ToUint8Array(encryptedBase64);
-      const nonce = this.base64ToUint8Array(nonceBase64);
-      const theirPublicKey = this.base64ToUint8Array(theirPublicKeyBase64);
-      const myPrivateKey = this.base64ToUint8Array(myPrivateKeyBase64);
+  // public async decryptWithNaCl(
+  //   encryptedBase64: string,
+  //   nonceBase64: string,
+  //   theirPublicKeyBase64: string,
+  //   myPrivateKeyBase64: string
+  // ): Promise<string> {
+  //   try {
+  //     const encrypted = this.base64ToUint8Array(encryptedBase64);
+  //     const nonce = this.base64ToUint8Array(nonceBase64);
+  //     const theirPublicKey = this.base64ToUint8Array(theirPublicKeyBase64);
+  //     const myPrivateKey = this.base64ToUint8Array(myPrivateKeyBase64);
 
-      const decrypted = nacl.box.open(
-        encrypted,
-        nonce,
-        theirPublicKey,
-        myPrivateKey
-      );
+  //     const decrypted = nacl.box.open(
+  //       encrypted,
+  //       nonce,
+  //       theirPublicKey,
+  //       myPrivateKey
+  //     );
 
-      if (!decrypted) {
-        throw new Error("Decryption failed - invalid ciphertext or keys");
-      }
+  //     if (!decrypted) {
+  //       throw new Error("Decryption failed - invalid ciphertext or keys");
+  //     }
 
-      return new TextDecoder().decode(decrypted);
-    } catch (error) {
-      throw new Error(`TweetNaCl decryption failed: ${error}`);
-    }
-  }
+  //     return new TextDecoder().decode(decrypted);
+  //   } catch (error) {
+  //     throw new Error(`TweetNaCl decryption failed: ${error}`);
+  //   }
+  // }
 
   // CODIFICAR: Uint8Array → Base64 string
   private uint8ArrayToBase64(uint8Array: Uint8Array): string {
@@ -178,6 +136,18 @@ class EncryptService {
         .split("")
         .map((c) => c.charCodeAt(0))
     );
+  }
+
+  // Derivar nonces únicos desde un nonce maestro para diferentes propósitos
+  private deriveNonce(masterNonce: Uint8Array, purpose: string): Uint8Array {
+    const purposeBytes = new TextEncoder().encode(purpose);
+    const combined = new Uint8Array(masterNonce.length + purposeBytes.length);
+    combined.set(masterNonce);
+    combined.set(purposeBytes, masterNonce.length);
+    
+    // Usar hash simple para derivar nonce único (primeros 24 bytes)
+    const derived = nacl.hash(combined).slice(0, 24);
+    return derived;
   }
 
   // Base64 string → ArrayBuffer
@@ -212,22 +182,7 @@ class EncryptService {
     }
   }
 
-  async importAESKey(aesKeyBase64: string): Promise<CryptoKey> {
-    try {
-      const keyBytes = this.base64ToUint8Array(aesKeyBase64);
-      return await crypto.subtle.importKey(
-        "raw",
-        keyBytes,
-        {
-          name: "AES-GCM",
-        },
-        false,
-        ["encrypt", "decrypt"]
-      );
-    } catch (error) {
-      throw new Error(`Failed to import AES key: ${error}`);
-    }
-  }
+
 
   /* 
     Genero la clave AES.
@@ -249,12 +204,12 @@ class EncryptService {
 
   // Guardar en la BBDD la clave AES encriptada, el nonce y la clave pública temporal por cada ITEM.
   */
-public async encryptAESKey(
-    aesKeyBase64: string,
+public async encryptSymmetricKey(
+    symmetricKeyBase64: string,
     theirPublicKeyBase64: string
 ): Promise<{ encrypted: string; nonce: string; ephemeralPublicKey: string }> {
     try {
-        const aesKeyBytes = this.base64ToUint8Array(aesKeyBase64);
+        const symmetricKeyBytes = this.base64ToUint8Array(symmetricKeyBase64);
         const theirPublicKey = this.base64ToUint8Array(theirPublicKeyBase64);
         
         // Generar par de claves temporal solo para este cifrado
@@ -262,8 +217,8 @@ public async encryptAESKey(
         const sharedSecret = nacl.box.before(theirPublicKey, ephemeralKeyPair.secretKey);
         
         const nonce = nacl.randomBytes(24);
-        const encrypted = nacl.box.after(aesKeyBytes, nonce, sharedSecret);
-        
+        const encrypted = nacl.box.after(symmetricKeyBytes, nonce, sharedSecret);
+
         if (!encrypted) {
             throw new Error("AES key encryption failed");
         }
@@ -278,7 +233,7 @@ public async encryptAESKey(
     }
 }
   // Descifrar clave AES con NaCl
-  public async decryptAESKey(
+  public async decryptsymmetricKey(
     encryptedKeyBase64: string,
     nonceBase64: string,
     ephemeralPublicKey: string,
@@ -325,14 +280,14 @@ public async encryptAESKey(
     return publicKey; // Asumiendo que la respuesta tiene formato { publicKey: "..." }
   }
 
-  public async generateEncryptionKeys(item: Item, publicKey: string): Promise<{ encrypted: string; nonce: string; ephemeralPublicKey: string; symmetricKey: string }> {
+  public async generateEncryptionKeys(_item: Item, publicKey: string): Promise<{ encrypted: string; nonce: string; ephemeralPublicKey: string; symmetricKey: string }> {
     try {
       // 1. Obtener la clave pública del destinatario
       const theirPublicKey = publicKey;
       // 3. Generar clave simétrica
       const symmetricKey = await this.generateSymmetricKey();
       // 4. Encriptar la clave simétrica con el nonce y el secreto compartido
-      const { encrypted: encrypted, nonce: nonce, ephemeralPublicKey: ephemeralPublicKey } = await this.encryptAESKey(symmetricKey, theirPublicKey);
+      const { encrypted: encrypted, nonce: nonce, ephemeralPublicKey: ephemeralPublicKey } = await this.encryptSymmetricKey(symmetricKey, theirPublicKey);
       return {
         encrypted: encrypted, 
         nonce: nonce,
@@ -345,12 +300,12 @@ public async encryptAESKey(
   }
 
 
-  public async cipherFullFile(file: File, item: Item, AESKey: string): Promise<{ encryptedFile: Uint8Array; nonce: string }> {
+  public async cipherFullFile(file: File, _item: Item, symmetricKey: string): Promise<{ encryptedFile: Uint8Array; nonce: string }> {
     try {
       const fileData = await this.readFileAsArrayBuffer(file);
       
       // 1. Convertir la clave AES de Base64 a Uint8Array
-      const key = this.base64ToUint8Array(AESKey);
+      const key = this.base64ToUint8Array(symmetricKey);
       
       // 2. Generar nonce para secretbox (24 bytes)
       const nonce = nacl.randomBytes(24);
@@ -377,12 +332,12 @@ public async encryptAESKey(
 
   public async decipherFullFile(
     encryptedFileData: Uint8Array, 
-    AESKey: string, 
+    symmetricKey: string, 
     nonceBase64: string
   ): Promise<Uint8Array> {
     try {
       // 1. Convertir la clave AES de Base64 a Uint8Array
-      const key = this.base64ToUint8Array(AESKey);
+      const key = this.base64ToUint8Array(symmetricKey);
       
       // 2. Convertir nonce de Base64 a Uint8Array
       const nonce = this.base64ToUint8Array(nonceBase64);
@@ -401,11 +356,17 @@ public async encryptAESKey(
     }
   }
 
+  public uint8ArrayToBinary(uint8Array: Uint8Array): string {
+    return Array.from(uint8Array)
+      .map((byte) => String.fromCharCode(byte))
+      .join("");
+  }
+
   // Cifrar los metadatos del item con la misma clave AES
-  public async cipherItemMetadata(item: Item, AESKey: string): Promise<{ encryptedMetadata: string; nonce: string }> {
+  public async cipherItemMetadata(item: Item, symmetricKey: string): Promise<{ encryptedMetadata: string; nonce: string }> {
     try {
       // 1. Convertir la clave AES de Base64 a Uint8Array
-      const key = this.base64ToUint8Array(AESKey);
+      const key = this.base64ToUint8Array(symmetricKey);
       
       // 2. Generar nonce para secretbox (24 bytes)
       const nonce = nacl.randomBytes(24);
@@ -416,7 +377,7 @@ public async encryptAESKey(
       
       // 4. Cifrar los metadatos con NaCl secretbox
       const encryptedMetadata = nacl.secretbox(metadataBytes, nonce, key);
-      
+
       if (!encryptedMetadata) {
         throw new Error("Metadata encryption failed");
       }
@@ -434,12 +395,12 @@ public async encryptAESKey(
   // Descifrar los metadatos del item
   public async decipherItemMetadata(
     encryptedMetadataBase64: string, 
-    AESKey: string, 
+    symmetricKey: string, 
     nonceBase64: string
   ): Promise<any> {
     try {
       // 1. Convertir la clave AES de Base64 a Uint8Array
-      const key = this.base64ToUint8Array(AESKey);
+      const key = this.base64ToUint8Array(symmetricKey);
       
       // 2. Convertir datos cifrados y nonce de Base64
       const encryptedMetadata = this.base64ToUint8Array(encryptedMetadataBase64);
@@ -468,7 +429,7 @@ public async encryptAESKey(
     publicKey: string
   ): Promise<{
     encryptedFileBlob: Blob;
-    encryptedAESKey: string;
+    encryptedSymmetricKey: string;
     keyNonce: string;
     ephemeralPublicKey: string;
     fileNonce: string;
@@ -486,11 +447,11 @@ public async encryptAESKey(
       const { encryptedMetadata, nonce: metadataNonce } = await this.cipherItemMetadata(item, symmetricKey);
       
       // 4. Convertir archivo cifrado a Blob para envío
-      const encryptedFileBlob = new Blob([encryptedFile], { type: 'application/octet-stream' });
+      const encryptedFileBlob = new Blob([new Uint8Array(encryptedFile)], { type: 'application/octet-stream' });
       
       return {
         encryptedFileBlob,           // Archivo cifrado listo para envío
-        encryptedAESKey: encrypted,  // Clave AES cifrada con clave pública
+        encryptedSymmetricKey: encrypted,  // Clave AES cifrada con clave pública
         keyNonce,                    // Nonce para descifrar la clave AES
         ephemeralPublicKey,          // Clave pública temporal
         fileNonce,                   // Nonce para descifrar el archivo
@@ -525,7 +486,7 @@ public async encryptAESKey(
     publicKey: string
   ): Promise<{
     encryptedFileBlob: Blob;
-    encryptedAESKey: string;
+    encryptedSymmetricKey: string;
     nonce: string;
     ephemeralPublicKey: string;
     fileNonce: string;
@@ -538,11 +499,11 @@ public async encryptAESKey(
       const { encryptedFile, nonce: fileNonce } = await this.cipherFullFile(file, item, symmetricKey);
       
       // 3. Convertir a Blob para envío (de Uint8Array a Blob)
-      const encryptedFileBlob = new Blob([encryptedFile], { type: 'application/octet-stream' });
+      const encryptedFileBlob = new Blob([new Uint8Array(encryptedFile)], { type: 'application/octet-stream' });
       
       return {
         encryptedFileBlob,
-        encryptedAESKey: encrypted,
+        encryptedSymmetricKey: encrypted,
         nonce,
         ephemeralPublicKey,
         fileNonce: fileNonce
@@ -550,6 +511,103 @@ public async encryptAESKey(
       
     } catch (error) {
       throw new Error(`Failed to encrypt file for upload: ${error}`);
+    }
+  }
+
+  // Método para descifrar con nonces derivados
+  public async decryptFileAndMetadataWithDerivedNonces(
+    encryptedFileData: Uint8Array,
+    encryptedMetadataBase64: string,
+    encryptedSymmetricKeyBase64: string,
+    keyNonceBase64: string,
+    ephemeralPublicKeyBase64: string,
+    masterNonceBase64: string,
+    myPrivateKeyBase64: string
+  ): Promise<{ decryptedFile: Uint8Array; decryptedMetadata: any }> {
+    try {
+      // 1. Descifrar la clave simétrica
+      const symmetricKey = await this.decryptsymmetricKey(
+        encryptedSymmetricKeyBase64,
+        keyNonceBase64,
+        ephemeralPublicKeyBase64,
+        myPrivateKeyBase64
+      );
+      
+      // 2. Reconstruir nonces derivados desde el nonce maestro
+      const masterNonce = this.base64ToUint8Array(masterNonceBase64);
+      const fileNonce = this.deriveNonce(masterNonce, "file");
+      const metadataNonce = this.deriveNonce(masterNonce, "metadata");
+      
+      // 3. Descifrar archivo
+      const decryptedFile = await this.decipherFullFileWithNonce(encryptedFileData, symmetricKey, fileNonce);
+      
+      // 4. Descifrar metadatos
+      const decryptedMetadata = await this.decipherItemMetadataWithNonce(
+        encryptedMetadataBase64,
+        symmetricKey,
+        metadataNonce
+      );
+      
+      return {
+        decryptedFile,
+        decryptedMetadata
+      };
+      
+    } catch (error) {
+      throw new Error(`Failed to decrypt file and metadata with derived nonces: ${error}`);
+    }
+  }
+
+  // Descifrar archivo con nonce específico
+  public async decipherFullFileWithNonce(
+    encryptedFileData: Uint8Array, 
+    symmetricKey: string, 
+    nonce: Uint8Array
+  ): Promise<Uint8Array> {
+    try {
+      // 1. Convertir la clave simétrica de Base64 a Uint8Array
+      const key = this.base64ToUint8Array(symmetricKey);
+      
+      // 2. Descifrar el archivo con NaCl secretbox
+      const decryptedFile = nacl.secretbox.open(encryptedFileData, nonce, key);
+      
+      if (!decryptedFile) {
+        throw new Error("File decryption failed - invalid ciphertext or key");
+      }
+
+      return decryptedFile;
+      
+    } catch (error) {
+      throw new Error(`Failed to decrypt full file with custom nonce: ${error}`);
+    }
+  }
+
+  // Descifrar metadatos con nonce específico
+  public async decipherItemMetadataWithNonce(
+    encryptedMetadataBase64: string, 
+    symmetricKey: string, 
+    nonce: Uint8Array
+  ): Promise<any> {
+    try {
+      // 1. Convertir la clave simétrica de Base64 a Uint8Array
+      const key = this.base64ToUint8Array(symmetricKey);
+      
+      // 2. Convertir datos cifrados de Base64
+      const encryptedMetadata = this.base64ToUint8Array(encryptedMetadataBase64);
+      
+      // 3. Descifrar los metadatos
+      const decryptedMetadata = nacl.secretbox.open(encryptedMetadata, nonce, key);
+      
+      if (!decryptedMetadata) {
+        throw new Error("Metadata decryption failed - invalid ciphertext or key");
+      }
+
+      // 4. Convertir de bytes a string y parsear JSON
+      const metadataString = new TextDecoder().decode(decryptedMetadata);
+      return JSON.parse(metadataString);
+      
+    } catch (error) {
+      throw new Error(`Failed to decrypt item metadata with custom nonce: ${error}`);
     }
   }
 }

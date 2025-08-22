@@ -120,8 +120,10 @@ class ItemService extends BaseService {
             },
             encryption: {
                 encryptedKey: undefined,
-                nonce: undefined,
-                ephemeralPublicKey: undefined
+                ephemeralPublicKey: undefined,
+                keyNonce: undefined,
+                metadataNonce: undefined,
+                fileNonce: undefined,
             },
             sharedWith: [],
             size: undefined, // Tamaño del archivo
@@ -153,8 +155,10 @@ class ItemService extends BaseService {
             },
             encryption: {
                 encryptedKey: undefined,
-                nonce: undefined,
-                ephemeralPublicKey: undefined
+                ephemeralPublicKey: undefined,
+                keyNonce: undefined,
+                metadataNonce: undefined,
+                fileNonce: undefined,
             },
             sharedWith: [],
             size: undefined, // Las carpetas no tienen tamaño
@@ -195,8 +199,10 @@ class ItemService extends BaseService {
             },
             encryption: {
                 encryptedKey: undefined,
-                nonce: undefined,
-                ephemeralPublicKey: undefined
+                ephemeralPublicKey: undefined,
+                keyNonce: undefined,
+                metadataNonce: undefined,
+                fileNonce: undefined,
             },
             sharedWith: [],
             size: undefined, // Las contraseñas no tienen tamaño
@@ -227,9 +233,11 @@ class ItemService extends BaseService {
                 icon: 'folder'
             },
             encryption: {
-                encryptedKey: undefined,
-                nonce: undefined,
-                ephemeralPublicKey: undefined
+              encryptedKey: undefined,
+                ephemeralPublicKey: undefined,
+                keyNonce: undefined,
+                metadataNonce: undefined,
+                fileNonce: undefined,
             },
             sharedWith: [],
             size: undefined, // Los grupos no tienen tamaño

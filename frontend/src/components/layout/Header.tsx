@@ -2,8 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { Item, ItemType } from '../../types';
-import { searchItems } from '../../data/mockData';
-import {
+import { 
   Search,
   X,
   Grid,
@@ -17,7 +16,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-
+import { itemService } from '../../services/ItemService';
 const Header: React.FC = () => {
   const {
     viewMode,
@@ -42,7 +41,8 @@ const Header: React.FC = () => {
 
   const performSearch = async () => {
     if (searchQuery.length > 0) {
-      const results = await searchItems(searchQuery);
+      // TODO: Implementar búsqueda real aquí
+      const results = await itemService.findSearchItems(searchQuery);
       setSearchResults(results);
       setSelectedResultIndex(-1);
     } else {
