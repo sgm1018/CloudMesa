@@ -109,7 +109,6 @@ class ItemService extends BaseService {
     initializeItem(file: File, parentId: string): Item {
         const item: Item = {
             _id: '',
-            name: file.name,
             type: ItemType.FILE,
             parentId: parentId,
             userId: '', // Se asignará en el servidor
@@ -139,7 +138,6 @@ class ItemService extends BaseService {
     initializeFolder(name: string, parentId: string = ''): Item {
         const item: Item = {
             _id: '',
-            name: name,
             type: ItemType.FOLDER,
             parentId: parentId,
             userId: '', // Se asignará en el servidor
@@ -183,7 +181,6 @@ class ItemService extends BaseService {
     }): Item {
         const item: Item = {
             _id: '',
-            name: data.name,
             type: ItemType.PASSWORD,
             parentId: data.parentId || '',
             userId: '', // Se asignará en el servidor
@@ -218,7 +215,6 @@ class ItemService extends BaseService {
     initializeGroup(name: string, parentId: string = ''): Item {
         const item: Item = {
             _id: '',
-            name: name,
             type: ItemType.GROUP,
             parentId: parentId,
             userId: '', // Se asignará en el servidor

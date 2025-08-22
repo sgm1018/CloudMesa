@@ -8,7 +8,7 @@ import { useDropzone } from 'react-dropzone';
 import { Folder, File, Upload, Plus, FolderPlus, Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { PaginationParams } from '../../services/BaseService';
-
+import { itemService } from '../../services/ItemService';
 
 const FilesView: React.FC = () => {
   const { currentFileFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
@@ -46,26 +46,16 @@ const FilesView: React.FC = () => {
   const handleFileUpload = async (files: File[]) => {
     setIsLoading(true);
     try {
-      if (files.length > 1) {
-        
+      if (files.length >= 1) {
+        // Handle multiple file uploads
+        const uploadPromises = files.map(file => itemService.uploadFile(file, currentFolder || ''));
+        await Promise.all(uploadPromises);
       }
     } catch (error) {
       showToast('Failed to upload files', 'error');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const generateItem = (file: File): Item => {
-    return {
-      id: crypto.randomUUID(),
-      name: file.name,
-      type: file.type.startsWith('image/') ? 'image' : 'file',
-      size: file.size,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      parentId: currentFolder || null,
-    };
   };
 
   const fetchItems = async () => {
