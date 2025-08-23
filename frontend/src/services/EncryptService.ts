@@ -435,7 +435,7 @@ public async encryptSymmetricKey(
       // 2. Cifrar el archivo con la clave AES
       const { encryptedFile, nonce: fileNonce } = await this.cipherFullFile(file, item, symmetricKey);
       
-      // 3. Cifrar los metadatos del item con la misma clave AES
+      // 3. Cifrar los metadatos del item con la misma clave simetrica
       const { encryptedMetadata, nonce: metadataNonce } = await this.cipherItemMetadata(item, symmetricKey);
       
       // 4. Convertir archivo cifrado a Blob para envío
