@@ -1,6 +1,5 @@
 ![logo-no-background](https://github.com/user-attachments/assets/50bff183-9aa7-4560-b3c8-ff0741f7715c)
 <div align="center">
-    <h1>CloudMesa</h1>
     <p><strong>Secure Cloud File/Password Storage with End-to-End Encryption</strong></p>
     
 [![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
