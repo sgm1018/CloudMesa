@@ -23,16 +23,7 @@ CloudMesa is a secure and private cloud storage service designed for managing fi
 6. [Usage](#usage)
 7. [Contributing](#contributing)
 8. [License](#license)
-# CloudMesa API
 
-<div align="center">
-    <h1>CloudMesa</h1>
-    <p><strong>Secure Cloud File/Password Storage with End-to-End Encryption</strong></p>
-    
-[![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-</div>
 
 ## 🔒 Overview
 
