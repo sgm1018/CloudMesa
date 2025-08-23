@@ -75,7 +75,7 @@ export class Item extends Entity {
     userId!: string;
   type!: ItemType;
   parentId: string = '';
-  encryptedMetadata!: EncryptedMetadata;
+  encryptedMetadata!: any;
   encryption!: Encryption;
   sharedWith: SharedConfig[] = [];
   // These aren't in the original type but are useful for the UI

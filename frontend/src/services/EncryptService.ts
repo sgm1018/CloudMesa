@@ -138,18 +138,6 @@ class EncryptService {
     );
   }
 
-  // Derivar nonces únicos desde un nonce maestro para diferentes propósitos
-  private deriveNonce(masterNonce: Uint8Array, purpose: string): Uint8Array {
-    const purposeBytes = new TextEncoder().encode(purpose);
-    const combined = new Uint8Array(masterNonce.length + purposeBytes.length);
-    combined.set(masterNonce);
-    combined.set(purposeBytes, masterNonce.length);
-    
-    // Usar hash simple para derivar nonce único (primeros 24 bytes)
-    const derived = nacl.hash(combined).slice(0, 24);
-    return derived;
-  }
-
   // Base64 string → ArrayBuffer
   public base64ToArrayBuffer(base64: string): ArrayBuffer {
     const binaryString = atob(base64);
@@ -213,8 +201,12 @@ public async encryptSymmetricKey(
         const theirPublicKey = this.base64ToUint8Array(theirPublicKeyBase64);
         
         // Generar par de claves temporal solo para este cifrado
+
+        //mock: generate other random public key
+        const otherPublicKey = nacl.box.keyPair().publicKey;
+
         const ephemeralKeyPair = nacl.box.keyPair();
-        const sharedSecret = nacl.box.before(theirPublicKey, ephemeralKeyPair.secretKey);
+        const sharedSecret = nacl.box.before(otherPublicKey, ephemeralKeyPair.secretKey); //! CAMBIAR POR TheirPublicKey
         
         const nonce = nacl.randomBytes(24);
         const encrypted = nacl.box.after(symmetricKeyBytes, nonce, sharedSecret);
@@ -511,103 +503,6 @@ public async encryptSymmetricKey(
       
     } catch (error) {
       throw new Error(`Failed to encrypt file for upload: ${error}`);
-    }
-  }
-
-  // Método para descifrar con nonces derivados
-  public async decryptFileAndMetadataWithDerivedNonces(
-    encryptedFileData: Uint8Array,
-    encryptedMetadataBase64: string,
-    encryptedSymmetricKeyBase64: string,
-    keyNonceBase64: string,
-    ephemeralPublicKeyBase64: string,
-    masterNonceBase64: string,
-    myPrivateKeyBase64: string
-  ): Promise<{ decryptedFile: Uint8Array; decryptedMetadata: any }> {
-    try {
-      // 1. Descifrar la clave simétrica
-      const symmetricKey = await this.decryptsymmetricKey(
-        encryptedSymmetricKeyBase64,
-        keyNonceBase64,
-        ephemeralPublicKeyBase64,
-        myPrivateKeyBase64
-      );
-      
-      // 2. Reconstruir nonces derivados desde el nonce maestro
-      const masterNonce = this.base64ToUint8Array(masterNonceBase64);
-      const fileNonce = this.deriveNonce(masterNonce, "file");
-      const metadataNonce = this.deriveNonce(masterNonce, "metadata");
-      
-      // 3. Descifrar archivo
-      const decryptedFile = await this.decipherFullFileWithNonce(encryptedFileData, symmetricKey, fileNonce);
-      
-      // 4. Descifrar metadatos
-      const decryptedMetadata = await this.decipherItemMetadataWithNonce(
-        encryptedMetadataBase64,
-        symmetricKey,
-        metadataNonce
-      );
-      
-      return {
-        decryptedFile,
-        decryptedMetadata
-      };
-      
-    } catch (error) {
-      throw new Error(`Failed to decrypt file and metadata with derived nonces: ${error}`);
-    }
-  }
-
-  // Descifrar archivo con nonce específico
-  public async decipherFullFileWithNonce(
-    encryptedFileData: Uint8Array, 
-    symmetricKey: string, 
-    nonce: Uint8Array
-  ): Promise<Uint8Array> {
-    try {
-      // 1. Convertir la clave simétrica de Base64 a Uint8Array
-      const key = this.base64ToUint8Array(symmetricKey);
-      
-      // 2. Descifrar el archivo con NaCl secretbox
-      const decryptedFile = nacl.secretbox.open(encryptedFileData, nonce, key);
-      
-      if (!decryptedFile) {
-        throw new Error("File decryption failed - invalid ciphertext or key");
-      }
-
-      return decryptedFile;
-      
-    } catch (error) {
-      throw new Error(`Failed to decrypt full file with custom nonce: ${error}`);
-    }
-  }
-
-  // Descifrar metadatos con nonce específico
-  public async decipherItemMetadataWithNonce(
-    encryptedMetadataBase64: string, 
-    symmetricKey: string, 
-    nonce: Uint8Array
-  ): Promise<any> {
-    try {
-      // 1. Convertir la clave simétrica de Base64 a Uint8Array
-      const key = this.base64ToUint8Array(symmetricKey);
-      
-      // 2. Convertir datos cifrados de Base64
-      const encryptedMetadata = this.base64ToUint8Array(encryptedMetadataBase64);
-      
-      // 3. Descifrar los metadatos
-      const decryptedMetadata = nacl.secretbox.open(encryptedMetadata, nonce, key);
-      
-      if (!decryptedMetadata) {
-        throw new Error("Metadata decryption failed - invalid ciphertext or key");
-      }
-
-      // 4. Convertir de bytes a string y parsear JSON
-      const metadataString = new TextDecoder().decode(decryptedMetadata);
-      return JSON.parse(metadataString);
-      
-    } catch (error) {
-      throw new Error(`Failed to decrypt item metadata with custom nonce: ${error}`);
     }
   }
 }

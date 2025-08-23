@@ -48,7 +48,11 @@ const FilesView: React.FC = () => {
     try {
       if (files.length >= 1) {
         // Handle multiple file uploads
-        const uploadPromises = files.map(file => itemService.uploadFile(file, currentFolder || ''));
+        const uploadPromises = files.map(file => itemService.uploadFile(file, currentFolder || '', (progress) => {
+          console.log(`Upload progress for ${file.name}: ${progress}%`);
+        }, (chunkNumber, totalChunks) => {
+          console.log(`Chunk ${chunkNumber} of ${totalChunks} uploaded for ${file.name}`);
+        }));
         await Promise.all(uploadPromises);
       }
     } catch (error) {

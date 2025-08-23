@@ -1,6 +1,7 @@
 import { BaseService, PaginationParams } from "./BaseService";
 import { Item, ItemType } from "../types";
 import { encryptService } from "./EncryptService";
+import { chunkUploadService } from "./ChunkUploadService";
 
 class ItemService extends BaseService {
     private static instance: ItemService;
@@ -72,37 +73,43 @@ class ItemService extends BaseService {
 
     }
 
-    async uploadFile(file: File, parentId: string): Promise<Item> {
-        const formData = new FormData();
-        
-
+    async uploadFile(file: File, parentId: string, onProgress?: (progress: number) => void, onChunkComplete?: (chunkNumber: number, totalChunks: number) => void): Promise<Item> {
+        const publicKey = sessionStorage.getItem('publicKey') || await encryptService.getPublicKey() || '';
 
         const itemData = this.initializeItem(file, parentId);
-        formData.append('file', file);
-        
-        // Append item data as JSON string or individual fields
-        Object.keys(itemData).forEach(key => {
-            const value = itemData[key as keyof Item];
-            if (value !== undefined && value !== null) {
-                formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
-            }
-        });
 
-        const response = await fetch(`${this.baseUrl}${this.controller}/upload`, {
-            method: 'POST',
-            headers: {
-                ...this.getAuthHeaders(),
-            },
-            body: formData
-        });
+        const {
+            encryptedFileBlob,
+            encryptedSymmetricKey,
+            keyNonce,
+            ephemeralPublicKey,
+            fileNonce,
+            encryptedMetadata,
+            metadataNonce
+        } = await encryptService.encryptFileAndMetadata(file, itemData, publicKey);
 
-        if (!response.ok) {
-            console.error(`Error uploading file: ${response.statusText}`);
-            throw new Error(`Upload failed: ${response.statusText}`);
-        }
+        itemData.encryption = {
+            encryptedKey: encryptedSymmetricKey,
+            ephemeralPublicKey,
+            keyNonce,
+            metadataNonce,
+            fileNonce,
+        };
 
-        const result: Item = await response.json();
-        return result;
+        itemData.encryptedMetadata = encryptedMetadata;
+
+
+        // Convertir el blob cifrado a File (si no lo es) para que ChunkUploadService lo acepte
+        const encryptedFile: File = (encryptedFileBlob instanceof File) ? encryptedFileBlob : new File([encryptedFileBlob as Blob], file.name);
+
+        // Delegar la subida al servicio de chunks. El servicio espera recibir el archivo cifrado y
+        // como itemMetadata recibe la metadata del item (itemData) que ya contiene la info de cifrado.
+        const result = await chunkUploadService.uploadFile(encryptedFile, itemData, onProgress, onChunkComplete);
+
+        // El servicio de chunks realizará el POST final y deberá devolver el Item creado por el backend.
+        // Aseguramos que el resultado tenga la forma esperada y lo retornamos.
+        const createdItem: Item = result as Item;
+        return createdItem;
     }
 
 

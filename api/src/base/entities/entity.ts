@@ -15,7 +15,7 @@ export class Entity {
   })
   @IsString()
   @Prop({ required: false, type: Types.ObjectId })
-  _id?: Types.ObjectId = new Types.ObjectId();
+  _id: Types.ObjectId = new Types.ObjectId();
   
   @ApiProperty({  
     description: 'Creation timestamp',

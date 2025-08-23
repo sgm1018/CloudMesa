@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Entity } from 'src/base/entities/entity';
-import { EncryptedMetadata } from './encryptedMetadata.entity';
 import { Encryption } from './encryption.entity';
 import { SharedConfig } from './sharedConfig.entity';
 import { ApiProperty } from '@nestjs/swagger';
@@ -45,22 +44,16 @@ export class Item extends Entity {
   @Prop()
   parentId?: string;
 
+
   @ApiProperty({
-    description: 'Encrypted metadata of the item',
-    type: EncryptedMetadata,
-    example: {
-      name: 'ZW5jcnlwdGVkX25hbWU=',
-      mimeType: 'ZW5jcnlwdGVkX21pbWVUeXBl',
-      notes: 'ZW5jcnlwdGVkX25vdGVz',
-      username: 'ZW5jcnlwdGVkX3VzZXJuYW1l',
-      password: 'ZW5jcnlwdGVkX3Bhc3N3b3Jk',
-      url: 'ZW5jcnlwdGVkX3VybA=='
-    }
+    description: 'Encrypted metadata for the item',
+    type: String,
+    example: 'encrypted-metadata-string'
   })
-  @ValidateNested()
-  @Type(() => EncryptedMetadata)
-  @Prop({ required: true, type: Object })
-  encryptedMetadata: EncryptedMetadata;
+  @IsString()
+  @IsNotEmpty()
+  @Prop({ required: true })
+  encryptedMetadata: string;
   
   @ApiProperty({
     description: 'Encryption data for the item',

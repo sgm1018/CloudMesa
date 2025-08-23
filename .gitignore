@@ -12,6 +12,9 @@ api/yarn-debug.log*
 api/yarn-error.log*
 api/lerna-debug.log*
 
+# Uploads
+api/uploads
+
 # OS
 api/.DS_Store
 

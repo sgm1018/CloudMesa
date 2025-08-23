@@ -1,13 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, BadRequestException, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, BadRequestException, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ItemsService } from './item.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { LoginGuard } from 'src/auth/guards/login.guard';
 import { User, UserDecoratorClass } from 'src/auth/decorators/user.decorator';
-import { ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { PaginationParams } from 'src/shared/responses/paginationParams';
 import { Item } from './entities/item.entity';
+import { ChunkUploadDto, FinishUploadDto } from './dto/chunk-upload.dto';
 import { Types } from 'mongoose';
 @Controller('items')
 @ApiBearerAuth('JWT-auth')  
@@ -130,11 +132,136 @@ export class ItemsController {
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
   @Post('upload')
-  async uploadFile(@User() user : UserDecoratorClass , @Body() createItem: Item, @UploadedFile() file: Express.Multer.File) {
-    const result = await this.itemsService.uploadFile(user.userId , createItem, file);
+  async uploadFile(@User() user : UserDecoratorClass , @Body() createItem: Item, @UploadedFile() encryptedFile: Express.Multer.File) {
+    const result = await this.itemsService.uploadFile(user.userId , createItem, encryptedFile);
     if (!result.isSuccess()) {
       throw new BadRequestException('Error creating item');
     }
+    return result.value;
+  }
+
+  // ============ CHUNK UPLOAD ENDPOINTS ============
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @Post('chunk-upload/init')
+  @ApiBody({
+    description: 'Inicializar subida en chunks',
+    schema: {
+      type: 'object',
+      properties: {
+        totalSize: { type: 'number', example: 1048576 },
+        totalChunks: { type: 'number', example: 5 }
+      },
+      required: ['totalSize', 'totalChunks']
+    }
+  })
+  async initChunkUpload(
+    @User() user: UserDecoratorClass,
+    @Body() body: { totalSize: number; totalChunks: number }
+  ) {
+    const result = await this.itemsService.initializeChunkUpload(
+      user.userId,
+      body.totalSize,
+      body.totalChunks
+    );
+    
+    if (!result.isSuccess()) {
+      throw new BadRequestException(result.message);
+    }
+    
+    return result.value;
+  }
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @Post('chunk-upload/chunk')
+  @UseInterceptors(FileInterceptor('chunk'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Subir un chunk del archivo',
+    schema: {
+      type: 'object',
+      properties: {
+        uploadId: { type: 'string', example: 'upload_123456789' },
+        chunkNumber: { type: 'number', example: 0 },
+        totalChunks: { type: 'number', example: 5 },
+        totalSize: { type: 'number', example: 1048576 },
+        chunk: { type: 'string', format: 'binary' }
+      },
+      required: ['uploadId', 'chunkNumber', 'totalChunks', 'totalSize', 'chunk']
+    }
+  })
+  async uploadChunk(
+    @User() user: UserDecoratorClass,
+    @Body() chunkData: ChunkUploadDto,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    if (!file) {
+      throw new BadRequestException('Chunk file is required');
+    }
+
+    const result = await this.itemsService.uploadChunk(user.userId, chunkData, file);
+    
+    if (!result.isSuccess()) {
+      throw new BadRequestException(result.message);
+    }
+    
+    return result.value;
+  }
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @Post('chunk-upload/finish')
+  @ApiBody({
+    description: 'Finalizar subida en chunks y crear el archivo',
+    type: FinishUploadDto
+  })
+  async finishChunkUpload(
+    @User() user: UserDecoratorClass,
+    @Body() body: { uploadId: string; itemData: any },
+  ) {   
+    const { uploadId, itemData } = body;
+    const result = await this.itemsService.finishChunkUpload(user.userId, uploadId, itemData);
+    
+    if (!result.isSuccess()) {
+      throw new BadRequestException(result.message);
+    }
+    
+    return result.value;
+  }
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @Get('chunk-upload/status/:uploadId')
+  @ApiParam({ name: 'uploadId', description: 'ID de la subida', type: String })
+  async getChunkUploadStatus(
+    @User() user: UserDecoratorClass,
+    @Param('uploadId') uploadId: string
+  ) {
+    const result = await this.itemsService.getChunkUploadStatus(user.userId, uploadId);
+    
+    if (!result.isSuccess()) {
+      throw new BadRequestException(result.message);
+    }
+    
+    return result.value;
+  }
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @Delete('chunk-upload/cancel/:uploadId')
+  @ApiParam({ name: 'uploadId', description: 'ID de la subida a cancelar', type: String })
+  async cancelChunkUpload(
+    @User() user: UserDecoratorClass,
+    @Param('uploadId') uploadId: string
+  ) {
+    const result = await this.itemsService.cancelChunkUpload(user.userId, uploadId);
+    
+    if (!result.isSuccess()) {
+      throw new BadRequestException(result.message);
+    }
+    
     return result.value;
   }
 

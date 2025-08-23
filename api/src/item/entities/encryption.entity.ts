@@ -6,10 +6,11 @@ import { IsString, IsNotEmpty } from 'class-validator';
 export class Encryption {
 
     
-    algorithm: string;
     encryptedKey: string;  // Clave de cifrado simétrico en base64
-    nonce: string;  // Needed for chcha20 + poly1305
     ephemeralPublicKey: string;  // Needed for shared secret generation 
+    keyNonce: string;  // Needed for chcha20 + poly1305 to decrypt encriptedKey
+    metadataNonce: string;  // Needed for decrypt metadata
+    fileNonce: string; // Needed for decrypt file
 }
 
 export const EncryptionSchema = SchemaFactory.createForClass(Encryption);

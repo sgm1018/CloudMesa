@@ -25,7 +25,7 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
 }) => {
   const { showToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(password.name);
+  const [name, setName] = useState(password.encryptedMetadata.name);
   const [username, setUsername] = useState(password.encryptedMetadata.username || '');
   const [passwordValue, setPasswordValue] = useState(password.encryptedMetadata.password || '');
   const [url, setUrl] = useState(password.encryptedMetadata.url || '');
@@ -43,7 +43,7 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    setName(password.name);
+    setName(password.encryptedMetadata.name || '');
     setUsername(password.encryptedMetadata.username || '');
     setPasswordValue(password.encryptedMetadata.password || '');
     setUrl(password.encryptedMetadata.url || '');
@@ -106,7 +106,7 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
   };
 
   const handleCancel = () => {
-    setName(password.name);
+    setName(password.encryptedMetadata.name || '');
     setUsername(password.encryptedMetadata.username || '');
     setPasswordValue(password.encryptedMetadata.password || '');
     setUrl(password.encryptedMetadata.url || '');
