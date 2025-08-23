@@ -9,8 +9,6 @@
 [![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
 </div>
 
-# CloudMesa
-
 CloudMesa is a secure and private cloud storage service designed for managing files and passwords. This project implements end-to-end encryption (E2E), zero knowledge, and zero trust technologies, ensuring that user data remains confidential and accessible only by the owners or those with explicit permissions.
 
 ## Table of Contents
