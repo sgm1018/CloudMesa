@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, BadRequestException, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, BadRequestException, UploadedFile, UseInterceptors, Res, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ItemsService } from './item.service';
+import { StreamingDownloadService } from './services/streaming-download.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -11,10 +12,15 @@ import { PaginationParams } from 'src/shared/responses/paginationParams';
 import { Item } from './entities/item.entity';
 import { ChunkUploadDto, FinishUploadDto } from './dto/chunk-upload.dto';
 import { Types } from 'mongoose';
+import { Cron } from '@nestjs/schedule';
+import { Request, Response } from 'express';
 @Controller('items')
 @ApiBearerAuth('JWT-auth')  
 export class ItemsController {
-  constructor(private readonly itemsService: ItemsService) {}
+  constructor(
+    private readonly itemsService: ItemsService,
+    private readonly streamingDownloadService: StreamingDownloadService
+  ) {}
 
   // @Public()
   // @Post()
@@ -80,8 +86,8 @@ export class ItemsController {
       throw new BadRequestException(`Error getting items`);
     }
     return result.list;
-
   }
+
 
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
@@ -138,6 +144,66 @@ export class ItemsController {
       throw new BadRequestException('Error creating item');
     }
     return result.value;
+  }
+
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @Post('downloadItem')
+  async downloadItem(@User() user : UserDecoratorClass , @Body() itemId : string) {
+    const result = await this.itemsService.downloadItem(user.userId , itemId);
+    if (!result.isSuccess()) {
+      throw new BadRequestException('Error creating item');
+    }
+    return result.value;
+  }
+
+  /**
+   * Endpoint moderno para descarga streaming con soporte para Range requests
+   */
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @Get(':id/download')
+  @ApiParam({ name: 'id', description: 'ID del item a descargar', type: String })
+  async downloadFileStream(
+    @User() user: UserDecoratorClass,
+    @Param('id') itemId: string,
+    @Req() request: Request,
+    @Res() response: Response
+  ): Promise<void> {
+    const rangeHeader = request.headers.range;
+    
+    if (rangeHeader) {
+      // Descarga con soporte para Range requests (pausar/reanudar)
+      await this.streamingDownloadService.downloadFileStreamWithRange(
+        user.userId,
+        itemId,
+        response,
+        rangeHeader
+      );
+    } else {
+      // Descarga streaming normal
+      await this.streamingDownloadService.downloadFileStream(
+        user.userId,
+        itemId,
+        response
+      );
+    }
+  }
+
+  /**
+   * Endpoint para obtener metadata del archivo sin descargarlo
+   */
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
+  @Get(':id/metadata')
+  @ApiParam({ name: 'id', description: 'ID del item', type: String })
+  async getFileMetadata(
+    @User() user: UserDecoratorClass,
+    @Param('id') itemId: string
+  ) {
+    const metadata = await this.streamingDownloadService.getFileMetadata(user.userId, itemId);
+    return metadata;
   }
 
   // ============ CHUNK UPLOAD ENDPOINTS ============

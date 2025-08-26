@@ -1,15 +1,40 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ChevronRight, Home, MoreHorizontal } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import MultiSelectActionButton from '../shared/MultiSelectActionButton';
+import { Item } from '../../types';
 
-const Breadcrumb: React.FC = () => {
+interface BreadcrumbProps {
+  // All items available for multi-selection context
+  allItems?: Item[];
+  // Action handlers for multi-selection
+  onShare?: (items: Item[]) => void;
+  onDownload?: (items: Item[]) => void;
+  onDelete?: (items: Item[]) => void;
+  onCopyUsername?: (items: Item[]) => void;
+  onCopyPassword?: (items: Item[]) => void;
+  onVisitWebsite?: (items: Item[]) => void;
+  onTogglePasswordVisibility?: (items: Item[]) => void;
+}
+
+const Breadcrumb: React.FC<BreadcrumbProps> = ({
+  allItems = [],
+  onShare,
+  onDownload, 
+  onDelete,
+  onCopyUsername,
+  onCopyPassword,
+  onVisitWebsite,
+  onTogglePasswordVisibility
+}) => {
   const { 
     currentView, 
     currentFileFolder, 
     currentPasswordFolder, 
     navigateToFolder,
     breadcrumbPath,
-    loadBreadcrumbPath
+    loadBreadcrumbPath,
+    selectedItems
   } = useAppContext();
 
   const [showFullPath, setShowFullPath] = useState(false);
@@ -76,9 +101,27 @@ const Breadcrumb: React.FC = () => {
     ? breadcrumbPath.slice(-MAX_VISIBLE_CRUMBS) 
     : breadcrumbPath;
 
+  // Get selected items as Item objects
+  const selectedItemObjects = allItems.filter(item => selectedItems.includes(item._id));
+
   return (
     <>
       <div className="flex items-center text-sm">
+        {/* Multi-select action button */}
+        {selectedItems.length > 0 && (
+          <MultiSelectActionButton
+            selectedItems={selectedItemObjects}
+            contextType={currentView as 'file' | 'password'}
+            onShare={onShare}
+            onDownload={onDownload}
+            onDelete={onDelete}
+            onCopyUsername={onCopyUsername}
+            onCopyPassword={onCopyPassword}
+            onVisitWebsite={onVisitWebsite}
+            onTogglePasswordVisibility={onTogglePasswordVisibility}
+          />
+        )}
+        
         <button
           onClick={() => handleNavigateToFolder(null)}
           className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"

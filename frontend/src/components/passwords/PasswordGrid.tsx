@@ -110,6 +110,19 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
       return;
     }
     
+    // Handle Ctrl+Click for multi-selection
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (selectedItems.includes(item._id)) {
+        setSelectedItems(selectedItems.filter(id => id !== item._id));
+      } else {
+        setSelectedItems([...selectedItems, item._id]);
+      }
+      return;
+    }
+    
     // Handle normal left click
     if (item.type === ItemType.GROUP) {
       navigateToFolder(item._id);
@@ -132,37 +145,57 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
     }));
   };
 
-  const handleShare = (item: Item) => {
-    setItemsToShare([item]);
+  const handleShare = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    setItemsToShare(itemsArray);
     setShowShareModal(true);
   };
 
-  const handleCopyUsername = (item: Item) => {
-    if (item.encryptedMetadata.username) {
-      copyToClipboard(item.encryptedMetadata.username, 'username');
+  const handleCopyUsername = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    const usernames = itemsArray
+      .filter(i => i.encryptedMetadata.username)
+      .map(i => i.encryptedMetadata.username)
+      .join('\n');
+    
+    if (usernames) {
+      copyToClipboard(usernames, 'username');
     }
   };
 
-  const handleCopyPassword = (item: Item) => {
-    if (item.encryptedMetadata.password) {
-      copyToClipboard(item.encryptedMetadata.password, 'password');
+  const handleCopyPassword = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    const passwords = itemsArray
+      .filter(i => i.encryptedMetadata.password)
+      .map(i => i.encryptedMetadata.password)
+      .join('\n');
+    
+    if (passwords) {
+      copyToClipboard(passwords, 'password');
     }
   };
 
-  const handleVisitWebsite = (item: Item) => {
-    if (item.encryptedMetadata.url) {
-      window.open(item.encryptedMetadata.url, '_blank');
+  const handleVisitWebsite = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    itemsArray.forEach(i => {
+      if (i.encryptedMetadata.url) {
+        window.open(i.encryptedMetadata.url, '_blank');
+      }
+    });
+  };
+
+  const handleEdit = (item: Item | Item[]) => {
+    // Para editar, solo trabajamos con un elemento
+    const singleItem = Array.isArray(item) ? item[0] : item;
+    if (singleItem.type === ItemType.PASSWORD) {
+      onPasswordSelect(singleItem);
     }
   };
 
-  const handleEdit = (item: Item) => {
-    if (item.type === ItemType.PASSWORD) {
-      onPasswordSelect(item);
-    }
-  };
-
-  const handleDelete = (_item: Item) => {
+  const handleDelete = (item: Item | Item[]) => {
     // Implementar lógica de eliminación
+    const itemsArray = Array.isArray(item) ? item : [item];
+    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
     showToast('Not implemented yet', 'error');
   };
 

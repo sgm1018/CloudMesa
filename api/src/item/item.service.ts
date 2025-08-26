@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Item } from './entities/item.entity';
 import { ChunkUpload } from './entities/chunk-upload.entity';
 import { ChunkUploadDto, FinishUploadDto } from './dto/chunk-upload.dto';
@@ -94,6 +94,22 @@ export class ItemsService extends BaseService<Item> {
     } catch (error) {
       return ApiResponse.error(-1, `Error initializing chunk upload: ${error.message}`);
     }
+  }
+
+  async downloadItem(userId: string, itemId: string): Promise<ApiResponse<{ file: ArrayBufferLike }>> {
+    const item = await this.ItemModel.findOne({ _id: new Types.ObjectId(itemId), userId: userId });
+    if (!item) {
+      return ApiResponse.error(-1, 'Item not found');
+    }
+    const filePath = `data/${userId}/${item._id}`
+    // Obtener el archivo
+    const file = await fs.promises.readFile(filePath);
+    if (!file) {
+      return ApiResponse.error(-1, 'File not found');
+    }
+    // Convert Node Buffer to ArrayBuffer to match ArrayBufferLike type
+    const arrayBuffer = file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
+    return ApiResponse.item({ file: arrayBuffer });
   }
 
   /**

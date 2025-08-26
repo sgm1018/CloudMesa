@@ -65,12 +65,12 @@ export class BaseService<T extends Entity> {
   }
 
   async update(entidad : T): Promise<ApiResponse<T>> {
-    const entity = this.findOne({ _id: entidad._id });
+    const entity = this.findOne({ _id: new Types.ObjectId(entidad._id) });
     if (!entity) {
       return ApiResponse.error(-1, `Entity with ID "${entidad._id}" not found`);
     }
     try {
-      await this.model.updateOne({ _id: entidad._id }, { $set: entidad }).exec();
+      await this.model.updateOne({ _id: new Types.ObjectId(entidad._id) }, { $set: entidad }).exec();
       return ApiResponse.item(entidad);
     } catch (error) {
       return ApiResponse.error(-1, `Error updating entity: ${error.message}`);

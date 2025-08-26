@@ -11,14 +11,15 @@ import {
   FileText
 } from 'lucide-react';
 import { Item, ItemType } from '../../types';
+import { useAppContext } from '../../context/AppContext';
 
 interface MenuAction {
   id: string;
   label: string;
   icon: React.ReactNode;
-  onClick: (item: Item) => void;
+  onClick: (item: Item | Item[]) => void;
   className?: string;
-  condition?: (item: Item) => boolean;
+  condition?: (item: Item | Item[]) => boolean;
   dividerAfter?: boolean;
 }
 
@@ -29,17 +30,19 @@ interface RightClickElementModalProps {
   onClose: () => void;
   contextType: 'file' | 'password' | 'folder';
   actions?: MenuAction[];
-  // Default actions handlers
-  onShare?: (item: Item) => void;
-  onDownload?: (item: Item) => void;
-  onEdit?: (item: Item) => void;
-  onDelete?: (item: Item) => void;
-  onCopyUsername?: (item: Item) => void;
-  onCopyPassword?: (item: Item) => void;
-  onVisitWebsite?: (item: Item) => void;
-  onTogglePasswordVisibility?: (item: Item) => void;
-  onRename?: (item: Item) => void;
-  onViewDetails?: (item: Item) => void;
+  // All available items to match with selected IDs
+  allItems?: Item[];
+  // Default actions handlers - now support both single item and multiple items
+  onShare?: (item: Item | Item[]) => void;
+  onDownload?: (item: Item | Item[]) => void;
+  onEdit?: (item: Item | Item[]) => void;
+  onDelete?: (item: Item | Item[]) => void;
+  onCopyUsername?: (item: Item | Item[]) => void;
+  onCopyPassword?: (item: Item | Item[]) => void;
+  onVisitWebsite?: (item: Item | Item[]) => void;
+  onTogglePasswordVisibility?: (item: Item | Item[]) => void;
+  onRename?: (item: Item | Item[]) => void;
+  onViewDetails?: (item: Item | Item[]) => void;
 }
 
 const RightClickElementModal: React.FC<RightClickElementModalProps> = ({
@@ -49,6 +52,7 @@ const RightClickElementModal: React.FC<RightClickElementModalProps> = ({
   onClose,
   contextType,
   actions = [],
+  allItems = [],
   onShare,
   onDownload,
   onEdit,
@@ -61,6 +65,14 @@ const RightClickElementModal: React.FC<RightClickElementModalProps> = ({
   onViewDetails
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const { selectedItems: contextSelectedItemIds } = useAppContext();
+  
+  // Convert selected item IDs to actual Item objects
+  const selectedItems = allItems.filter(itm => contextSelectedItemIds.includes(itm._id));
+  
+  // Determine if we're in multiple selection mode
+  const isMultipleSelection = selectedItems.length > 1;
+  const targetItems = isMultipleSelection ? selectedItems : (item ? [item] : []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -86,49 +98,65 @@ const RightClickElementModal: React.FC<RightClickElementModalProps> = ({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !position || !item) return null;
+  if (!isOpen || !position || (!item && !isMultipleSelection)) return null;
 
-  // Define default actions based on context type
+  // Define default actions based on context type and selection mode
   const getDefaultActions = (): MenuAction[] => {
     const defaultActions: MenuAction[] = [];
+    
+    if (targetItems.length === 0) return defaultActions;
+
+    // Helper function to check if all items meet a condition
+    const allItemsMatch = (condition: (item: Item) => boolean) => 
+      targetItems.every(condition);
+
+    // Helper function to get appropriate label
+    const getLabel = (singular: string, plural: string) => 
+      isMultipleSelection ? `${plural} (${targetItems.length})` : singular;
+
+    // Helper function to create action handler
+    const createHandler = (handler: ((item: Item | Item[]) => void) | undefined) => {
+      if (!handler) return undefined;
+      return () => handler(isMultipleSelection ? targetItems : targetItems[0]);
+    };
 
     switch (contextType) {
       case 'password':
-        if (item.type === ItemType.PASSWORD) {
+        if (allItemsMatch(item => item.type === ItemType.PASSWORD)) {
           // Password-specific actions
-          if (onCopyUsername && item.encryptedMetadata.username) {
+          if (onCopyUsername && allItemsMatch(item => !!item.encryptedMetadata.username)) {
             defaultActions.push({
               id: 'copy-username',
-              label: 'Copy Username',
+              label: getLabel('Copy Username', 'Copy All Usernames'),
               icon: <Copy className="h-4 w-4 mr-2" />,
-              onClick: onCopyUsername
+              onClick: createHandler(onCopyUsername)!
             });
           }
 
-          if (onCopyPassword && item.encryptedMetadata.password) {
+          if (onCopyPassword && allItemsMatch(item => !!item.encryptedMetadata.password)) {
             defaultActions.push({
               id: 'copy-password',
-              label: 'Copy Password',
+              label: getLabel('Copy Password', 'Copy All Passwords'),
               icon: <Copy className="h-4 w-4 mr-2" />,
-              onClick: onCopyPassword
+              onClick: createHandler(onCopyPassword)!
             });
           }
 
-          if (onVisitWebsite && item.encryptedMetadata.url) {
+          if (onVisitWebsite && allItemsMatch(item => !!item.encryptedMetadata.url)) {
             defaultActions.push({
               id: 'visit-website',
-              label: 'Visit Website',
+              label: getLabel('Visit Website', 'Open All Websites'),
               icon: <ExternalLink className="h-4 w-4 mr-2" />,
-              onClick: onVisitWebsite
+              onClick: createHandler(onVisitWebsite)!
             });
           }
 
           if (onTogglePasswordVisibility) {
             defaultActions.push({
               id: 'toggle-visibility',
-              label: 'Toggle Visibility',
+              label: getLabel('Toggle Visibility', 'Toggle All Visibility'),
               icon: <Eye className="h-4 w-4 mr-2" />,
-              onClick: onTogglePasswordVisibility
+              onClick: createHandler(onTogglePasswordVisibility)!
             });
           }
 
@@ -140,34 +168,34 @@ const RightClickElementModal: React.FC<RightClickElementModalProps> = ({
         break;
 
       case 'file':
-        if (item.type !== ItemType.GROUP) {
+        if (allItemsMatch(item => item.type !== ItemType.GROUP)) {
           if (onDownload) {
             defaultActions.push({
               id: 'download',
-              label: 'Download',
+              label: getLabel('Download', 'Download All'),
               icon: <Download className="h-4 w-4 mr-2" />,
-              onClick: onDownload
+              onClick: createHandler(onDownload)!
             });
           }
 
-          if (onViewDetails) {
+          if (onViewDetails && !isMultipleSelection) {
             defaultActions.push({
               id: 'view-details',
               label: 'View Details',
               icon: <FileText className="h-4 w-4 mr-2" />,
-              onClick: onViewDetails
+              onClick: createHandler(onViewDetails)!
             });
           }
         }
         break;
 
       case 'folder':
-        if (onViewDetails) {
+        if (onViewDetails && !isMultipleSelection) {
           defaultActions.push({
             id: 'view-details',
             label: 'Properties',
             icon: <Folder className="h-4 w-4 mr-2" />,
-            onClick: onViewDetails
+            onClick: createHandler(onViewDetails)!
           });
         }
         break;
@@ -177,27 +205,30 @@ const RightClickElementModal: React.FC<RightClickElementModalProps> = ({
     if (onShare) {
       defaultActions.push({
         id: 'share',
-        label: 'Share',
+        label: getLabel('Share', 'Share All'),
         icon: <Share className="h-4 w-4 mr-2" />,
-        onClick: onShare
+        onClick: createHandler(onShare)!
       });
     }
 
     if (onEdit || onRename) {
-      defaultActions.push({
-        id: 'edit',
-        label: contextType === 'password' ? 'Edit' : 'Rename',
-        icon: <Edit className="h-4 w-4 mr-2" />,
-        onClick: onEdit || onRename || (() => {})
-      });
+      const handler = onEdit || onRename;
+      if (!isMultipleSelection && handler) {
+        defaultActions.push({
+          id: 'edit',
+          label: contextType === 'password' ? 'Edit' : 'Rename',
+          icon: <Edit className="h-4 w-4 mr-2" />,
+          onClick: createHandler(handler)!
+        });
+      }
     }
 
     if (onDelete) {
       defaultActions.push({
         id: 'delete',
-        label: 'Delete',
+        label: getLabel('Delete', 'Delete All'),
         icon: <Trash className="h-4 w-4 mr-2" />,
-        onClick: onDelete,
+        onClick: createHandler(onDelete)!,
         className: 'text-red-600 dark:text-red-400'
       });
     }
@@ -210,12 +241,12 @@ const RightClickElementModal: React.FC<RightClickElementModalProps> = ({
 
   // Filter actions based on conditions
   const visibleActions = allActions.filter(action => 
-    !action.condition || action.condition(item)
+    !action.condition || action.condition(isMultipleSelection ? targetItems : (item || targetItems[0]))
   );
 
   const handleActionClick = (action: MenuAction, event: React.MouseEvent) => {
     event.stopPropagation();
-    action.onClick(item);
+    action.onClick(isMultipleSelection ? targetItems : (item || targetItems[0]));
     onClose();
   };
 

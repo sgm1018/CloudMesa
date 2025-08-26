@@ -25,7 +25,6 @@ const FilesView: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [items4Page, setItems4Page] = useState(20);
-
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
 
@@ -57,6 +56,7 @@ const FilesView: React.FC = () => {
           console.log(`Chunk ${chunkNumber} of ${totalChunks} uploaded for ${file.name}`);
         }));
         await Promise.all(uploadPromises);
+        await fetchItems();
       }
     } catch (error) {
       showToast('Failed to upload files', 'error');
@@ -118,6 +118,49 @@ const FilesView: React.FC = () => {
   useEffect(() => {
     fetchItems();
   }, [currentFolder, sortBy, sortOrder, filterType, currentPage, privateKey]);
+
+  // Multi-selection action handlers for Breadcrumb
+  const handleBulkDownload = async (items: Item[]) => {
+    try {
+      showToast(`Downloading ${items.length} items...`, 'success');
+      // TODO: Implement bulk download logic
+      for (const item of items) {
+        if (item.type !== ItemType.GROUP) {
+          // Download individual item
+          console.log('Downloading:', item.encryptedMetadata.name);
+        }
+      }
+      showToast('Download completed!', 'success');
+    } catch (error) {
+      console.error('Error downloading items:', error);
+      showToast('Error downloading items. Please try again.', 'error');
+    }
+  };
+
+  const handleBulkDelete = async (items: Item[]) => {
+    try {
+      if (confirm(`Are you sure you want to delete ${items.length} items?`)) {
+        await Promise.all(items.map(item => itemService.remove(item._id)));
+        showToast(`${items.length} items deleted successfully!`, 'success');
+        await fetchItems();
+      }
+    } catch (error) {
+      console.error('Error deleting items:', error);
+      showToast('Error deleting items. Please try again.', 'error');
+    }
+  };
+
+  const handleBulkShare = async (items: Item[]) => {
+    try {
+      showToast(`Sharing ${items.length} items...`, 'success');
+      // TODO: Implement bulk share logic
+      console.log('Sharing items:', items.map(item => item.encryptedMetadata.name));
+      showToast('Items shared successfully!', 'success');
+    } catch (error) {
+      console.error('Error sharing items:', error);
+      showToast('Error sharing items. Please try again.', 'error');
+    }
+  };
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
@@ -220,7 +263,12 @@ const FilesView: React.FC = () => {
 
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-4">
-          <Breadcrumb />
+          <Breadcrumb 
+            allItems={items}
+            onDownload={handleBulkDownload}
+            onDelete={handleBulkDelete}
+            onShare={handleBulkShare}
+          />
           
           <div className="flex items-center ">
             <div className="relative flex items-center justify-center">

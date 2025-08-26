@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Item, ViewMode } from '../types';
 import { itemService } from '../services/ItemService';
 import { PaginationParams } from '../services/BaseService';
@@ -49,7 +49,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsSidebarCollapsed((prev) => !prev);
   };
 
-  const loadBreadcrumbPath = async (itemId: string | null) => {
+  const loadBreadcrumbPath = useCallback(async (itemId: string | null) => {
     if (!itemId || itemId === '') {
       setBreadcrumbPath([]);
       return;
@@ -62,19 +62,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('Error loading breadcrumb path:', error);
       setBreadcrumbPath([]);
     }
-  };
+  }, []);
 
-  const navigateToFolder = async (folderId: string | null) => {
+  const navigateToFolder = useCallback(async (folderId: string | null) => {
     setCurrentFolder(folderId);
     await loadBreadcrumbPath(folderId);
-  };
+  }, [loadBreadcrumbPath]);
 
   // Update breadcrumbs when current view changes
-  const setCurrentViewWithBreadcrumbs = async (view: View) => {
+  const setCurrentViewWithBreadcrumbs = useCallback(async (view: View) => {
     setCurrentView(view);
     const currentFolder = view === 'files' ? currentFileFolder : currentPasswordFolder;
     await loadBreadcrumbPath(currentFolder);
-  };
+  }, [currentFileFolder, currentPasswordFolder, loadBreadcrumbPath]);
 
   const setCurrentFolder = (folderId: string | null) => {
     if (currentView === 'files') {
@@ -84,21 +84,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const countItems = async (type: string[], parentId: string) => {
+  const countItems = useCallback(async (type: string[], parentId: string) => {
     return await itemService.countItems(type, parentId);
-  };
+  }, []);
 
-  const getItemsByParentId = async (paginationParams: PaginationParams) => {
+  const getItemsByParentId = useCallback(async (paginationParams: PaginationParams) => {
       const items = await itemService.findItemwByUserByParentIdPagination(paginationParams);
       return items;
-  };
+  }, []);
 
   return (
     <AppContext.Provider
       value={{
         currentView,
         setCurrentView,
-        setCurrentViewWithBreadcrumbs,
         viewMode,
         setViewMode,
         currentFileFolder,
@@ -120,6 +119,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setBreadcrumbPath,
         loadBreadcrumbPath,
         navigateToFolder,
+        setCurrentViewWithBreadcrumbs,
       }}
     >
       {children}

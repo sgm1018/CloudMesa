@@ -8,6 +8,7 @@ import { ItemsController } from './item.controller';
 import { ItemsService } from './item.service';
 import { ChunkUploadCleanupService } from './services/chunk-upload-cleanup.service';
 import { ChunkValidationService } from './services/chunk-validation.service';
+import { StreamingDownloadService } from './services/streaming-download.service';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { ChunkValidationService } from './services/chunk-validation.service';
     ScheduleModule.forRoot(),
   ],
   controllers: [ItemsController],
-  providers: [ItemsService, ChunkUploadCleanupService, ChunkValidationService],
+  providers: [ItemsService, ChunkUploadCleanupService, ChunkValidationService, StreamingDownloadService],
   exports: [ItemsService],
 })
 export class FilesModule {}

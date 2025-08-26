@@ -2,6 +2,7 @@ import { BaseService, PaginationParams } from "./BaseService";
 import { Item, ItemType } from "../types";
 import { encryptService } from "./EncryptService";
 import { chunkUploadService } from "./ChunkUploadService";
+import { streamingDownloadService, DownloadProgress } from "./StreamingDownloadService";
 import { useToast } from "../context/ToastContext";
 
 class ItemService extends BaseService {
@@ -54,7 +55,7 @@ class ItemService extends BaseService {
 
     }
     async countItems(type: string[], parentId: string): Promise<number> {
-        const url = new URL(`${this.baseUrl}/count`);
+        const url = new URL(`${this.baseUrl}${this.controller}/count`);
         
         url.searchParams.append('type', JSON.stringify(type));
         url.searchParams.append('parentId', parentId);
@@ -113,7 +114,7 @@ class ItemService extends BaseService {
         return createdItem;
     }
 
-    async downloadItem(item: Item, privateKey: string): Promise<void> {
+    async downloadItem(item: Item, privateKey: string, onProgress?: (progress: DownloadProgress) => void): Promise<void> {
 
         if (item.encryption == null || item.encryption.encryptedKey == null 
             || item.encryption.encryptedKey =='' 
@@ -126,48 +127,211 @@ class ItemService extends BaseService {
             || item.encryption.metadataNonce == null
             || item.encryption.metadataNonce == ''
         ) {
-            //Setter mensaje a NotificacionComponent de error
+            console.error('Missing encryption data in item');
             return;
         }
 
-        const url = new URL(`${this.baseUrl}${this.controller}/${item._id}/download`);
-        const response = await fetch(url.toString(), {
-            method: 'GET',
-            headers: { authorization: `Bearer ${sessionStorage.getItem('accessToken')}` } // NO uso el this.getAuthHeaders() porque necesito otro content-type distinto de application/json
-        });
+        try {
+            // Usar el servicio de streaming para descargar el archivo
+            const encryptedBlob = await streamingDownloadService.downloadFileAsBlob(item._id, {
+                onProgress,
+                onError: (error) => {
+                    console.error(`Download error: ${error.message}`);
+                }
+            });
 
-        if (!response.ok) {
-            console.error(`Error downloading file: ${response.statusText}`);
-            throw new Error(`Error downloading file: ${response.statusText}`);
+            // Convertir el blob a Uint8Array para el descifrado
+            const arrayBuffer = await encryptedBlob.arrayBuffer();
+            const encryptedFile = new Uint8Array(arrayBuffer);
+
+            // Descifrar la clave simétrica
+            const decryptedSymetricKey = await encryptService.decryptsymmetricKey(
+                item.encryption.encryptedKey, 
+                item.encryption.keyNonce, 
+                item.encryption.ephemeralPublicKey, 
+                privateKey
+            );
+            
+            if (decryptedSymetricKey == null || decryptedSymetricKey == '') {
+                console.error('Failed to decrypt symmetric key');
+                return;
+            }
+
+            // Descifrar el archivo
+            const decryptedFileBuffer = await encryptService.decipherFullFile(
+                encryptedFile, 
+                decryptedSymetricKey, 
+                item.encryption.fileNonce
+            );
+            
+            if (decryptedFileBuffer == null) {
+                console.error('Failed to decrypt file');
+                return;
+            }
+
+            // Obtener el nombre original del archivo desde la metadata descifrada
+            const fileName = item?.encryptedMetadata?.name || 'downloaded_file';
+
+            // Crear blob con el archivo descifrado
+            const fileUint8 = (decryptedFileBuffer instanceof Uint8Array)
+                ? new Uint8Array(decryptedFileBuffer)
+                : new Uint8Array(decryptedFileBuffer as any);
+
+            const blob = new Blob([fileUint8], { type: 'application/octet-stream' });
+            
+            // Método tradicional como fallback
+            const urlBlob = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = urlBlob;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(urlBlob);
+
+        } catch (error) {
+            console.error(`Error downloading file: ${error}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Descarga avanzada con más opciones de control
+     */
+    async downloadItemAdvanced(
+        item: Item, 
+        privateKey: string, 
+        options: {
+            onProgress?: (progress: DownloadProgress) => void;
+            onDecryptProgress?: (stage: string) => void;
+            signal?: AbortSignal;
+            suggestedName?: string;
+        } = {}
+    ): Promise<void> {
+        if (item.encryption == null || item.encryption.encryptedKey == null 
+            || item.encryption.encryptedKey =='' 
+            || item.encryption.ephemeralPublicKey == null 
+            || item.encryption.ephemeralPublicKey == ''
+            || item.encryption.fileNonce == null
+            || item.encryption.fileNonce == ''
+            || item.encryption.keyNonce == null
+            || item.encryption.keyNonce == ''
+            || item.encryption.metadataNonce == null
+            || item.encryption.metadataNonce == ''
+        ) {
+            throw new Error('Missing encryption data in item');
         }
 
-        const arrayBuffer = await response.arrayBuffer();
-        const encryptedFile = new Uint8Array(arrayBuffer);
+        try {
+            // Notificar progreso de descarga
+            options.onDecryptProgress?.('Downloading encrypted file...');
 
-        const decryptedSymetricKey = await encryptService.decryptsymmetricKey(item.encryption.encryptedKey, item.encryption.keyNonce, item.encryption.ephemeralPublicKey, privateKey);
-        if (decryptedSymetricKey == null || decryptedSymetricKey == '') {
-            //Setter mensaje a NotificacionComponent de error
-            return;
+            // Usar streaming download con progreso
+            const encryptedBlob = await streamingDownloadService.downloadFileAsBlob(item._id, {
+                onProgress: options.onProgress,
+                signal: options.signal,
+                onError: (error) => {
+                    console.error(`Download error: ${error.message}`);
+                }
+            });
+
+            // Verificar si la descarga fue cancelada
+            if (options.signal?.aborted) {
+                throw new Error('Download was cancelled');
+            }
+
+            options.onDecryptProgress?.('Decrypting symmetric key...');
+
+            // Convertir blob a array buffer
+            const arrayBuffer = await encryptedBlob.arrayBuffer();
+            const encryptedFile = new Uint8Array(arrayBuffer);
+
+            // Descifrar clave simétrica
+            const decryptedSymetricKey = await encryptService.decryptsymmetricKey(
+                item.encryption.encryptedKey, 
+                item.encryption.keyNonce, 
+                item.encryption.ephemeralPublicKey, 
+                privateKey
+            );
+            
+            if (!decryptedSymetricKey) {
+                throw new Error('Failed to decrypt symmetric key');
+            }
+
+            if (options.signal?.aborted) {
+                throw new Error('Download was cancelled');
+            }
+
+            options.onDecryptProgress?.('Decrypting file content...');
+
+            // Descifrar archivo
+            const decryptedFileBuffer = await encryptService.decipherFullFile(
+                encryptedFile, 
+                decryptedSymetricKey, 
+                item.encryption.fileNonce
+            );
+            
+            if (!decryptedFileBuffer) {
+                throw new Error('Failed to decrypt file');
+            }
+
+            if (options.signal?.aborted) {
+                throw new Error('Download was cancelled');
+            }
+
+            options.onDecryptProgress?.('Preparing download...');
+
+            // Obtener nombre del archivo
+            let fileName = options.suggestedName;
+            if (!fileName) {
+                const decryptedItem = await this.getDecryptMetadata(item, privateKey);
+                fileName = decryptedItem?.encryptedMetadata?.name || 'downloaded_file';
+            }
+
+            // Crear blob final
+            const fileUint8 = (decryptedFileBuffer instanceof Uint8Array)
+                ? new Uint8Array(decryptedFileBuffer)
+                : new Uint8Array(decryptedFileBuffer as any);
+
+            const finalBlob = new Blob([fileUint8], { type: 'application/octet-stream' });
+
+            options.onDecryptProgress?.('Saving file...');
+
+            // Crear URL y descargar usando el método tradicional
+            const urlBlob = URL.createObjectURL(finalBlob);
+            const a = document.createElement('a');
+            a.href = urlBlob;
+            a.download = fileName || 'downloaded_file';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(urlBlob);
+
+            options.onDecryptProgress?.('Download completed!');
+
+        } catch (error) {
+            if ((error as Error).name === 'AbortError' || (error as Error).message.includes('cancelled')) {
+                console.log('Download was cancelled by user');
+                return;
+            }
+            console.error(`Error in advanced download: ${error}`);
+            throw error;
         }
-        const decryptedFileBuffer = await encryptService.decipherFullFile(encryptedFile, decryptedSymetricKey, item.encryption.fileNonce);
-        if (decryptedFileBuffer == null) {
-            //Setter mensaje a NotificacionComponent de error
-            return;
-        }
+    }
 
-        // Create a copy backed by a plain ArrayBuffer to satisfy Blob's type requirements
-        const fileUint8 = (decryptedFileBuffer instanceof Uint8Array)
-            ? new Uint8Array(decryptedFileBuffer) // copies into an ArrayBuffer-backed view
-            : new Uint8Array(decryptedFileBuffer as any);
-
-        const blob = new Blob([fileUint8], { type: 'application/octet-stream' });
-        const urlBlob = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = urlBlob;
-        a.download = 'file';
-        document.body.appendChild(a);
-        // a.click();
-        // document.body.removeChild(a);
+    /**
+     * Obtiene información sobre las capacidades de descarga del navegador
+     */
+    getDownloadCapabilities(): {
+        supportsStreaming: boolean;
+        supportsRangeRequests: boolean;
+        supportsCancellation: boolean;
+    } {
+        return {
+            supportsStreaming: streamingDownloadService.supportsStreaming(),
+            supportsRangeRequests: 'AbortController' in window,
+            supportsCancellation: 'AbortController' in window
+        };
     }
 
 
@@ -222,15 +386,7 @@ class ItemService extends BaseService {
     }
 
 
-    downloadFile(){
-        // const urlBlob = URL.createObjectURL(blob);
-        // const a = document.createElement('a');
-        // a.href = urlBlob;
-        // a.download = 'file';
-        // document.body.appendChild(a);
-        // a.click();
-        // document.body.removeChild(a);
-    }
+
 
     initializeItem(file: File, parentId: string): Item {
         const item: Item = {

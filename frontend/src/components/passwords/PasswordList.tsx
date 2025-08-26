@@ -184,6 +184,19 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
       return;
     }
     
+    // Handle Ctrl+Click for multi-selection
+    if (event.ctrlKey && item.type === ItemType.PASSWORD) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (selectedItems.includes(item._id)) {
+        setSelectedItems(selectedItems.filter(id => id !== item._id));
+      } else {
+        setSelectedItems([...selectedItems, item._id]);
+      }
+      return;
+    }
+    
     // Handle normal left click
     if (item.type === ItemType.GROUP) {
       navigateToFolder(item._id);

@@ -5,6 +5,9 @@ import { formatFileSize } from '../../data/mockData';
 import { File, FileImage, FileText, FileSpreadsheet, Presentation as FilePresentation, FileArchive, Folder, MoreVertical, Share } from 'lucide-react';
 import ShareModal from '../shared/ShareModal';
 import RightClickElementModal from '../shared/RightClickElementModal';
+import { itemService } from '../../services/ItemService';
+import { useEncryption } from '../../context/EncryptionContext';
+import { useToast } from '../../context/ToastContext';
 
 interface FileGridProps {
   items: Item[];
@@ -17,6 +20,8 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
   const [showShareModal, setShowShareModal] = React.useState(false);
   const [itemsToShare, setItemsToShare] = React.useState<Item[]>([]);
+  const { privateKey } = useEncryption();
+  const { showToast } = useToast();
 
   const getFileIcon = (item: Item) => {
     if (item.type === 'folder') return <Folder className="h-12 w-12 text-yellow-500" />;
@@ -83,6 +88,19 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
       return;
     }
     
+    // Handle Ctrl+Click for multi-selection
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (selectedItems.includes(item._id)) {
+        setSelectedItems(selectedItems.filter(id => id !== item._id));
+      } else {
+        setSelectedItems([...selectedItems, item._id]);
+      }
+      return;
+    }
+    
     // Handle normal left click
     if (item.type === 'folder') {
       navigateToFolder(item._id);
@@ -114,24 +132,36 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
     setOpenMenuId(id);
   };
 
-  const handleShare = (item: Item) => {
-    setItemsToShare([item]);
+  const handleShare = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    setItemsToShare(itemsArray);
     setShowShareModal(true);
   };
 
-  const handleDownload = (item: Item) => {
+  const handleDownload = async (item: Item | Item[]) => {
     // Implementar lógica de descarga
-    console.log('Download:', item.encryptedMetadata.name);
+    if (privateKey == null || privateKey == '') {
+      showToast('Error: Private key is required to download files.', 'error');
+      return;
+    }
+    
+    const itemsArray = Array.isArray(item) ? item : [item];
+    for (const singleItem of itemsArray) {
+      await itemService.downloadItem(singleItem, privateKey);
+    }
+    showToast(`Download completed for ${itemsArray.length} item(s).`, 'success');
   };
 
-  const handleRename = (item: Item) => {
-    // Implementar lógica de renombrado
-    console.log('Rename:', item.encryptedMetadata.name);
+  const handleRename = (item: Item | Item[]) => {
+    // Para renombrar, solo trabajamos con un elemento
+    const singleItem = Array.isArray(item) ? item[0] : item;
+    console.log('Rename:', singleItem.encryptedMetadata.name);
   };
 
-  const handleDelete = (item: Item) => {
+  const handleDelete = (item: Item | Item[]) => {
     // Implementar lógica de eliminación
-    console.log('Delete:', item.encryptedMetadata.name);
+    const itemsArray = Array.isArray(item) ? item : [item];
+    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
   };
 
   const handleCloseMenu = () => {
@@ -212,6 +242,7 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
           item={currentItem}
           onClose={handleCloseMenu}
           contextType={currentItem?.type === 'folder' ? 'folder' : 'file'}
+          allItems={items}
           onShare={handleShare}
           onDownload={handleDownload}
           onRename={handleRename}

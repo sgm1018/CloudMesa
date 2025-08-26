@@ -75,11 +75,6 @@ export class ChunkValidationService {
       throw new BadRequestException(`Number of chunks exceeds maximum allowed (${maxChunks})`);
     }
 
-    // Validar que el número de chunks es razonable para el tamaño del archivo
-    const minChunkSize = 1024; // 1KB mínimo por chunk
-    if (totalSize / totalChunks < minChunkSize) {
-      throw new BadRequestException('Chunks are too small. Minimum chunk size is 1KB');
-    }
   }
 
 }

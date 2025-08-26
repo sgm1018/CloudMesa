@@ -8,9 +8,12 @@ import NewPasswordModal from './NewPasswordModal';
 import PasswordDetailsModal from './PasswordDetailsModal';
 import { FolderPlus, KeyIcon, Plus, Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PaginationParams } from '../../services/BaseService';
+import { itemService } from '../../services/ItemService';
+import { useToast } from '../../context/ToastContext';
 
 const PasswordsView: React.FC = () => {
   const { currentPasswordFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
+  const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
@@ -68,6 +71,64 @@ const PasswordsView: React.FC = () => {
   useEffect(() => {
     fetchItems();
   }, [currentFolder, sortBy, sortOrder, filterType, currentPage]);
+
+  // Multi-selection action handlers for Breadcrumb
+  const handleBulkDelete = async (items: Item[]) => {
+    try {
+      if (confirm(`Are you sure you want to delete ${items.length} passwords?`)) {
+        await Promise.all(items.map(item => itemService.remove(item._id)));
+        showToast(`${items.length} passwords deleted successfully!`, 'success');
+        await fetchItems();
+      }
+    } catch (error) {
+      console.error('Error deleting passwords:', error);
+      showToast('Error deleting passwords. Please try again.', 'error');
+    }
+  };
+
+  const handleBulkCopyUsername = async (items: Item[]) => {
+    try {
+      const usernames = items
+        .filter(item => item.encryptedMetadata.username)
+        .map(item => item.encryptedMetadata.username)
+        .join('\n');
+      
+      await navigator.clipboard.writeText(usernames);
+      showToast(`${items.length} usernames copied to clipboard!`, 'success');
+    } catch (error) {
+      console.error('Error copying usernames:', error);
+      showToast('Error copying usernames. Please try again.', 'error');
+    }
+  };
+
+  const handleBulkCopyPassword = async (items: Item[]) => {
+    try {
+      const passwords = items
+        .filter(item => item.encryptedMetadata.password)
+        .map(item => item.encryptedMetadata.password)
+        .join('\n');
+      
+      await navigator.clipboard.writeText(passwords);
+      showToast(`${items.length} passwords copied to clipboard!`, 'success');
+    } catch (error) {
+      console.error('Error copying passwords:', error);
+      showToast('Error copying passwords. Please try again.', 'error');
+    }
+  };
+
+  const handleBulkVisitWebsite = async (items: Item[]) => {
+    try {
+      items
+        .filter(item => item.encryptedMetadata.url)
+        .forEach(item => {
+          window.open(item.encryptedMetadata.url, '_blank');
+        });
+      showToast(`Opened ${items.length} websites!`, 'success');
+    } catch (error) {
+      console.error('Error opening websites:', error);
+      showToast('Error opening websites. Please try again.', 'error');
+    }
+  };
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
@@ -203,7 +264,13 @@ const PasswordsView: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-4">
-          <Breadcrumb />
+          <Breadcrumb 
+            allItems={items}
+            onDelete={handleBulkDelete}
+            onCopyUsername={handleBulkCopyUsername}
+            onCopyPassword={handleBulkCopyPassword}
+            onVisitWebsite={handleBulkVisitWebsite}
+          />
           
           <div className="flex items-center space-x-2">
             <div className="relative">

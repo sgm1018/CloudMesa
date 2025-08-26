@@ -92,6 +92,19 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
       return;
     }
     
+    // Handle Ctrl+Click for multi-selection
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (selectedItems.includes(item._id)) {
+        setSelectedItems(selectedItems.filter(id => id !== item._id));
+      } else {
+        setSelectedItems([...selectedItems, item._id]);
+      }
+      return;
+    }
+    
     // Handle normal left click
     if (item.type === 'folder') {
       navigateToFolder(item._id);
@@ -123,24 +136,28 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
     setOpenMenuId(id);
   };
 
-  const handleShare = (item: Item) => {
-    setItemsToShare([item]);
+  const handleShare = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    setItemsToShare(itemsArray);
     setShowShareModal(true);
   };
 
-  const handleDownload = (item: Item) => {
+  const handleDownload = (item: Item | Item[]) => {
     // Implementar lógica de descarga
-    console.log('Download:', item.encryptedMetadata.name);
+    const itemsArray = Array.isArray(item) ? item : [item];
+    console.log('Download:', itemsArray.map(i => i.encryptedMetadata.name));
   };
 
-  const handleRename = (item: Item) => {
-    // Implementar lógica de renombrado
-    console.log('Rename:', item.encryptedMetadata.name);
+  const handleRename = (item: Item | Item[]) => {
+    // Para renombrar, solo trabajamos con un elemento
+    const singleItem = Array.isArray(item) ? item[0] : item;
+    console.log('Rename:', singleItem.encryptedMetadata.name);
   };
 
-  const handleDelete = (item: Item) => {
+  const handleDelete = (item: Item | Item[]) => {
     // Implementar lógica de eliminación
-    console.log('Delete:', item.encryptedMetadata.name);
+    const itemsArray = Array.isArray(item) ? item : [item];
+    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
   };
 
   const handleCloseMenu = () => {
