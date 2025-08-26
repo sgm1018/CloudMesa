@@ -8,10 +8,13 @@ import SettingsView from '../settings/SettingsView';
 import { useAuth } from '../../context/AuthContext';
 import AuthPage from '../auth/AuthPage';
 import PrivateKeyModal from '../shared/PrivateKeyModal';
+import PrivateKeyImportModal from '../shared/PrivateKeyImportModal';
+import { useEncryption } from '../../context/EncryptionContext';
 
 const MainLayout: React.FC = () => {
   const { currentView, isSidebarCollapsed } = useAppContext();
   const { isAuthenticated, isShowPrivateKey , setShowPrivateKey } = useAuth();
+  const { privateKey } = useEncryption(); 
   const auth : boolean = isAuthenticated();
 
   if (!auth) return <AuthPage/>
@@ -34,6 +37,12 @@ const MainLayout: React.FC = () => {
       <PrivateKeyModal
         isOpen={isShowPrivateKey}
         onClose={() => setShowPrivateKey(false)}
+      />
+      
+      {/* Modal de Importar Clave Privada */}
+      <PrivateKeyImportModal
+        isOpen={!privateKey && auth}
+        onClose={() => {}}
       />
     </div>
   );

@@ -9,8 +9,11 @@ import { Folder, File, Upload, Plus, FolderPlus, Loader2, Filter, ChevronLeft, C
 import { useToast } from '../../context/ToastContext';
 import { PaginationParams } from '../../services/BaseService';
 import { itemService } from '../../services/ItemService';
+import { useEncryption } from '../../context/EncryptionContext';
+import { log } from 'console';
 
 const FilesView: React.FC = () => {
+  const { privateKey } = useEncryption();
   const { currentFileFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
@@ -63,11 +66,16 @@ const FilesView: React.FC = () => {
   };
 
   const fetchItems = async () => {
+      if (privateKey == null || privateKey == ''){
+        showToast('Private key is not available', 'error');
+        return;
+      }
       setIsLoading(true);
+
 
       const contItems : number = await countItems([ItemType.FILE, ItemType.FOLDER], currentFolder || '');
       setTotalPages(Math.ceil(contItems / items4Page));
-      
+
       const params : PaginationParams = {
         parentId: currentFolder || '',
         itemTypes: [ItemType.FILE, ItemType.FOLDER],
@@ -77,32 +85,39 @@ const FilesView: React.FC = () => {
       let fetchedItems = await getItemsByParentId(params);
       
       
-      fetchedItems.sort((a, b) => {
+      
+      let listOfDecryptedMetadataFiles : Item[] = [];
+      for (const item of fetchedItems) {
+        const decryptedItem = await itemService.getDecryptMetadata(item, privateKey);
+        if (decryptedItem == null) continue;
+        listOfDecryptedMetadataFiles.push(decryptedItem);
+      }
+      if (listOfDecryptedMetadataFiles == null) return
+      listOfDecryptedMetadataFiles.sort((a, b) => {
         let comparison = 0;
         
         switch (sortBy) {
           case 'name':
             comparison = a.encryptedMetadata.name!.localeCompare(b.encryptedMetadata.name!);
             break;
-          case 'date':
-            if (!a.updatedAt || !b.updatedAt) return 0;
-            comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-            break;
-          case 'size':
-            comparison = (b.size || 0) - (a.size || 0);
-            break;
-        }
-        
-        return sortOrder === 'asc' ? comparison : -comparison;
-      });
-      
-      setItems(fetchedItems);
+            case 'date':
+              if (!a.updatedAt || !b.updatedAt) return 0;
+              comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+              break;
+              case 'size':
+                comparison = (b.size || 0) - (a.size || 0);
+                break;
+              }
+              return sortOrder === 'asc' ? comparison : -comparison;
+            });
+      setItems(listOfDecryptedMetadataFiles);
+      console.log(listOfDecryptedMetadataFiles);
       setIsLoading(false);
     };
 
   useEffect(() => {
     fetchItems();
-  }, [currentFolder, sortBy, sortOrder, filterType, currentPage]);
+  }, [currentFolder, sortBy, sortOrder, filterType, currentPage, privateKey]);
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;

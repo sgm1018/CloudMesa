@@ -62,6 +62,15 @@ class EncryptService {
     )}\n-----END ${label}-----\n`;
   }
 
+  public pemToBase64(pemString: string): string {
+    // Remove PEM headers and footers, newlines, and spaces
+    const base64 = pemString
+      .replace(/-----BEGIN [^-]+-----/g, '')
+      .replace(/-----END [^-]+-----/g, '')
+      .replace(/\s/g, '');
+    return base64;
+  }
+
 
   // // Cifrar datos con NaCl
   // public async encryptWithNaCl(
@@ -203,10 +212,10 @@ public async encryptSymmetricKey(
         // Generar par de claves temporal solo para este cifrado
 
         //mock: generate other random public key
-        const otherPublicKey = nacl.box.keyPair().publicKey;
+        // const otherPublicKey = nacl.box.keyPair().publicKey;
 
         const ephemeralKeyPair = nacl.box.keyPair();
-        const sharedSecret = nacl.box.before(otherPublicKey, ephemeralKeyPair.secretKey); //! CAMBIAR POR TheirPublicKey
+        const sharedSecret = nacl.box.before(theirPublicKey, ephemeralKeyPair.secretKey); 
         
         const nonce = nacl.randomBytes(24);
         const encrypted = nacl.box.after(symmetricKeyBytes, nonce, sharedSecret);

@@ -2,6 +2,7 @@ import { BaseService, PaginationParams } from "./BaseService";
 import { Item, ItemType } from "../types";
 import { encryptService } from "./EncryptService";
 import { chunkUploadService } from "./ChunkUploadService";
+import { useToast } from "../context/ToastContext";
 
 class ItemService extends BaseService {
     private static instance: ItemService;
@@ -112,6 +113,124 @@ class ItemService extends BaseService {
         return createdItem;
     }
 
+    async downloadItem(item: Item, privateKey: string): Promise<void> {
+
+        if (item.encryption == null || item.encryption.encryptedKey == null 
+            || item.encryption.encryptedKey =='' 
+            || item.encryption.ephemeralPublicKey == null 
+            || item.encryption.ephemeralPublicKey == ''
+            || item.encryption.fileNonce == null
+            || item.encryption.fileNonce == ''
+            || item.encryption.keyNonce == null
+            || item.encryption.keyNonce == ''
+            || item.encryption.metadataNonce == null
+            || item.encryption.metadataNonce == ''
+        ) {
+            //Setter mensaje a NotificacionComponent de error
+            return;
+        }
+
+        const url = new URL(`${this.baseUrl}${this.controller}/${item._id}/download`);
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            headers: { authorization: `Bearer ${sessionStorage.getItem('accessToken')}` } // NO uso el this.getAuthHeaders() porque necesito otro content-type distinto de application/json
+        });
+
+        if (!response.ok) {
+            console.error(`Error downloading file: ${response.statusText}`);
+            throw new Error(`Error downloading file: ${response.statusText}`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const encryptedFile = new Uint8Array(arrayBuffer);
+
+        const decryptedSymetricKey = await encryptService.decryptsymmetricKey(item.encryption.encryptedKey, item.encryption.keyNonce, item.encryption.ephemeralPublicKey, privateKey);
+        if (decryptedSymetricKey == null || decryptedSymetricKey == '') {
+            //Setter mensaje a NotificacionComponent de error
+            return;
+        }
+        const decryptedFileBuffer = await encryptService.decipherFullFile(encryptedFile, decryptedSymetricKey, item.encryption.fileNonce);
+        if (decryptedFileBuffer == null) {
+            //Setter mensaje a NotificacionComponent de error
+            return;
+        }
+
+        // Create a copy backed by a plain ArrayBuffer to satisfy Blob's type requirements
+        const fileUint8 = (decryptedFileBuffer instanceof Uint8Array)
+            ? new Uint8Array(decryptedFileBuffer) // copies into an ArrayBuffer-backed view
+            : new Uint8Array(decryptedFileBuffer as any);
+
+        const blob = new Blob([fileUint8], { type: 'application/octet-stream' });
+        const urlBlob = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = urlBlob;
+        a.download = 'file';
+        document.body.appendChild(a);
+        // a.click();
+        // document.body.removeChild(a);
+    }
+
+
+    async getDecryptMetadata(item: Item, privateKey: string): Promise<Item | null> {
+        if (item.encryption == null || item.encryption.encryptedKey == null 
+            || item.encryption.encryptedKey =='' 
+            || item.encryption.ephemeralPublicKey == null 
+            || item.encryption.ephemeralPublicKey == ''
+            || item.encryption.keyNonce == null
+            || item.encryption.keyNonce == ''
+            || item.encryption.metadataNonce == null
+            || item.encryption.metadataNonce == ''
+        ) {
+            console.error('Missing encryption data in item');
+            return null;
+        }
+
+        try {
+            const decryptedSymmetricKey = await encryptService.decryptsymmetricKey(
+                item.encryption.encryptedKey,
+                item.encryption.keyNonce,
+                item.encryption.ephemeralPublicKey,
+                privateKey
+            );
+
+            if (!decryptedSymmetricKey) {
+                console.error('Failed to decrypt symmetric key');
+                return null;
+            }
+
+            const decryptedMetadata = await encryptService.decipherItemMetadata(
+                item.encryptedMetadata,
+                decryptedSymmetricKey,
+                item.encryption.metadataNonce
+            );
+
+            if (!decryptedMetadata) {
+                console.error('Failed to decrypt metadata');
+                return null;
+            }
+
+            // Return a new Item object with decrypted metadata
+            return {
+                ...item,
+                encryptedMetadata: decryptedMetadata
+            };
+        } catch (error) {
+            console.error(`Error decrypting metadata: ${error}`);
+            return null;
+        }
+
+    }
+
+
+    downloadFile(){
+        // const urlBlob = URL.createObjectURL(blob);
+        // const a = document.createElement('a');
+        // a.href = urlBlob;
+        // a.download = 'file';
+        // document.body.appendChild(a);
+        // a.click();
+        // document.body.removeChild(a);
+    }
 
     initializeItem(file: File, parentId: string): Item {
         const item: Item = {
