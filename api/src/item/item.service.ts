@@ -195,6 +195,8 @@ export class ItemsService extends BaseService<Item> {
       chunkUpload.completedAt = new Date();
       await chunkUpload.save();
 
+      // await this.saveFileOnStorage(finalFilePath, newItem._id.toString());
+
       // Limpiar chunks temporales
       await this.cleanupChunks(chunkUpload.tempPath);
 

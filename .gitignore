@@ -14,6 +14,7 @@ api/lerna-debug.log*
 
 # Uploads
 api/uploads
+api/data
 
 # OS
 api/.DS_Store
