@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Item, ItemType } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { Lock, Key, Folder, MoreVertical, Share, Trash, Edit, Eye, EyeOff, Copy, ExternalLink } from 'lucide-react';
+import { Lock, Key, Folder, MoreVertical, Eye, EyeOff, Share } from 'lucide-react';
 import ShareModal from '../shared/ShareModal';
+import RightClickElementModal from '../shared/RightClickElementModal';
 
 interface PasswordGridProps {
   items: Item[];
@@ -16,11 +17,20 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
+  const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
   const [showShareModal, setShowShareModal] = React.useState(false);
   const [itemsToShare, setItemsToShare] = React.useState<Item[]>([]);
-  const menuRef = React.useRef<HTMLDivElement>(null);
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   const [selectedPasswordId, setSelectedPasswordId] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string, type: 'username' | 'password') => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(`${type === 'username' ? 'Username' : 'Password'} copied to clipboard`, 'success');
+    } catch (err) {
+      showToast('Failed to copy to clipboard', 'error');
+    }
+  };
 
   // Add keyboard shortcut handler
   useEffect(() => {
@@ -80,11 +90,15 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
     event.preventDefault();
     event.stopPropagation();
     
+    const item = items.find(i => i._id === itemId);
+    if (!item) return;
+    
     setMenuPosition({
       top: event.clientY,
       left: event.clientX
     });
     
+    setCurrentItem(item);
     setOpenMenuId(itemId);
   };
 
@@ -118,33 +132,44 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
     }));
   };
 
-  const copyToClipboard = async (text: string, type: 'username' | 'password') => {
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast(`${type === 'username' ? 'Username' : 'Password'} copied to clipboard`);
-    } catch (error) {
-      showToast('Failed to copy to clipboard', 'error');
-    }
-  };
-
-  const handleCopyClick = (text: string, type: 'username' | 'password', event: React.MouseEvent) => {
-    event.stopPropagation();
-    copyToClipboard(text, type);
-  };
-
   const handleShare = (item: Item) => {
     setItemsToShare([item]);
     setShowShareModal(true);
-    setOpenMenuId(null);
-    setMenuPosition(null);
   };
 
-  const handleShareSelected = () => {
-    const itemsToShare = items.filter(item => selectedItems.includes(item._id));
-    setItemsToShare(itemsToShare);
-    setShowShareModal(true);
+  const handleCopyUsername = (item: Item) => {
+    if (item.encryptedMetadata.username) {
+      copyToClipboard(item.encryptedMetadata.username, 'username');
+    }
+  };
+
+  const handleCopyPassword = (item: Item) => {
+    if (item.encryptedMetadata.password) {
+      copyToClipboard(item.encryptedMetadata.password, 'password');
+    }
+  };
+
+  const handleVisitWebsite = (item: Item) => {
+    if (item.encryptedMetadata.url) {
+      window.open(item.encryptedMetadata.url, '_blank');
+    }
+  };
+
+  const handleEdit = (item: Item) => {
+    if (item.type === ItemType.PASSWORD) {
+      onPasswordSelect(item);
+    }
+  };
+
+  const handleDelete = (_item: Item) => {
+    // Implementar lógica de eliminación
+    showToast('Not implemented yet', 'error');
+  };
+
+  const handleCloseMenu = () => {
     setOpenMenuId(null);
     setMenuPosition(null);
+    setCurrentItem(null);
   };
 
   const toggleMenu = (id: string, event: React.MouseEvent) => {
@@ -169,16 +194,9 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
   };
 
   React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openMenuId && menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpenMenuId(null);
-        setMenuPosition(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openMenuId]);
+    // El componente RightClickElementModal maneja su propio cierre
+    // Este useEffect ya no es necesario
+  }, []);
 
   return (
     <>
@@ -268,118 +286,25 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
       </div>
 
       {/* Context Menu - positioned absolutely */}
-      {openMenuId && menuPosition && (
-        <div 
-          ref={menuRef}
-          style={{
-            position: 'fixed',
-            top: `${menuPosition.top}px`,
-            left: `${menuPosition.left}px`,
-          }}
-          className="w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown"
-        >
-          {items.find(item => item._id === openMenuId)?.type === ItemType.PASSWORD && (
-            <>
-              <button
-                className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const item = items.find(i => i._id === openMenuId);
-                  if (item?.encryptedMetadata.username) {
-                    copyToClipboard(item.encryptedMetadata.username, 'username');
-                  }
-                  setOpenMenuId(null);
-                }}
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                <span>Copy Username</span>
-              </button>
-              
-              <button
-                className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const item = items.find(i => i._id === openMenuId);
-                  if (item?.encryptedMetadata.password) {
-                    copyToClipboard(item.encryptedMetadata.password, 'password');
-                  }
-                  setOpenMenuId(null);
-                }}
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                <span>Copy Password</span>
-              </button>
-              
-              {items.find(i => i._id === openMenuId)?.encryptedMetadata.url && (
-                <button
-                  className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const item = items.find(i => i._id === openMenuId);
-                    if (item?.encryptedMetadata.url) {
-                      window.open(item.encryptedMetadata.url, '_blank');
-                    }
-                    setOpenMenuId(null);
-                  }}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  <span>Visit Website</span>
-                </button>
-              )}
-              
-              <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-            </>
-          )}
-          
-          <button 
-            className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={(e) => {
-              e.stopPropagation();
-              const item = items.find(i => i._id === openMenuId);
-              if (item) handleShare(item);
-              setOpenMenuId(null);
-            }}
-          >
-            <Share className="h-4 w-4 mr-2" />
-            <span>Share</span>
-          </button>
-          
-          <button 
-            className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={(e) => {
-              e.stopPropagation();
-              const item = items.find(i => i._id === openMenuId);
-              if (item?.type === ItemType.PASSWORD) {
-                onPasswordSelect(item);
-              }
-            setOpenMenuId(null);
-
-            }}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            <span>Edit</span>
-          </button>
-          
-          <button className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-          onClick={(e) => {
-            e.stopPropagation();
-            // Here you would call the delete function from your service
-            // For example: PasswordService.delete(item._id);
-            
-            showToast('Not implemented yet', 'error');
-            setOpenMenuId(null);
-          }}>
-            <Trash className="h-4 w-4 mr-2" />
-            <span>Delete</span>
-          </button>
-        </div>
-      )}
+      <RightClickElementModal
+        isOpen={openMenuId !== null}
+        position={menuPosition}
+        item={currentItem}
+        onClose={handleCloseMenu}
+        contextType="password"
+        onShare={handleShare}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onCopyUsername={handleCopyUsername}
+        onCopyPassword={handleCopyPassword}
+        onVisitWebsite={handleVisitWebsite}
+      />
 
       <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         items={itemsToShare}
-        onShare={(users) => {
+        onShare={(_users) => {
           setShowShareModal(false);
         }}
       />

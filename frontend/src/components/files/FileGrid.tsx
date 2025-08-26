@@ -2,8 +2,9 @@ import React from 'react';
 import { Item } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { formatFileSize } from '../../data/mockData';
-import { File, FileImage, FileText, FileSpreadsheet, Presentation as FilePresentation, FileArchive, Folder, MoreVertical, Share, Download, Trash, Edit } from 'lucide-react';
+import { File, FileImage, FileText, FileSpreadsheet, Presentation as FilePresentation, FileArchive, Folder, MoreVertical, Share } from 'lucide-react';
 import ShareModal from '../shared/ShareModal';
+import RightClickElementModal from '../shared/RightClickElementModal';
 
 interface FileGridProps {
   items: Item[];
@@ -13,9 +14,9 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
+  const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
   const [showShareModal, setShowShareModal] = React.useState(false);
   const [itemsToShare, setItemsToShare] = React.useState<Item[]>([]);
-  const menuRef = React.useRef<HTMLDivElement>(null);
 
   const getFileIcon = (item: Item) => {
     if (item.type === 'folder') return <Folder className="h-12 w-12 text-yellow-500" />;
@@ -62,11 +63,15 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
     event.preventDefault();
     event.stopPropagation();
 
+    const item = items.find(i => i._id === itemId);
+    if (!item) return;
+
     setMenuPosition({
       top: event.clientY,
       left: event.clientX
     });
     
+    setCurrentItem(item);
     setOpenMenuId(itemId);
   };
 
@@ -112,29 +117,33 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
   const handleShare = (item: Item) => {
     setItemsToShare([item]);
     setShowShareModal(true);
-    setOpenMenuId(null);
-    setMenuPosition(null);
   };
 
-  const handleShareSelected = () => {
-    const itemsToShare = items.filter(item => selectedItems.includes(item._id));
-    setItemsToShare(itemsToShare);
-    setShowShareModal(true);
+  const handleDownload = (item: Item) => {
+    // Implementar lógica de descarga
+    console.log('Download:', item.encryptedMetadata.name);
+  };
+
+  const handleRename = (item: Item) => {
+    // Implementar lógica de renombrado
+    console.log('Rename:', item.encryptedMetadata.name);
+  };
+
+  const handleDelete = (item: Item) => {
+    // Implementar lógica de eliminación
+    console.log('Delete:', item.encryptedMetadata.name);
+  };
+
+  const handleCloseMenu = () => {
     setOpenMenuId(null);
     setMenuPosition(null);
+    setCurrentItem(null);
   };
 
   React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openMenuId && menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpenMenuId(null);
-        setMenuPosition(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openMenuId]);
+    // El componente RightClickElementModal maneja su propio cierre
+    // Este useEffect ya no es necesario
+  }, []);
 
   return (
     <>
@@ -197,49 +206,24 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
       </div>
 
       {openMenuId && menuPosition && (
-        <div 
-          ref={menuRef}
-          style={{
-            position: 'fixed',
-            top: `${menuPosition.top}px`,
-            left: `${menuPosition.left}px`,
-          }}
-          className="w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown"
-        >
-          <button 
-            className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={(e) => {
-              e.stopPropagation();
-              const item = items.find(item => item._id === openMenuId);
-              if (item) handleShare(item);
-            }}
-          >
-            <Share className="h-4 w-4 mr-2" />
-            <span>Share</span>
-          </button>
-          
-          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Download className="h-4 w-4 mr-2" />
-            <span>Download</span>
-          </button>
-          
-          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Edit className="h-4 w-4 mr-2" />
-            <span>Rename</span>
-          </button>
-          
-          <button className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Trash className="h-4 w-4 mr-2" />
-            <span>Delete</span>
-          </button>
-        </div>
+        <RightClickElementModal
+          isOpen={openMenuId !== null}
+          position={menuPosition}
+          item={currentItem}
+          onClose={handleCloseMenu}
+          contextType={currentItem?.type === 'folder' ? 'folder' : 'file'}
+          onShare={handleShare}
+          onDownload={handleDownload}
+          onRename={handleRename}
+          onDelete={handleDelete}
+        />
       )}
 
       <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         items={itemsToShare}
-        onShare={(users) => {
+        onShare={(_users) => {
           setShowShareModal(false);
         }}
       />

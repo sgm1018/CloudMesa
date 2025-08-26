@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Item } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { formatFileSize } from '../../data/mockData';
-import { Lock, Key, Folder, MoreVertical, Share, Eye, EyeOff, Copy, ExternalLink as External, X, Download } from 'lucide-react';
+import { Lock, Key, Folder, MoreVertical, Share } from 'lucide-react';
 import ShareModal from '../shared/ShareModal';
+import RightClickElementModal from '../shared/RightClickElementModal';
 
 interface FileListProps {
   items: Item[];
@@ -11,17 +12,16 @@ interface FileListProps {
 
 const FileList: React.FC<FileListProps> = ({ items }) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
-  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
+  const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
   const [showShareModal, setShowShareModal] = React.useState(false);
   const [itemsToShare, setItemsToShare] = React.useState<Item[]>([]);
-  const menuRef = React.useRef<HTMLDivElement>(null);
 
   const getFileIcon = (item: Item) => {
     if (item.type === 'folder') return <Folder className="h-5 w-5 text-yellow-500" />;
 
-    const extension = item.name.split('.').pop()?.toLowerCase();
+    const extension = item.encryptedMetadata.name.split('.').pop()?.toLowerCase();
     
     switch(extension) {
       case 'pdf':
@@ -72,11 +72,15 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
     event.preventDefault();
     event.stopPropagation();
 
+    const item = items.find(i => i._id === itemId);
+    if (!item) return;
+
     setMenuPosition({
       top: event.clientY,
       left: event.clientX
     });
     
+    setCurrentItem(item);
     setOpenMenuId(itemId);
   };
 
@@ -122,29 +126,30 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
   const handleShare = (item: Item) => {
     setItemsToShare([item]);
     setShowShareModal(true);
-    setOpenMenuId(null);
-    setMenuPosition(null);
   };
 
-  const handleShareSelected = () => {
-    const itemsToShare = items.filter(item => selectedItems.includes(item._id));
-    setItemsToShare(itemsToShare);
-    setShowShareModal(true);
-    setOpenMenuId(null);
-    setMenuPosition(null);
+  const handleDownload = (item: Item) => {
+    // Implementar lógica de descarga
+    console.log('Download:', item.encryptedMetadata.name);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openMenuId && menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpenMenuId(null);
-        setMenuPosition(null);
-      }
-    };
+  const handleRename = (item: Item) => {
+    // Implementar lógica de renombrado
+    console.log('Rename:', item.encryptedMetadata.name);
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openMenuId]);
+  const handleDelete = (item: Item) => {
+    // Implementar lógica de eliminación
+    console.log('Delete:', item.encryptedMetadata.name);
+  };
+
+  const handleCloseMenu = () => {
+    setOpenMenuId(null);
+    setMenuPosition(null);
+    setCurrentItem(null);
+  };
+
+  // El componente RightClickElementModal maneja su propio cierre
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -205,7 +210,7 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
                 <td className="px-4 py-3">
                   <div className="flex items-center">
                     {getFileIcon(item)}
-                    <span className="ml-3 font-medium">{item.name}</span>
+                    <span className="ml-3 font-medium">{item.encryptedMetadata.name}</span>
                     {item.sharedWith && item.sharedWith.length > 0 && (
                       <div className="ml-2">
                         <Share className="h-3.5 w-3.5 text-primary-500" />
@@ -235,52 +240,24 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
         </table>
       </div>
 
-      {openMenuId && menuPosition && (
-        <div 
-          ref={menuRef}
-          style={{
-            position: 'fixed',
-            top: `${menuPosition.top}px`,
-            left: `${menuPosition.left}px`,
-          }}
-          className="w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 menu-dropdown"
-        >
-          <button
-            className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={(e) => {
-              e.stopPropagation();
-              const item = items.find(item => item._id === openMenuId);
-              if (item) handleShare(item);
-            }}
-          >
-            <Share className="h-4 w-4 mr-2" />
-            <span>Share</span>
-          </button>
-          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Copy className="h-4 w-4 mr-2" />
-            <span>Copy Link</span>
-          </button>
-          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-            <External className="h-4 w-4 mr-2" />
-            <span>Open</span>
-          </button>
-          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Download className="h-4 w-4 mr-2" />
-            <span>Download</span>
-          </button>
-          <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
-            <X className="h-4 w-4 mr-2" />
-            <span>Delete</span>
-          </button>
-
-        </div>
-      )}
+      {/* Context Menu */}
+      <RightClickElementModal
+        isOpen={openMenuId !== null}
+        position={menuPosition}
+        item={currentItem}
+        onClose={handleCloseMenu}
+        contextType={currentItem?.type === 'folder' ? 'folder' : 'file'}
+        onShare={handleShare}
+        onDownload={handleDownload}
+        onRename={handleRename}
+        onDelete={handleDelete}
+      />
 
       <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         items={itemsToShare}
-        onShare={(users) => {
+        onShare={(_users) => {
           setShowShareModal(false);
         }}
       />
