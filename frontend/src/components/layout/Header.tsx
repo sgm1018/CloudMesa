@@ -209,7 +209,7 @@ const Header: React.FC = () => {
                     <KeyIcon className="h-5 w-5 text-secondary-500" />
                   )}
                   <div className="ml-3">
-                    <div className="text-sm font-medium">{item.encryptedMetadata.name}</div>
+                    <div className="text-sm font-medium">{item.itemName}</div>
                     {/* <div className="text-xs text-gray-500 dark:text-gray-400">
                       {item.path && item.path.length > 0
                         ? item.path.join(' > ')

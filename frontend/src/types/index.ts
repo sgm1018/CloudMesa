@@ -72,7 +72,8 @@ export enum ItemType {
 }
 
 export class Item extends Entity {
-    userId!: string;
+  itemName!: string;
+  userId!: string;
   type!: ItemType;
   parentId: string = '';
   encryptedMetadata!: any;

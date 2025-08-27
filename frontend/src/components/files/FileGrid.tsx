@@ -22,7 +22,7 @@ const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRenam
   const getFileIcon = (item: Item) => {
     if (item.type === 'folder') return <Folder className="h-12 w-12 text-yellow-500" />;
 
-    const extension = item.encryptedMetadata.name!.split('.').pop()?.toLowerCase();
+    const extension = item.itemName!.split('.').pop()?.toLowerCase();
     
     switch(extension) {
       case 'pdf':
@@ -182,7 +182,7 @@ const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRenam
               </div>
               
               <div className="mt-2 text-center">
-                <h3 className="text-sm font-medium truncate w-full max-w-[160px]">{item.encryptedMetadata.name}</h3>
+                <h3 className="text-sm font-medium truncate w-full max-w-[160px]">{item.itemName}</h3>
                 
                 {item.type === 'file' && item.size && (
                   <span className="text-xs text-gray-500 dark:text-gray-400 block mt-1">

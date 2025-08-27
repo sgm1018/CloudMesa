@@ -52,7 +52,7 @@ const PasswordsView: React.FC = () => {
       
       switch (sortBy) {
         case 'name':
-          comparison = a.encryptedMetadata.name!.localeCompare(b.encryptedMetadata.name!);
+          comparison = a.itemName!.localeCompare(b.itemName!);
           break;
         case 'date':
           if (!a.updatedAt || !b.updatedAt) return 0;
@@ -73,7 +73,7 @@ const PasswordsView: React.FC = () => {
 
   // Shared handlers for both grid and list views
   const handleShare = (item: Item | Item[]) => {
-    console.log('Share:', Array.isArray(item) ? item.map(i => i.encryptedMetadata.name) : item.encryptedMetadata.name);
+    console.log('Share:', Array.isArray(item) ? item.map(i => i.itemName) : item.itemName);
     showToast('Share functionality not implemented yet', 'error');
   };
 
@@ -122,7 +122,7 @@ const PasswordsView: React.FC = () => {
 
   const handleDelete = (item: Item | Item[]) => {
     const itemsArray = Array.isArray(item) ? item : [item];
-    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
+    console.log('Delete:', itemsArray.map(i => i.itemName));
     showToast('Delete functionality not implemented yet', 'error');
   };
 

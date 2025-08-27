@@ -244,7 +244,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({
               </div>
               
               <div className="mt-2 text-center">
-                <h3 className="text-sm font-medium truncate w-full max-w-[160px]">{item.encryptedMetadata.name}</h3>
+                <h3 className="text-sm font-medium truncate w-full max-w-[160px]">{item.itemName}</h3>
                 
                 {item.type === ItemType.PASSWORD && item.encryptedMetadata.username && (
                   <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate max-w-[160px]">

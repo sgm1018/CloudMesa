@@ -22,7 +22,7 @@ const FileList: React.FC<FileListProps> = ({ items, onShare, onDownload, onRenam
   const getFileIcon = (item: Item) => {
     if (item.type === 'folder') return <Folder className="h-5 w-5 text-yellow-500" />;
 
-    const extension = item.encryptedMetadata.name.split('.').pop()?.toLowerCase();
+    const extension = item.itemName.split('.').pop()?.toLowerCase();
     
     switch(extension) {
       case 'pdf':
@@ -211,7 +211,7 @@ const FileList: React.FC<FileListProps> = ({ items, onShare, onDownload, onRenam
                 <td className="px-4 py-3">
                   <div className="flex items-center">
                     {getFileIcon(item)}
-                    <span className="ml-3 font-medium">{item.encryptedMetadata.name}</span>
+                    <span className="ml-3 font-medium">{item.itemName}</span>
                     {item.sharedWith && item.sharedWith.length > 0 && (
                       <div className="ml-2">
                         <Share className="h-3.5 w-3.5 text-primary-500" />

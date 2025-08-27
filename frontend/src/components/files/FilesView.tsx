@@ -93,7 +93,7 @@ const FilesView: React.FC = () => {
 
       switch (sortBy) {
         case 'name':
-          comparison = a.encryptedMetadata.name!.localeCompare(b.encryptedMetadata.name!);
+          comparison = a.itemName!.localeCompare(b.itemName!);
           break;
           case 'date':
             if (!a.updatedAt || !b.updatedAt) return 0;
@@ -132,7 +132,7 @@ const FilesView: React.FC = () => {
     try {
       showToast(`Sharing ${items.length} items...`, 'success');
       // TODO: Implement bulk share logic
-      console.log('Sharing items:', items.map(item => item.encryptedMetadata.name));
+      console.log('Sharing items:', items.map(item => item.itemName));
       showToast('Items shared successfully!', 'success');
     } catch (error) {
       console.error('Error sharing items:', error);
@@ -216,7 +216,7 @@ const FilesView: React.FC = () => {
   // Shared handlers for both grid and list views
   const handleShare = (item: Item | Item[]) => {
     const itemsArray = Array.isArray(item) ? item : [item];
-    console.log('Share:', itemsArray.map(i => i.encryptedMetadata.name));
+    console.log('Share:', itemsArray.map(i => i.itemName));
     showToast('Share functionality not implemented yet', 'error');
   };
 
@@ -235,13 +235,13 @@ const FilesView: React.FC = () => {
 
   const handleRename = (item: Item | Item[]) => {
     const singleItem = Array.isArray(item) ? item[0] : item;
-    console.log('Rename:', singleItem.encryptedMetadata.name);
+    console.log('Rename:', singleItem.itemName);
     showToast('Rename functionality not implemented yet', 'error');
   };
 
   const handleDelete = (item: Item | Item[]) => {
     const itemsArray = Array.isArray(item) ? item : [item];
-    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
+    console.log('Delete:', itemsArray.map(i => i.itemName));
     showToast('Delete functionality not implemented yet', 'error');
   };
 

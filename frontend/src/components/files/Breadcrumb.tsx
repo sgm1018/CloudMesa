@@ -159,9 +159,9 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
                   ? 'font-medium text-primary-600 dark:text-primary-400'
                   : 'text-gray-600 dark:text-gray-300'
               }`}
-              title={`Ir a ${crumb.encryptedMetadata.name}`}
+              title={`Ir a ${crumb.itemName}`}
             >
-              {crumb.encryptedMetadata.name}
+              {crumb.itemName}
             </button>
             {index < visibleCrumbs.length - 1 && (
               <ChevronRight className="h-4 w-4 text-gray-400 mx-1" />
@@ -207,7 +207,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
               }`}
               style={{ paddingLeft: `${12 + (index + 1) * 8}px` }}
             >
-              <span className="truncate">{crumb.encryptedMetadata.name}</span>
+              <span className="truncate">{crumb.itemName}</span>
             </button>
           ))}
         </div>

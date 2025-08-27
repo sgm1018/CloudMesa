@@ -255,7 +255,7 @@ const PasswordList: React.FC<PasswordListProps> = ({
               <td className="px-4 py-3">
                 <div className="flex items-center">
                   {getItemIcon(item)}
-                  <span className="ml-3 font-medium">{item.encryptedMetadata.name}</span>
+                  <span className="ml-3 font-medium">{item.itemName}</span>
                   {item.sharedWith && item.sharedWith.length > 0 && (
                     <div className="ml-2">
                       <Share className="h-3.5 w-3.5 text-primary-500" />

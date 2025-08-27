@@ -23,8 +23,8 @@ export class ItemsService extends BaseService<Item> {
   }
 
 
-  async findContainName(userid: string, name: string): Promise<ApiResponse<Item>> {
-    const result = await this.ItemModel.find({ userId: userid, name: { $regex: name, $options: 'i' } }).limit(8);
+  async findContainName(userid: string, itemName: string): Promise<ApiResponse<Item>> {
+    const result = await this.ItemModel.find({ userId: userid, itemName: { $regex: itemName, $options: 'i' } }).limit(8);
     if (!result || result.length === 0) {
       return ApiResponse.empty();
     }
@@ -190,6 +190,7 @@ export class ItemsService extends BaseService<Item> {
 
       // Crear el item en la base de datos
       const newItem = new Item();
+      newItem.itemName = itemData.itemName;
       newItem.userId = userId;
       newItem.createdAt = new Date();
       newItem.encryptedMetadata = itemData.encryptedMetadata;

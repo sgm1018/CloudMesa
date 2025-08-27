@@ -23,6 +23,16 @@ export class Item extends Entity {
   @IsNotEmpty()
   @Prop({ required: true })
   userId: string;
+
+  @ApiProperty({
+    description: 'Name of the item',
+    type: String,
+    example: 'NombreDeMiArchivo'
+  })
+  @IsString()
+  @IsNotEmpty()
+  @Prop({ required: true })
+  itemName:string
   
   @ApiProperty({
     description: 'Type of the item',

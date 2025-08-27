@@ -391,6 +391,7 @@ class ItemService extends BaseService {
     initializeItem(file: File, parentId: string): Item {
         const item: Item = {
             _id: '',
+            itemName: file.name.split('.').slice(0, -1).join('.'),
             type: ItemType.FILE,
             parentId: parentId,
             userId: '', // Se asignará en el servidor
@@ -398,6 +399,7 @@ class ItemService extends BaseService {
                 name: file.name,
                 description: '',
                 notes: '',
+                extension: file.name.split('.').pop()?.toLowerCase()
             },
             encryption: {
                 encryptedKey: undefined,
@@ -420,6 +422,7 @@ class ItemService extends BaseService {
     initializeFolder(name: string, parentId: string = ''): Item {
         const item: Item = {
             _id: '',
+            itemName: name,
             type: ItemType.FOLDER,
             parentId: parentId,
             userId: '', // Se asignará en el servidor
@@ -463,6 +466,7 @@ class ItemService extends BaseService {
     }): Item {
         const item: Item = {
             _id: '',
+            itemName: data.name,
             type: ItemType.PASSWORD,
             parentId: data.parentId || '',
             userId: '', // Se asignará en el servidor
@@ -497,6 +501,7 @@ class ItemService extends BaseService {
     initializeGroup(name: string, parentId: string = ''): Item {
         const item: Item = {
             _id: '',
+            itemName: name,
             type: ItemType.GROUP,
             parentId: parentId,
             userId: '', // Se asignará en el servidor

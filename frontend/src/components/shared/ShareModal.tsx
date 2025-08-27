@@ -143,7 +143,7 @@
 //           <div className="flex items-center space-x-2">
 //             <Users className="h-5 w-5 text-primary-500" />
 //             <h2 className="text-lg font-semibold">
-//               Share {items.length > 1 ? `${items.length} items` : items[0].encryptedMetadata.name}
+//               Share {items.length > 1 ? `${items.length} items` : items[0].itemName}
 //             </h2>
 //           </div>
 //           <button
