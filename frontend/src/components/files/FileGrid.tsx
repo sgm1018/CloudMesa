@@ -1,9 +1,8 @@
 import React from 'react';
 import { Item } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { formatFileSize } from '../../data/mockData';
 import { File, FileImage, FileText, FileSpreadsheet, Presentation as FilePresentation, FileArchive, Folder, MoreVertical, Share } from 'lucide-react';
-import ShareModal from '../shared/ShareModal';
+// import ShareModal from '../shared/ShareModal';
 import RightClickElementModal from '../shared/RightClickElementModal';
 import { itemService } from '../../services/ItemService';
 import { useEncryption } from '../../context/EncryptionContext';
@@ -71,9 +70,22 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
     const item = items.find(i => i._id === itemId);
     if (!item) return;
 
+    const button = event.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    
+    // Calculate available space
+    const spaceBelow = window.innerHeight - (rect.bottom + scrollTop);
+    const menuHeight = 200; // Approximate height of menu
+    
+    // Position menu above or below based on available space
+    const top = spaceBelow < menuHeight ? rect.top + scrollTop - menuHeight : rect.bottom + scrollTop;
+    const left = rect.right - 180; // Menu width is approximately 180px
+
+
     setMenuPosition({
-      top: event.clientY,
-      left: event.clientX
+      top: top,
+      left: left
     });
     
     setCurrentItem(item);
@@ -107,30 +119,6 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
     }
   };
 
-  const toggleMenu = (id: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    
-    if (openMenuId === id) {
-      setOpenMenuId(null);
-      setMenuPosition(null);
-      return;
-    }
-
-    const button = event.currentTarget as HTMLElement;
-    const rect = button.getBoundingClientRect();
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    
-    // Calculate available space
-    const spaceBelow = window.innerHeight - (rect.bottom + scrollTop);
-    const menuHeight = 200; // Approximate height of menu
-    
-    // Position menu above or below based on available space
-    const top = spaceBelow < menuHeight ? rect.top + scrollTop - menuHeight : rect.bottom + scrollTop;
-    const left = rect.right - 180; // Menu width is approximately 180px
-    
-    setMenuPosition({ top, left });
-    setOpenMenuId(id);
-  };
 
   const handleShare = (item: Item | Item[]) => {
     const itemsArray = Array.isArray(item) ? item : [item];
@@ -201,7 +189,7 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
             <div className="absolute top-2 right-2 z-20">
               <button
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => toggleMenu(item._id, e)}
+                onClick={(e) => rightClickOnElement(e, item._id)}
               >
                 <MoreVertical className="h-4 w-4 text-gray-500" />
               </button>
@@ -217,7 +205,7 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
                 
                 {item.type === 'file' && item.size && (
                   <span className="text-xs text-gray-500 dark:text-gray-400 block mt-1">
-                    {formatFileSize(item.size)}
+                    {/* {formatFileSize(item.size)} */}
                   </span>
                 )}
                 
@@ -250,14 +238,14 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
         />
       )}
 
-      <ShareModal
+      {/* <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         items={itemsToShare}
         onShare={(_users) => {
           setShowShareModal(false);
         }}
-      />
+      /> */}
     </>
   );
 };

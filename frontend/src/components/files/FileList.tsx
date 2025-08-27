@@ -1,9 +1,8 @@
 import React from 'react';
 import { Item } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { formatFileSize } from '../../data/mockData';
 import { Lock, Key, Folder, MoreVertical, Share } from 'lucide-react';
-import ShareModal from '../shared/ShareModal';
+// import ShareModal from '../shared/ShareModal';
 import RightClickElementModal from '../shared/RightClickElementModal';
 
 interface FileListProps {
@@ -75,9 +74,22 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
     const item = items.find(i => i._id === itemId);
     if (!item) return;
 
+    const button = event.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    
+    // Calculate available space
+    const spaceBelow = window.innerHeight - (rect.bottom + scrollTop);
+    const menuHeight = 200; // Approximate height of menu
+    
+    // Position menu above or below based on available space
+    const top = spaceBelow < menuHeight ? rect.top + scrollTop - menuHeight : rect.bottom + scrollTop;
+    const left = rect.right - 180; // Menu width is approximately 180px
+
+
     setMenuPosition({
-      top: event.clientY,
-      left: event.clientX
+      top: top,
+      left: left
     });
     
     setCurrentItem(item);
@@ -111,30 +123,7 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
     }
   };
 
-  const toggleMenu = (id: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    
-    if (openMenuId === id) {
-      setOpenMenuId(null);
-      setMenuPosition(null);
-      return;
-    }
 
-    const button = event.currentTarget as HTMLElement;
-    const rect = button.getBoundingClientRect();
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    
-    // Calculate available space
-    const spaceBelow = window.innerHeight - (rect.bottom + scrollTop);
-    const menuHeight = 200; // Approximate height of menu
-    
-    // Position menu above or below based on available space
-    const top = spaceBelow < menuHeight ? rect.top + scrollTop - menuHeight : rect.bottom + scrollTop;
-    const left = rect.right - 180; // Menu width is approximately 180px
-    
-    setMenuPosition({ top, left });
-    setOpenMenuId(id);
-  };
 
   const handleShare = (item: Item | Item[]) => {
     const itemsArray = Array.isArray(item) ? item : [item];
@@ -239,13 +228,13 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
                   {item.updatedAt && formatDate(item.updatedAt)}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell">
-                  {item.type === 'file' && item.size ? formatFileSize(item.size) : '—'}
+                  {item.type === 'file' && item.size ? 'SizeHere' : '—'}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="relative">
                     <button
                       className="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-                      onClick={(e) => toggleMenu(item._id, e)}
+                      onClick={(e) => rightClickOnElement(e, item._id)}
                     >
                       <MoreVertical className="h-4 w-4 text-gray-500" />
                     </button>
@@ -270,14 +259,14 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
         onDelete={handleDelete}
       />
 
-      <ShareModal
+      {/* <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         items={itemsToShare}
         onShare={(_users) => {
           setShowShareModal(false);
         }}
-      />
+      /> */}
     </>
   );
 };

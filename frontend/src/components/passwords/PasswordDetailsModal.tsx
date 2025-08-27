@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Copy, Eye, EyeOff, ExternalLink, Share, Edit3, Save, RotateCcw, RefreshCw, Check } from 'lucide-react';
 import { Item } from '../../types';
 import { useToast } from '../../context/ToastContext';
-import ShareModal from '../shared/ShareModal';
+// import ShareModal from '../shared/ShareModal';
 
 interface PasswordDetailsModalProps {
   isOpen: boolean;
@@ -478,7 +478,7 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
         </div>
       </div>
 
-      <ShareModal
+      {/* <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         items={[password]}
@@ -486,7 +486,7 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
           setShowShareModal(false);
           showToast('Password shared successfully');
         }}
-      />
+      /> */}
     </>
   );
 };

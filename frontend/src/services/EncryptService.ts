@@ -208,12 +208,7 @@ public async encryptSymmetricKey(
     try {
         const symmetricKeyBytes = this.base64ToUint8Array(symmetricKeyBase64);
         const theirPublicKey = this.base64ToUint8Array(theirPublicKeyBase64);
-        
-        // Generar par de claves temporal solo para este cifrado
-
-        //mock: generate other random public key
-        // const otherPublicKey = nacl.box.keyPair().publicKey;
-
+      
         const ephemeralKeyPair = nacl.box.keyPair();
         const sharedSecret = nacl.box.before(theirPublicKey, ephemeralKeyPair.secretKey); 
         

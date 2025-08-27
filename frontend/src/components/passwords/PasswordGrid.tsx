@@ -3,7 +3,7 @@ import { Item, ItemType } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { Lock, Key, Folder, MoreVertical, Eye, EyeOff, Share } from 'lucide-react';
-import ShareModal from '../shared/ShareModal';
+// import ShareModal from '../shared/ShareModal';
 import RightClickElementModal from '../shared/RightClickElementModal';
 
 interface PasswordGridProps {
@@ -333,14 +333,14 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
         onVisitWebsite={handleVisitWebsite}
       />
 
-      <ShareModal
+      {/* <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         items={itemsToShare}
         onShare={(_users) => {
           setShowShareModal(false);
         }}
-      />
+      /> */}
     </>
   );
 };
