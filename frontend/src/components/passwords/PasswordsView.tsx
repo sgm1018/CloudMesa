@@ -6,7 +6,7 @@ import PasswordList from './PasswordList';
 import Breadcrumb from '../files/Breadcrumb';
 import NewPasswordModal from './NewPasswordModal';
 import PasswordDetailsModal from './PasswordDetailsModal';
-import { FolderPlus, KeyIcon, Plus, Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FolderPlus, KeyIcon, Plus, Loader2, Filter, ChevronLeft, ChevronRight, Folder, Key, Lock } from 'lucide-react';
 import { PaginationParams } from '../../services/BaseService';
 import { useToast } from '../../context/ToastContext';
 
@@ -71,6 +71,24 @@ const PasswordsView: React.FC = () => {
     fetchItems();
   }, [currentFolder, sortBy, sortOrder, filterType, currentPage]);
 
+
+  const getItemIcon = (item: Item, isList: boolean) => {
+    if (item.type === ItemType.GROUP) return <Folder className="h-5 w-5 text-primary-500" />;
+    const iconSizeClass = isList ? 'h-5 w-5' : 'h-10 w-10';
+    const icon = item.encryptedMetadata.icon;
+    switch(icon) {
+      case 'mail':
+        return <Key className={`${iconSizeClass} text-red-500`} />;
+      case 'shopping-cart':
+        return <Key className={`${iconSizeClass} text-orange-500"`} />;
+      case 'building':
+        return <Key className={`${iconSizeClass} text-blue-500"`} />;
+      case 'trello':
+        return <Key className={`${iconSizeClass} text-indigo-500"`} />;
+      default:
+        return <Lock className={`${iconSizeClass} text-gray-500"`} />;
+    }
+  };
   // Shared handlers for both grid and list views
   const handleShare = (item: Item | Item[]) => {
     console.log('Share:', Array.isArray(item) ? item.map(i => i.itemName) : item.itemName);
@@ -376,6 +394,8 @@ const PasswordsView: React.FC = () => {
               onVisitWebsite={handleVisitWebsite}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onGetIcon={getItemIcon}
+
             />
           ) : (
             <PasswordList
@@ -387,6 +407,7 @@ const PasswordsView: React.FC = () => {
               onVisitWebsite={handleVisitWebsite}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onGetIcon={getItemIcon}
             />
           )}
           

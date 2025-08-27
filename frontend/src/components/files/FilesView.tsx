@@ -5,7 +5,7 @@ import FileGrid from './FileGrid';
 import FileList from './FileList';
 import Breadcrumb from './Breadcrumb';
 import { useDropzone } from 'react-dropzone';
-import { Folder, File, Upload, Plus, FolderPlus, Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Folder, File, Upload, Plus, FolderPlus, Image, Loader2, Filter, ChevronLeft, ChevronRight, Archive, Code, Database, Download, FileText, FileType, Globe, HardDrive, Music, Palette, Presentation, Settings, Sheet, Terminal, Video, Zap } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { PaginationParams } from '../../services/BaseService';
 import { itemService } from '../../services/ItemService';
@@ -26,6 +26,159 @@ const FilesView: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [items4Page, setItems4Page] = useState(20);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const fileIconsMap : Record<string, React.ReactElement> = {
+      // PDFs y documentos
+      'pdf': <FileText className="insertSizehere text-red-500" />,
+      
+      // Documentos de texto
+      'doc': <FileText className="insertSizehere text-blue-500" />,
+      'docx': <FileText className="insertSizehere text-blue-500" />,
+      'txt': <FileText className="insertSizehere text-gray-600" />,
+      'rtf': <FileText className="insertSizehere text-blue-400" />,
+      'odt': <FileText className="insertSizehere text-blue-600" />,
+      
+      // Hojas de cálculo
+      'xls': <Sheet className="insertSizehere text-green-500" />,
+      'xlsx': <Sheet className="insertSizehere text-green-500" />,
+      'csv': <Sheet className="insertSizehere text-green-400" />,
+      'ods': <Sheet className="insertSizehere text-green-600" />,
+      
+      // Presentaciones
+      'ppt': <Presentation className="insertSizehere text-orange-500" />,
+      'pptx': <Presentation className="insertSizehere text-orange-500" />,
+      'odp': <Presentation className="insertSizehere text-orange-600" />,
+      
+      // Imágenes
+      'jpg': <Image className="insertSizehere text-purple-500" />,
+      'jpeg': <Image className="insertSizehere text-purple-500" />,
+      'png': <Image className="insertSizehere text-purple-400" />,
+      'gif': <Image className="insertSizehere text-purple-600" />,
+      'bmp': <Image className="insertSizehere text-purple-300" />,
+      'svg': <Palette className="insertSizehere text-pink-500" />,
+      'webp': <Image className="insertSizehere text-purple-400" />,
+      'ico': <Image className="insertSizehere text-yellow-500" />,
+      'tiff': <Image className="insertSizehere text-purple-700" />,
+      'psd': <Palette className="insertSizehere text-blue-500" />,
+      
+      // Audio
+      'mp3': <Music className="insertSizehere text-green-600" />,
+      'wav': <Music className="insertSizehere text-green-500" />,
+      'flac': <Music className="insertSizehere text-green-700" />,
+      'aac': <Music className="insertSizehere text-green-400" />,
+      'ogg': <Music className="insertSizehere text-green-600" />,
+      'wma': <Music className="insertSizehere text-green-500" />,
+      'm4a': <Music className="insertSizehere text-green-600" />,
+      
+      // Video
+      'mp4': <Video className="insertSizehere text-red-600" />,
+      'avi': <Video className="insertSizehere text-red-500" />,
+      'mkv': <Video className="insertSizehere text-red-700" />,
+      'mov': <Video className="insertSizehere text-red-400" />,
+      'wmv': <Video className="insertSizehere text-red-500" />,
+      'flv': <Video className="insertSizehere text-red-600" />,
+      'webm': <Video className="insertSizehere text-red-500" />,
+      '3gp': <Video className="insertSizehere text-red-400" />,
+      
+      // Archivos comprimidos
+      'zip': <Archive className="insertSizehere text-yellow-600" />,
+      'rar': <Archive className="insertSizehere text-yellow-500" />,
+      '7z': <Archive className="insertSizehere text-yellow-700" />,
+      'tar': <Archive className="insertSizehere text-yellow-500" />,
+      'gz': <Archive className="insertSizehere text-yellow-600" />,
+      'bz2': <Archive className="insertSizehere text-yellow-500" />,
+      
+      // Código y desarrollo
+      'js': <Code className="insertSizehere text-yellow-500" />,
+      'jsx': <Code className="insertSizehere text-blue-400" />,
+      'ts': <Code className="insertSizehere text-blue-600" />,
+      'tsx': <Code className="insertSizehere text-blue-500" />,
+      'html': <Globe className="insertSizehere text-orange-500" />,
+      'css': <Palette className="insertSizehere text-blue-500" />,
+      'scss': <Palette className="insertSizehere text-pink-500" />,
+      'sass': <Palette className="insertSizehere text-pink-600" />,
+      'less': <Palette className="insertSizehere text-blue-600" />,
+      'php': <Code className="insertSizehere text-purple-600" />,
+      'py': <Code className="insertSizehere text-yellow-600" />,
+      'java': <Code className="insertSizehere text-red-600" />,
+      'cpp': <Code className="insertSizehere text-blue-700" />,
+      'c': <Code className="insertSizehere text-blue-600" />,
+      'cs': <Code className="insertSizehere text-purple-500" />,
+      'rb': <Code className="insertSizehere text-red-500" />,
+      'go': <Code className="insertSizehere text-cyan-500" />,
+      'rs': <Code className="insertSizehere text-orange-600" />,
+      'swift': <Code className="insertSizehere text-orange-500" />,
+      'kt': <Code className="insertSizehere text-purple-600" />,
+      'dart': <Code className="insertSizehere text-blue-500" />,
+      
+      // Web y datos
+      'json': <Code className="insertSizehere text-green-600" />,
+      'xml': <Code className="insertSizehere text-orange-400" />,
+      'yaml': <Code className="insertSizehere text-purple-400" />,
+      'yml': <Code className="insertSizehere text-purple-400" />,
+      'toml': <Code className="insertSizehere text-gray-600" />,
+      'ini': <Settings className="insertSizehere text-gray-500" />,
+      'env': <Settings className="insertSizehere text-green-500" />,
+      
+      // Bases de datos
+      'sql': <Database className="insertSizehere text-blue-600" />,
+      'db': <Database className="insertSizehere text-green-600" />,
+      'sqlite': <Database className="insertSizehere text-blue-500" />,
+      'mdb': <Database className="insertSizehere text-red-600" />,
+      
+      // Ejecutables y sistema
+      'exe': <Zap className="insertSizehere text-red-600" />,
+      'msi': <Download className="insertSizehere text-blue-600" />,
+      'deb': <Download className="insertSizehere text-orange-600" />,
+      'rpm': <Download className="insertSizehere text-red-500" />,
+      'dmg': <HardDrive className="insertSizehere text-gray-600" />,
+      'iso': <HardDrive className="insertSizehere text-yellow-600" />,
+      'img': <HardDrive className="insertSizehere text-blue-500" />,
+      
+      // Scripts y terminal
+      'sh': <Terminal className="insertSizehere text-green-600" />,
+      'bash': <Terminal className="insertSizehere text-green-700" />,
+      'zsh': <Terminal className="insertSizehere text-blue-600" />,
+      'bat': <Terminal className="insertSizehere text-yellow-600" />,
+      'cmd': <Terminal className="insertSizehere text-gray-600" />,
+      'ps1': <Terminal className="insertSizehere text-blue-500" />,
+      
+      // Fuentes
+      'ttf': <FileType className="insertSizehere text-purple-500" />,
+      'otf': <FileType className="insertSizehere text-purple-600" />,
+      'woff': <FileType className="insertSizehere text-purple-400" />,
+      'woff2': <FileType className="insertSizehere text-purple-400" />,
+      'eot': <FileType className="insertSizehere text-purple-700" />,
+      
+      // Otros formatos comunes
+      'log': <FileText className="insertSizehere text-gray-500" />,
+      'md': <FileText className="insertSizehere text-blue-600" />,
+      'readme': <FileText className="insertSizehere text-green-600" />,
+      'license': <FileText className="insertSizehere text-yellow-600" />,
+      'gitignore': <Settings className="insertSizehere text-orange-500" />
+    };
+
+  // Función para obtener el icono
+  const getIconExtension = (extension: string, sizeClass: string) => {
+    const element = fileIconsMap[extension] || <FileType className="h-5 w-5 text-gray-400" />;
+    const newClassName  = element.props.className.replace('insertSizehere', sizeClass)
+    const cloneElement = React.cloneElement(element, { className: newClassName });
+
+    return cloneElement;
+  };
+  
+
+  const handleExtensionIcon = (item: Item, isList: boolean) => {
+    const sizeClass = isList ? 'h-5 w-5' : 'h-5 w-5 md:h-7 md:w-7 lg:h-10 lg:w-10';
+    if (item.type === 'folder') return <Folder className={`${sizeClass} text-yellow-500`} />;
+
+    const extension : string = item.encryptedMetadata.extension
+    return getIconExtension(extension, sizeClass);
+  }
+
+  
+
+
 
   const handlePage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -399,6 +552,7 @@ const FilesView: React.FC = () => {
               onDownload={handleDownload}
               onRename={handleRename}
               onDelete={handleDelete}
+              onGetIcon={handleExtensionIcon}
             />
           ) : (
             <FileList
@@ -407,6 +561,7 @@ const FilesView: React.FC = () => {
               onDownload={handleDownload}
               onRename={handleRename}
               onDelete={handleDelete}
+              onGetIcon={handleExtensionIcon}
             />
           )}
           

@@ -1,8 +1,12 @@
 import React from 'react';
 import { Item } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { Lock, Key, Folder, MoreVertical, Share } from 'lucide-react';
-// import ShareModal from '../shared/ShareModal';
+import { 
+  FileText, Sheet, Presentation, Image, Archive, 
+  Music, Video, Code, Database, FileType,
+  Folder, Lock, Download, Globe, Settings,Share,
+  Zap, Cpu, HardDrive, Terminal, Palette, MoreVertical
+} from 'lucide-react';// import ShareModal from '../shared/ShareModal';
 import RightClickElementModal from '../shared/RightClickElementModal';
 
 interface FileListProps {
@@ -11,44 +15,15 @@ interface FileListProps {
   onDownload: (item: Item | Item[]) => Promise<void>;
   onRename: (item: Item | Item[]) => void;
   onDelete: (item: Item | Item[]) => void;
+  onGetIcon: (extension: Item, isList: boolean) => React.ReactElement;
 }
 
-const FileList: React.FC<FileListProps> = ({ items, onShare, onDownload, onRename, onDelete }) => {
+const FileList: React.FC<FileListProps> = ({ items, onShare, onDownload, onRename, onDelete, onGetIcon }) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
-
-  const getFileIcon = (item: Item) => {
-    if (item.type === 'folder') return <Folder className="h-5 w-5 text-yellow-500" />;
-
-    const extension = item.itemName.split('.').pop()?.toLowerCase();
     
-    switch(extension) {
-      case 'pdf':
-        return <Lock className="h-5 w-5 text-red-500" />;
-      case 'doc':
-      case 'docx':
-        return <Key className="h-5 w-5 text-blue-500" />;
-      case 'xls':
-      case 'xlsx':
-        return <Lock className="h-5 w-5 text-green-500" />;
-      case 'ppt':
-      case 'pptx':
-        return <Key className="h-5 w-5 text-orange-500" />;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-        return <Lock className="h-5 w-5 text-purple-500" />;
-      case 'zip':
-      case 'rar':
-        return <Key className="h-5 w-5 text-gray-500" />;
-      default:
-        return <Lock className="h-5 w-5 text-gray-400" />;
-    }
-  };
-
   const toggleSelect = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
     
@@ -210,7 +185,7 @@ const FileList: React.FC<FileListProps> = ({ items, onShare, onDownload, onRenam
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center">
-                    {getFileIcon(item)}
+                    {onGetIcon(item, true)}
                     <span className="ml-3 font-medium">{item.itemName}</span>
                     {item.sharedWith && item.sharedWith.length > 0 && (
                       <div className="ml-2">

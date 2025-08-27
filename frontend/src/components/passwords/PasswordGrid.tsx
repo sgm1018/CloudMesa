@@ -14,6 +14,7 @@ interface PasswordGridProps {
   onVisitWebsite: (item: Item | Item[]) => void;
   onEdit: (item: Item | Item[]) => void;
   onDelete: (item: Item | Item[]) => void;
+  onGetIcon: (extension: Item, isList: boolean) => React.ReactElement;
 }
 
 const PasswordGrid: React.FC<PasswordGridProps> = ({
@@ -24,7 +25,8 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({
   onCopyPassword,
   onVisitWebsite,
   onEdit,
-  onDelete
+  onDelete,
+  onGetIcon
 }) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
@@ -55,23 +57,6 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [hoveredItemId, items]);
 
-  const getItemIcon = (item: Item) => {
-    if (item.type === ItemType.GROUP) return <Folder className="h-12 w-12 text-primary-500" />;
-    
-    const icon = item.encryptedMetadata.icon;
-    switch(icon) {
-      case 'mail':
-        return <Key className="h-12 w-12 text-red-500" />;
-      case 'shopping-cart':
-        return <Key className="h-12 w-12 text-orange-500" />;
-      case 'building':
-        return <Key className="h-12 w-12 text-blue-500" />;
-      case 'trello':
-        return <Key className="h-12 w-12 text-indigo-500" />;
-      default:
-        return <Lock className="h-12 w-12 text-gray-500" />;
-    }
-  };
 
   const toggleSelect = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -240,7 +225,7 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({
             
             <div className="p-4 pt-6 flex flex-col items-center">
               <div className="mb-3 flex items-center justify-center">
-                {getItemIcon(item)}
+                {onGetIcon(item, false)}
               </div>
               
               <div className="mt-2 text-center">

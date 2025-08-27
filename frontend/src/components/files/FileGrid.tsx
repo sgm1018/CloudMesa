@@ -11,43 +11,16 @@ interface FileGridProps {
   onDownload: (item: Item | Item[]) => Promise<void>;
   onRename: (item: Item | Item[]) => void;
   onDelete: (item: Item | Item[]) => void;
+  onGetIcon: (extension: Item, isList: boolean) => React.ReactElement;
+  
 }
 
-const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRename, onDelete }) => {
+const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRename, onDelete, onGetIcon }) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
 
-  const getFileIcon = (item: Item) => {
-    if (item.type === 'folder') return <Folder className="h-12 w-12 text-yellow-500" />;
-
-    const extension = item.itemName!.split('.').pop()?.toLowerCase();
-    
-    switch(extension) {
-      case 'pdf':
-        return <File className="h-12 w-12 text-red-500" />;
-      case 'doc':
-      case 'docx':
-        return <FileText className="h-12 w-12 text-blue-500" />;
-      case 'xls':
-      case 'xlsx':
-        return <FileSpreadsheet className="h-12 w-12 text-green-500" />;
-      case 'ppt':
-      case 'pptx':
-        return <FilePresentation className="h-12 w-12 text-orange-500" />;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-        return <FileImage className="h-12 w-12 text-purple-500" />;
-      case 'zip':
-      case 'rar':
-        return <FileArchive className="h-12 w-12 text-gray-500" />;
-      default:
-        return <File className="h-12 w-12 text-gray-400" />;
-    }
-  };
 
   const toggleSelect = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -178,7 +151,7 @@ const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRenam
             
             <div className="p-4 pt-6 flex flex-col items-center">
               <div className="mb-3 flex items-center justify-center">
-                {getFileIcon(item)}
+                {onGetIcon(item, false)}
               </div>
               
               <div className="mt-2 text-center">

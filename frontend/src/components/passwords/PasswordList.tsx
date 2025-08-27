@@ -12,6 +12,7 @@ interface PasswordListProps {
   onVisitWebsite: (item: Item | Item[]) => void;
   onEdit: (item: Item | Item[]) => void;
   onDelete: (item: Item | Item[]) => void;
+  onGetIcon: (extension: Item, isList: boolean) => React.ReactElement;
 }
 
 const PasswordList: React.FC<PasswordListProps> = ({
@@ -22,7 +23,8 @@ const PasswordList: React.FC<PasswordListProps> = ({
   onCopyPassword,
   onVisitWebsite,
   onEdit,
-  onDelete
+  onDelete,
+  onGetIcon
 }) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
@@ -73,23 +75,7 @@ const PasswordList: React.FC<PasswordListProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [selectedPasswordId, items]);
 
-  const getItemIcon = (item: Item) => {
-    if (item.type === ItemType.GROUP) return <Folder className="h-5 w-5 text-primary-500" />;
-    
-    const icon = item.encryptedMetadata.icon;
-    switch(icon) {
-      case 'mail':
-        return <Key className="h-5 w-5 text-red-500" />;
-      case 'shopping-cart':
-        return <Key className="h-5 w-5 text-orange-500" />;
-      case 'building':
-        return <Key className="h-5 w-5 text-blue-500" />;
-      case 'trello':
-        return <Key className="h-5 w-5 text-indigo-500" />;
-      default:
-        return <Lock className="h-5 w-5 text-gray-500" />;
-    }
-  };
+
 
   const toggleSelect = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -254,7 +240,7 @@ const PasswordList: React.FC<PasswordListProps> = ({
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center">
-                  {getItemIcon(item)}
+                  {onGetIcon(item, true)}
                   <span className="ml-3 font-medium">{item.itemName}</span>
                   {item.sharedWith && item.sharedWith.length > 0 && (
                     <div className="ml-2">
