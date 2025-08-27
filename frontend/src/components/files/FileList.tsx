@@ -7,15 +7,17 @@ import RightClickElementModal from '../shared/RightClickElementModal';
 
 interface FileListProps {
   items: Item[];
+  onShare: (item: Item | Item[]) => void;
+  onDownload: (item: Item | Item[]) => Promise<void>;
+  onRename: (item: Item | Item[]) => void;
+  onDelete: (item: Item | Item[]) => void;
 }
 
-const FileList: React.FC<FileListProps> = ({ items }) => {
+const FileList: React.FC<FileListProps> = ({ items, onShare, onDownload, onRename, onDelete }) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
-  const [showShareModal, setShowShareModal] = React.useState(false);
-  const [itemsToShare, setItemsToShare] = React.useState<Item[]>([]);
 
   const getFileIcon = (item: Item) => {
     if (item.type === 'folder') return <Folder className="h-5 w-5 text-yellow-500" />;
@@ -126,27 +128,20 @@ const FileList: React.FC<FileListProps> = ({ items }) => {
 
 
   const handleShare = (item: Item | Item[]) => {
-    const itemsArray = Array.isArray(item) ? item : [item];
-    setItemsToShare(itemsArray);
-    setShowShareModal(true);
+    onShare(item);
   };
 
   const handleDownload = (item: Item | Item[]) => {
     // Implementar lógica de descarga
-    const itemsArray = Array.isArray(item) ? item : [item];
-    console.log('Download:', itemsArray.map(i => i.encryptedMetadata.name));
+    onDownload(item);
   };
 
   const handleRename = (item: Item | Item[]) => {
-    // Para renombrar, solo trabajamos con un elemento
-    const singleItem = Array.isArray(item) ? item[0] : item;
-    console.log('Rename:', singleItem.encryptedMetadata.name);
+    onRename(item);
   };
 
   const handleDelete = (item: Item | Item[]) => {
-    // Implementar lógica de eliminación
-    const itemsArray = Array.isArray(item) ? item : [item];
-    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
+    onDelete(item);
   };
 
   const handleCloseMenu = () => {

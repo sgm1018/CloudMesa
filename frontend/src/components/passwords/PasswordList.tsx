@@ -1,17 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Item, ItemType } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { useToast } from '../../context/ToastContext';
 import { Lock, Key, Folder, MoreVertical, Share, Eye, EyeOff, Copy, ExternalLink as External } from 'lucide-react';
 
 interface PasswordListProps {
   items: Item[];
   onPasswordSelect: (password: Item) => void;
+  onShare: (item: Item | Item[]) => void;
+  onCopyUsername: (item: Item | Item[]) => void;
+  onCopyPassword: (item: Item | Item[]) => void;
+  onVisitWebsite: (item: Item | Item[]) => void;
+  onEdit: (item: Item | Item[]) => void;
+  onDelete: (item: Item | Item[]) => void;
 }
 
-const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) => {
+const PasswordList: React.FC<PasswordListProps> = ({
+  items,
+  onPasswordSelect,
+  onShare,
+  onCopyUsername,
+  onCopyPassword,
+  onVisitWebsite,
+  onEdit,
+  onDelete
+}) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
-  const { showToast } = useToast();
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const menuRef = React.useRef<HTMLDivElement>(null);
@@ -28,68 +41,37 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
 
       if (event.key.toLowerCase() === 'u') {
         event.preventDefault();
-        if (hoveredItem.encryptedMetadata.username) {
-          copyToClipboard(hoveredItem.encryptedMetadata.username, 'username');
-        }
+        onCopyUsername(hoveredItem);
       } else if (event.key.toLowerCase() === 'c') {
         event.preventDefault();
-        if (hoveredItem.encryptedMetadata.password) {
-          copyToClipboard(hoveredItem.encryptedMetadata.password, 'password');
-        }
+        onCopyPassword(hoveredItem);
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [hoveredItemId, items]);
-  const handleKeyDown = async (e: KeyboardEvent) => {
-    if (!selectedPasswordId) return;
-    
-    const item = items.find(i => i._id === selectedPasswordId);
-    if (!item || item.type !== ItemType.PASSWORD) return;
-
-    if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
-      e.preventDefault();
-      if (item.encryptedMetadata.username) {
-        await copyToClipboard(item.encryptedMetadata.username, 'username');
-      }
-    } else if (e.ctrlKey && (e.key === 'c' || e.key === 'C')) {
-      e.preventDefault();
-      if (item.encryptedMetadata.password) {
-        await copyToClipboard(item.encryptedMetadata.password, 'password');
-      }
-    }
-  };
 
   // Keep the existing keyboard shortcut handler for selected items
   useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (!selectedPasswordId) return;
+      
+      const item = items.find(i => i._id === selectedPasswordId);
+      if (!item || item.type !== ItemType.PASSWORD) return;
+
+      if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
+        e.preventDefault();
+        onCopyUsername(item);
+      } else if (e.ctrlKey && (e.key === 'c' || e.key === 'C')) {
+        e.preventDefault();
+        onCopyPassword(item);
+      }
+    };
 
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [selectedPasswordId, items]);
-
-  const copyToClipboard = async (text: string, type: 'username' | 'password') => {
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast(`${type === 'username' ? 'Username' : 'Password'} copied to clipboard`);
-    } catch (error) {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      try {
-        document.execCommand('copy');
-        showToast(`${type === 'username' ? 'Username' : 'Password'} copied to clipboard`);
-      } catch (err) {
-        console.error('Fallback clipboard copy failed:', err);
-        showToast('Failed to copy to clipboard', 'error');
-      }
-      document.body.removeChild(textarea);
-    }
-  };
 
   const getItemIcon = (item: Item) => {
     if (item.type === ItemType.GROUP) return <Folder className="h-5 w-5 text-primary-500" />;
@@ -131,11 +113,6 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
       ...prev,
       [id]: !prev[id]
     }));
-  };
-
-  const handleCopyClick = async (text: string, type: 'username' | 'password', event: React.MouseEvent) => {
-    event.stopPropagation();
-    await copyToClipboard(text, type);
   };
 
   const toggleMenu = (id: string, event: React.MouseEvent) => {
@@ -294,7 +271,10 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                     </span>
                     <button
                       className="p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => handleCopyClick(item.encryptedMetadata.username || '', 'username', e)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCopyUsername(item);
+                      }}
                     >
                       <Copy className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
                     </button>
@@ -323,7 +303,10 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                     </button>
                     <button
                       className="p-1"
-                      onClick={(e) => handleCopyClick(item.encryptedMetadata.password || '', 'password', e)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCopyPassword(item);
+                      }}
                     >
                       <Copy className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
                     </button>
@@ -360,9 +343,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                             className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (item.encryptedMetadata.username) {
-                                copyToClipboard(item.encryptedMetadata.username, 'username');
-                              }
+                              onCopyUsername(item);
                               setOpenMenuId(null);
                             }}
                           >
@@ -374,9 +355,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                             className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (item.encryptedMetadata.password) {
-                                copyToClipboard(item.encryptedMetadata.password, 'password');
-                              }
+                              onCopyPassword(item);
                               setOpenMenuId(null);
                             }}
                           >
@@ -389,7 +368,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                               className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                window.open(item.encryptedMetadata.url, '_blank');
+                                onVisitWebsite(item);
                                 setOpenMenuId(null);
                               }}
                             >
@@ -402,7 +381,14 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                         </>
                       )}
                       
-                      <button className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700">
+                      <button 
+                        className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onShare(item);
+                          setOpenMenuId(null);
+                        }}
+                      >
                         <Share className="h-4 w-4 mr-2" />
                         <span>Share</span>
                       </button>
@@ -411,9 +397,7 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                         className="w-full flex items-center px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (item.type === ItemType.PASSWORD) {
-                            onPasswordSelect(item);
-                          }
+                          onEdit(item);
                           setOpenMenuId(null);
                         }}
                       >
@@ -421,15 +405,14 @@ const PasswordList: React.FC<PasswordListProps> = ({ items, onPasswordSelect }) 
                         <span>Edit</span>
                       </button>
                       
-                      <button className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      <button 
+                        className="w-full flex items-center px-4 py-2 text-sm text-left text-error-600 dark:text-error-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Handle delete action here
-                          // You can call a delete function or show a confirmation dialog
-                          showToast('Delete action not implemented yet', 'error');
+                          onDelete(item);
                           setOpenMenuId(null);
-                        }
-                         }>
+                        }}
+                      >
                         <Copy className="h-4 w-4 mr-2" />
                         <span>Delete</span>
                       </button>

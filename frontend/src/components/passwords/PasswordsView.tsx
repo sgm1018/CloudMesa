@@ -8,7 +8,6 @@ import NewPasswordModal from './NewPasswordModal';
 import PasswordDetailsModal from './PasswordDetailsModal';
 import { FolderPlus, KeyIcon, Plus, Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PaginationParams } from '../../services/BaseService';
-import { itemService } from '../../services/ItemService';
 import { useToast } from '../../context/ToastContext';
 
 const PasswordsView: React.FC = () => {
@@ -72,62 +71,59 @@ const PasswordsView: React.FC = () => {
     fetchItems();
   }, [currentFolder, sortBy, sortOrder, filterType, currentPage]);
 
-  // Multi-selection action handlers for Breadcrumb
-  const handleBulkDelete = async (items: Item[]) => {
-    try {
-      if (confirm(`Are you sure you want to delete ${items.length} passwords?`)) {
-        await Promise.all(items.map(item => itemService.remove(item._id)));
-        showToast(`${items.length} passwords deleted successfully!`, 'success');
-        await fetchItems();
+  // Shared handlers for both grid and list views
+  const handleShare = (item: Item | Item[]) => {
+    console.log('Share:', Array.isArray(item) ? item.map(i => i.encryptedMetadata.name) : item.encryptedMetadata.name);
+    showToast('Share functionality not implemented yet', 'error');
+  };
+
+  const handleCopyUsername = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    const usernames = itemsArray
+      .filter(i => i.encryptedMetadata.username)
+      .map(i => i.encryptedMetadata.username)
+      .join('\n');
+
+    if (usernames) {
+      navigator.clipboard.writeText(usernames);
+      showToast(`${itemsArray.length} usernames copied to clipboard!`, 'success');
+    }
+  };
+
+  const handleCopyPassword = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    const passwords = itemsArray
+      .filter(i => i.encryptedMetadata.password)
+      .map(i => i.encryptedMetadata.password)
+      .join('\n');
+
+    if (passwords) {
+      navigator.clipboard.writeText(passwords);
+      showToast(`${itemsArray.length} passwords copied to clipboard!`, 'success');
+    }
+  };
+
+  const handleVisitWebsite = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    itemsArray.forEach(i => {
+      if (i.encryptedMetadata.url) {
+        window.open(i.encryptedMetadata.url, '_blank');
       }
-    } catch (error) {
-      console.error('Error deleting passwords:', error);
-      showToast('Error deleting passwords. Please try again.', 'error');
+    });
+    showToast(`Opened ${itemsArray.length} websites!`, 'success');
+  };
+
+  const handleEdit = (item: Item | Item[]) => {
+    const singleItem = Array.isArray(item) ? item[0] : item;
+    if (singleItem.type === ItemType.PASSWORD) {
+      setSelectedPassword(singleItem);
     }
   };
 
-  const handleBulkCopyUsername = async (items: Item[]) => {
-    try {
-      const usernames = items
-        .filter(item => item.encryptedMetadata.username)
-        .map(item => item.encryptedMetadata.username)
-        .join('\n');
-      
-      await navigator.clipboard.writeText(usernames);
-      showToast(`${items.length} usernames copied to clipboard!`, 'success');
-    } catch (error) {
-      console.error('Error copying usernames:', error);
-      showToast('Error copying usernames. Please try again.', 'error');
-    }
-  };
-
-  const handleBulkCopyPassword = async (items: Item[]) => {
-    try {
-      const passwords = items
-        .filter(item => item.encryptedMetadata.password)
-        .map(item => item.encryptedMetadata.password)
-        .join('\n');
-      
-      await navigator.clipboard.writeText(passwords);
-      showToast(`${items.length} passwords copied to clipboard!`, 'success');
-    } catch (error) {
-      console.error('Error copying passwords:', error);
-      showToast('Error copying passwords. Please try again.', 'error');
-    }
-  };
-
-  const handleBulkVisitWebsite = async (items: Item[]) => {
-    try {
-      items
-        .filter(item => item.encryptedMetadata.url)
-        .forEach(item => {
-          window.open(item.encryptedMetadata.url, '_blank');
-        });
-      showToast(`Opened ${items.length} websites!`, 'success');
-    } catch (error) {
-      console.error('Error opening websites:', error);
-      showToast('Error opening websites. Please try again.', 'error');
-    }
+  const handleDelete = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
+    showToast('Delete functionality not implemented yet', 'error');
   };
 
   const renderPagination = () => {
@@ -266,10 +262,10 @@ const PasswordsView: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Breadcrumb 
             allItems={items}
-            onDelete={handleBulkDelete}
-            onCopyUsername={handleBulkCopyUsername}
-            onCopyPassword={handleBulkCopyPassword}
-            onVisitWebsite={handleBulkVisitWebsite}
+            onDelete={handleDelete}
+            onCopyUsername={handleCopyUsername}
+            onCopyPassword={handleCopyPassword}
+            onVisitWebsite={handleVisitWebsite}
           />
           
           <div className="flex items-center space-x-2">
@@ -283,7 +279,7 @@ const PasswordsView: React.FC = () => {
               </button>
               
               {showFilters && (
-                <div className="absolute z-50 top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-10">
+                <div className="absolute z-10 top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
                   <div className="space-y-2">
                     <div>
                       <label className="text-sm font-medium mb-1 block">Sort by</label>
@@ -371,9 +367,27 @@ const PasswordsView: React.FC = () => {
       ) : (
         <div className="mt-4">
           {viewMode === 'grid' ? (
-            <PasswordGrid items={items} onPasswordSelect={handlePasswordSelect} />
+            <PasswordGrid
+              items={items}
+              onPasswordSelect={handlePasswordSelect}
+              onShare={handleShare}
+              onCopyUsername={handleCopyUsername}
+              onCopyPassword={handleCopyPassword}
+              onVisitWebsite={handleVisitWebsite}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ) : (
-            <PasswordList items={items} onPasswordSelect={handlePasswordSelect} />
+            <PasswordList
+              items={items}
+              onPasswordSelect={handlePasswordSelect}
+              onShare={handleShare}
+              onCopyUsername={handleCopyUsername}
+              onCopyPassword={handleCopyPassword}
+              onVisitWebsite={handleVisitWebsite}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           )}
           
           {renderPagination()}

@@ -4,23 +4,20 @@ import { useAppContext } from '../../context/AppContext';
 import { File, FileImage, FileText, FileSpreadsheet, Presentation as FilePresentation, FileArchive, Folder, MoreVertical, Share } from 'lucide-react';
 // import ShareModal from '../shared/ShareModal';
 import RightClickElementModal from '../shared/RightClickElementModal';
-import { itemService } from '../../services/ItemService';
-import { useEncryption } from '../../context/EncryptionContext';
-import { useToast } from '../../context/ToastContext';
 
 interface FileGridProps {
   items: Item[];
+  onShare: (item: Item | Item[]) => void;
+  onDownload: (item: Item | Item[]) => Promise<void>;
+  onRename: (item: Item | Item[]) => void;
+  onDelete: (item: Item | Item[]) => void;
 }
 
-const FileGrid: React.FC<FileGridProps> = ({ items }) => {
+const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRename, onDelete }) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
-  const [showShareModal, setShowShareModal] = React.useState(false);
-  const [itemsToShare, setItemsToShare] = React.useState<Item[]>([]);
-  const { privateKey } = useEncryption();
-  const { showToast } = useToast();
 
   const getFileIcon = (item: Item) => {
     if (item.type === 'folder') return <Folder className="h-12 w-12 text-yellow-500" />;
@@ -121,35 +118,19 @@ const FileGrid: React.FC<FileGridProps> = ({ items }) => {
 
 
   const handleShare = (item: Item | Item[]) => {
-    const itemsArray = Array.isArray(item) ? item : [item];
-    setItemsToShare(itemsArray);
-    setShowShareModal(true);
+    onShare(item);
   };
 
   const handleDownload = async (item: Item | Item[]) => {
-    // Implementar lógica de descarga
-    if (privateKey == null || privateKey == '') {
-      showToast('Error: Private key is required to download files.', 'error');
-      return;
-    }
-    
-    const itemsArray = Array.isArray(item) ? item : [item];
-    for (const singleItem of itemsArray) {
-      await itemService.downloadItem(singleItem, privateKey);
-    }
-    showToast(`Download completed for ${itemsArray.length} item(s).`, 'success');
+    await onDownload(item);
   };
 
   const handleRename = (item: Item | Item[]) => {
-    // Para renombrar, solo trabajamos con un elemento
-    const singleItem = Array.isArray(item) ? item[0] : item;
-    console.log('Rename:', singleItem.encryptedMetadata.name);
+    onRename(item);
   };
 
   const handleDelete = (item: Item | Item[]) => {
-    // Implementar lógica de eliminación
-    const itemsArray = Array.isArray(item) ? item : [item];
-    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
+    onDelete(item);
   };
 
   const handleCloseMenu = () => {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Item, ItemType } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { useToast } from '../../context/ToastContext';
 import { Lock, Key, Folder, MoreVertical, Eye, EyeOff, Share } from 'lucide-react';
 // import ShareModal from '../shared/ShareModal';
 import RightClickElementModal from '../shared/RightClickElementModal';
@@ -9,28 +8,31 @@ import RightClickElementModal from '../shared/RightClickElementModal';
 interface PasswordGridProps {
   items: Item[];
   onPasswordSelect: (password: Item) => void;
+  onShare: (item: Item | Item[]) => void;
+  onCopyUsername: (item: Item | Item[]) => void;
+  onCopyPassword: (item: Item | Item[]) => void;
+  onVisitWebsite: (item: Item | Item[]) => void;
+  onEdit: (item: Item | Item[]) => void;
+  onDelete: (item: Item | Item[]) => void;
 }
 
-const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) => {
+const PasswordGrid: React.FC<PasswordGridProps> = ({
+  items,
+  onPasswordSelect,
+  onShare,
+  onCopyUsername,
+  onCopyPassword,
+  onVisitWebsite,
+  onEdit,
+  onDelete
+}) => {
   const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
-  const { showToast } = useToast();
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
-  const [showShareModal, setShowShareModal] = React.useState(false);
-  const [itemsToShare, setItemsToShare] = React.useState<Item[]>([]);
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   const [selectedPasswordId, setSelectedPasswordId] = useState<string | null>(null);
-
-  const copyToClipboard = async (text: string, type: 'username' | 'password') => {
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast(`${type === 'username' ? 'Username' : 'Password'} copied to clipboard`, 'success');
-    } catch (err) {
-      showToast('Failed to copy to clipboard', 'error');
-    }
-  };
 
   // Add keyboard shortcut handler
   useEffect(() => {
@@ -42,14 +44,10 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
 
       if (event.key.toLowerCase() === 'u') {
         event.preventDefault();
-        if (hoveredItem.encryptedMetadata.username) {
-          copyToClipboard(hoveredItem.encryptedMetadata.username, 'username');
-        }
+        onCopyUsername(hoveredItem);
       } else if (event.key.toLowerCase() === 'c') {
         event.preventDefault();
-        if (hoveredItem.encryptedMetadata.password) {
-          copyToClipboard(hoveredItem.encryptedMetadata.password, 'password');
-        }
+        onCopyPassword(hoveredItem);
       }
     };
 
@@ -146,57 +144,27 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({ items, onPasswordSelect }) 
   };
 
   const handleShare = (item: Item | Item[]) => {
-    const itemsArray = Array.isArray(item) ? item : [item];
-    setItemsToShare(itemsArray);
-    setShowShareModal(true);
+    onShare(item);
   };
 
   const handleCopyUsername = (item: Item | Item[]) => {
-    const itemsArray = Array.isArray(item) ? item : [item];
-    const usernames = itemsArray
-      .filter(i => i.encryptedMetadata.username)
-      .map(i => i.encryptedMetadata.username)
-      .join('\n');
-    
-    if (usernames) {
-      copyToClipboard(usernames, 'username');
-    }
+    onCopyUsername(item);
   };
 
   const handleCopyPassword = (item: Item | Item[]) => {
-    const itemsArray = Array.isArray(item) ? item : [item];
-    const passwords = itemsArray
-      .filter(i => i.encryptedMetadata.password)
-      .map(i => i.encryptedMetadata.password)
-      .join('\n');
-    
-    if (passwords) {
-      copyToClipboard(passwords, 'password');
-    }
+    onCopyPassword(item);
   };
 
   const handleVisitWebsite = (item: Item | Item[]) => {
-    const itemsArray = Array.isArray(item) ? item : [item];
-    itemsArray.forEach(i => {
-      if (i.encryptedMetadata.url) {
-        window.open(i.encryptedMetadata.url, '_blank');
-      }
-    });
+    onVisitWebsite(item);
   };
 
   const handleEdit = (item: Item | Item[]) => {
-    // Para editar, solo trabajamos con un elemento
-    const singleItem = Array.isArray(item) ? item[0] : item;
-    if (singleItem.type === ItemType.PASSWORD) {
-      onPasswordSelect(singleItem);
-    }
+    onEdit(item);
   };
 
   const handleDelete = (item: Item | Item[]) => {
-    // Implementar lógica de eliminación
-    const itemsArray = Array.isArray(item) ? item : [item];
-    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
-    showToast('Not implemented yet', 'error');
+    onDelete(item);
   };
 
   const handleCloseMenu = () => {

@@ -27,8 +27,6 @@ const FilesView: React.FC = () => {
   const [items4Page, setItems4Page] = useState(20);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-
-
   const handlePage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -72,7 +70,6 @@ const FilesView: React.FC = () => {
     }
     setIsLoading(true);
 
-
     const contItems : number = await countItems([ItemType.FILE, ItemType.FOLDER], currentFolder || '');
     setTotalPages(Math.ceil(contItems / items4Page));
 
@@ -80,12 +77,10 @@ const FilesView: React.FC = () => {
       parentId: currentFolder || '',
       itemTypes: [ItemType.FILE, ItemType.FOLDER],
       page: currentPage,
-      limit: items4Page, 
+      limit: items4Page,
     }
     let fetchedItems = await getItemsByParentId(params);
-    
-    
-    
+
     let listOfDecryptedMetadataFiles : Item[] = [];
     for (const item of fetchedItems) {
       const decryptedItem = await itemService.getDecryptMetadata(item, privateKey);
@@ -95,7 +90,7 @@ const FilesView: React.FC = () => {
     if (listOfDecryptedMetadataFiles == null) return
     listOfDecryptedMetadataFiles.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'name':
           comparison = a.encryptedMetadata.name!.localeCompare(b.encryptedMetadata.name!);
@@ -119,23 +114,6 @@ const FilesView: React.FC = () => {
     fetchItems();
   }, [currentFolder, sortBy, sortOrder, filterType, currentPage, privateKey]);
 
-  // Multi-selection action handlers for Breadcrumb
-  const handleBulkDownload = async (items: Item[]) => {
-    try {
-      showToast(`Downloading ${items.length} items...`, 'success');
-      // TODO: Implement bulk download logic
-      for (const item of items) {
-        if (item.type !== ItemType.GROUP) {
-          // Download individual item
-          console.log('Downloading:', item.encryptedMetadata.name);
-        }
-      }
-      showToast('Download completed!', 'success');
-    } catch (error) {
-      console.error('Error downloading items:', error);
-      showToast('Error downloading items. Please try again.', 'error');
-    }
-  };
 
   const handleBulkDelete = async (items: Item[]) => {
     try {
@@ -235,6 +213,38 @@ const FilesView: React.FC = () => {
     );
   };
 
+  // Shared handlers for both grid and list views
+  const handleShare = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    console.log('Share:', itemsArray.map(i => i.encryptedMetadata.name));
+    showToast('Share functionality not implemented yet', 'error');
+  };
+
+  const handleDownload = async (item: Item | Item[]) => {
+    if (privateKey == null || privateKey == '') {
+      showToast('Error: Private key is required to download files.', 'error');
+      return;
+    }
+
+    const itemsArray = Array.isArray(item) ? item : [item];
+    for (const singleItem of itemsArray) {
+      await itemService.downloadItem(singleItem, privateKey);
+    }
+    showToast(`Download completed for ${itemsArray.length} item(s).`, 'success');
+  };
+
+  const handleRename = (item: Item | Item[]) => {
+    const singleItem = Array.isArray(item) ? item[0] : item;
+    console.log('Rename:', singleItem.encryptedMetadata.name);
+    showToast('Rename functionality not implemented yet', 'error');
+  };
+
+  const handleDelete = (item: Item | Item[]) => {
+    const itemsArray = Array.isArray(item) ? item : [item];
+    console.log('Delete:', itemsArray.map(i => i.encryptedMetadata.name));
+    showToast('Delete functionality not implemented yet', 'error');
+  };
+
   if (isLoading) {
     return (
       <div className="py-10">
@@ -265,7 +275,7 @@ const FilesView: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Breadcrumb 
             allItems={items}
-            onDownload={handleBulkDownload}
+            onDownload={handleDownload}
             onDelete={handleBulkDelete}
             onShare={handleBulkShare}
           />
@@ -383,9 +393,21 @@ const FilesView: React.FC = () => {
       ) : (
         <div className="mt-4">
           {viewMode === 'grid' ? (
-            <FileGrid items={items} />
+            <FileGrid
+              items={items}
+              onShare={handleShare}
+              onDownload={handleDownload}
+              onRename={handleRename}
+              onDelete={handleDelete}
+            />
           ) : (
-            <FileList items={items} />
+            <FileList
+              items={items}
+              onShare={handleShare}
+              onDownload={handleDownload}
+              onRename={handleRename}
+              onDelete={handleDelete}
+            />
           )}
           
           {renderPagination()}
