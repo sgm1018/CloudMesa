@@ -4,6 +4,7 @@ import { encryptService } from "./EncryptService";
 import { chunkUploadService } from "./ChunkUploadService";
 import { streamingDownloadService, DownloadProgress } from "./StreamingDownloadService";
 import { useToast } from "../context/ToastContext";
+import { Enviroment } from "../../enviroment";
 
 class ItemService extends BaseService {
     private static instance: ItemService;
@@ -75,7 +76,7 @@ class ItemService extends BaseService {
 
     }
 
-    async uploadFile(file: File, parentId: string, onProgress?: (progress: number) => void, onChunkComplete?: (chunkNumber: number, totalChunks: number) => void): Promise<Item> {
+    async uploadFile(file: File , parentId: string, onProgress?: (progress: number) => void, onChunkComplete?: (chunkNumber: number, totalChunks: number) => void): Promise<Item> {
         const publicKey = sessionStorage.getItem('publicKey') || await encryptService.getPublicKey() || '';
 
         const itemData = this.initializeItem(file, parentId);
@@ -317,6 +318,79 @@ class ItemService extends BaseService {
             console.error(`Error in advanced download: ${error}`);
             throw error;
         }
+    }
+
+    async createItemStorage(type: ItemType.FOLDER | ItemType.GROUP, name: string, parentId: string): Promise<Item>       {
+        const publicKey = sessionStorage.getItem('publicKey') || await encryptService.getPublicKey() || '';
+        const item: Item = {
+            _id: '',
+            itemName: name,
+            type: type,
+            parentId: parentId,
+            userId: '', // Se asignará en el servidor
+            encryptedMetadata: {
+                name: name,
+                description: '',
+                notes: '',
+                username: undefined,
+                password: undefined,
+                url: undefined,
+                color: undefined,
+                icon: type
+            },
+            encryption: {
+                encryptedKey: undefined,
+                ephemeralPublicKey: undefined,
+                keyNonce: undefined,
+                metadataNonce: undefined,
+                fileNonce: undefined,
+            },
+            sharedWith: [],
+            size: undefined, // Las carpetas no tienen tamaño
+            createdAt: new Date(),
+            updatedAt: undefined,
+            userCreator: undefined,
+            userUpdater: undefined
+        };
+        const symmetricKey = await encryptService.generateSymmetricKey();
+        const { encryptedMetadata, nonce: metadataNonce } = await encryptService.cipherItemMetadata(item, symmetricKey);
+        const {  encrypted, nonce: keyNonce, ephemeralPublicKey} = await encryptService.encryptSymmetricKey(symmetricKey,publicKey)
+        item.encryptedMetadata = encryptedMetadata;
+        item.encryption = {
+            encryptedKey: encrypted,
+            ephemeralPublicKey: ephemeralPublicKey,
+            keyNonce: keyNonce,
+            metadataNonce: metadataNonce,
+            fileNonce: ""
+        };
+
+        return item;
+    }
+
+    async uploadStorage(item : Item){
+        console.log('Sending item:', item);
+        console.log('URL:', `${Enviroment.API_URL}${this.controller}/uploadStorage`);
+        console.log('Token:', sessionStorage.getItem('accesToken'));
+        
+        const response = await fetch(`${Enviroment.API_URL}${this.controller}/uploadStorage`, {
+            method: 'POST',
+            headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('accesToken')}`,
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(item)
+        });
+
+        console.log('Response status:', response.status);
+        console.log('Response statusText:', response.statusText);
+
+        if (response.status != 201) {
+            const errorText = await response.text();
+            console.error(`Error uploading item: ${response.statusText}`, errorText);
+            throw new Error(`Failed to upload item: ${response.status} - ${errorText}`);
+        }
+        const result = await response.json();
+        return result;
     }
 
     /**

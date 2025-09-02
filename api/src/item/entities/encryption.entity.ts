@@ -10,7 +10,7 @@ export class Encryption {
     ephemeralPublicKey: string;  // Needed for shared secret generation 
     keyNonce: string;  // Needed for chcha20 + poly1305 to decrypt encriptedKey
     metadataNonce: string;  // Needed for decrypt metadata
-    fileNonce: string; // Needed for decrypt file
+    fileNonce?: string; // Needed for decrypt file
 }
 
 export const EncryptionSchema = SchemaFactory.createForClass(Encryption);

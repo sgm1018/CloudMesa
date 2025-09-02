@@ -11,6 +11,7 @@ import { ApiResponse } from 'src/shared/responses/ApiResponse';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { group } from 'console';
 
 @Injectable()
 export class ItemsService extends BaseService<Item> {
@@ -40,24 +41,32 @@ export class ItemsService extends BaseService<Item> {
     return ApiResponse.item(count);
   }
 
-  async uploadFile(userId: string, createItem: Item, file: Express.Multer.File): Promise<ApiResponse<Item>> {
-    if (!file) {
-      return ApiResponse.error(-1, 'File is required');
-    }
+  async uploadStorage(userId: string, createItem: Item): Promise<ApiResponse<Item>> {
+    const validTypes = ['folder', 'group'];
     if (!userId) {
       return ApiResponse.error(-1, 'User ID is required');
     }
     if (!createItem.type) {
       return ApiResponse.error(-1, 'Item type is required');
     }
-    if (createItem.type !== 'file') {
-      return ApiResponse.error(-1, 'Invalid item type. Only "file" and "folder" are allowed');
+    if (!validTypes.includes(createItem.type)) {
+      return ApiResponse.error(-1, 'Invalid item type. Only "folder" and "group" are allowed');
     }
     try {
-      const item = new this.ItemModel({ ...createItem, userId: userId });
+      const item = new Item();
+      item.userId = userId;
+      item.type = createItem.type;
+      item.itemName = createItem.itemName;
+      item.size = createItem.size;
+      item.encryptedMetadata = createItem.encryptedMetadata;
+      item.encryption = createItem.encryption;
+      item.parentId = createItem.parentId;
+      item.sharedWith = createItem.sharedWith;
+      item.userId = userId;
+      item.userCreator = userId;
+
       await this.ItemModel.create(item);
-      await this.saveFileOnStorage(userId, item._id.toString(), file);
-      return ApiResponse.item(createItem);
+      return ApiResponse.item(item);
     } catch (error) {
       return ApiResponse.error(-1, `Error uploading file: ${error.message}`);
     }

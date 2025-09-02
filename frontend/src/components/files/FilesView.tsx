@@ -11,10 +11,11 @@ import { PaginationParams } from '../../services/BaseService';
 import { itemService } from '../../services/ItemService';
 import { useEncryption } from '../../context/EncryptionContext';
 import { log } from 'console';
+import FileNewFolder from './FileNewFolder';
 
 const FilesView: React.FC = () => {
   const { privateKey } = useEncryption();
-  const { currentFileFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
+  const { currentFileFolder: currentFolder, setCurrentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +26,9 @@ const FilesView: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [items4Page, setItems4Page] = useState(20);
+  const [isNewFolder, setIsNewFolder] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
 
   const fileIconsMap : Record<string, React.ReactElement> = {
       // PDFs y documentos
@@ -160,13 +163,31 @@ const FilesView: React.FC = () => {
 
   // Función para obtener el icono
   const getIconExtension = (extension: string, sizeClass: string) => {
-    const element = fileIconsMap[extension] || <FileType className="h-5 w-5 text-gray-400" />;
+    const element = fileIconsMap[extension] || <FileType className="insertSizehere text-gray-400" />;
     const newClassName  = element.props.className.replace('insertSizehere', sizeClass)
     const cloneElement = React.cloneElement(element, { className: newClassName });
 
     return cloneElement;
   };
-  
+
+
+  const handleNewFolder = () => {
+    setIsNewFolder(true);
+  }
+
+
+  const createNewFolder = async (folderName: string) => {
+    setIsNewFolder(false);
+    try {
+      const item = await itemService.createItemStorage(ItemType.FOLDER, folderName, currentFolder || '');
+      await itemService.uploadStorage(item);
+      showToast('Folder created successfully!', 'success');
+      await fetchItems(); // Refresh the items list
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      showToast('Failed to create folder. Please try again.', 'error');
+    }
+  }
 
   const handleExtensionIcon = (item: Item, isList: boolean) => {
     const sizeClass = isList ? 'h-5 w-5' : 'h-5 w-5 md:h-7 md:w-7 lg:h-10 lg:w-10';
@@ -505,6 +526,13 @@ const FilesView: React.FC = () => {
             <Upload className="h-4 w-4" />
             <span>Upload</span>
           </button>
+          <button 
+            className="btn btn-secondary ml-2"
+            onClick={handleNewFolder}
+          >
+            <FolderPlus className="h-4 w-4" />
+            <span>New Folder</span>
+          </button>
         </div>
       </div>
       
@@ -536,7 +564,7 @@ const FilesView: React.FC = () => {
                 <Upload className="h-4 w-4" />
                 <span>Upload Files</span>
               </button>
-              <button className="btn btn-secondary">
+              <button className="btn btn-secondary" onClick={handleNewFolder}>
                 <FolderPlus className="h-4 w-4" />
                 <span>New Folder</span>
               </button>
@@ -568,6 +596,14 @@ const FilesView: React.FC = () => {
           {renderPagination()}
         </div>
       )}
+      
+      {/* FileNewFolder Modal */}
+      <FileNewFolder
+        isOpen={isNewFolder}
+        itemType={ItemType.FOLDER}
+        onClose={() => setIsNewFolder(false)}
+        onCreate={createNewFolder}
+      />
     </div>
   );
 };

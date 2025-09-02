@@ -2,8 +2,8 @@
 
 ## Features
 
-[ ] - Pensar si poner el name en los items para poder hacer busquedas de objetos de nombres
-[ ] - Crear Carpetas/Grupos
+[ X ] - Pensar si poner el name en los items para poder hacer busquedas de objetos de nombres
+[  ] - Crear Carpetas/Grupos
 [ ] - Crear Contraseñas
 [ ] - Modificar contraseñas
 

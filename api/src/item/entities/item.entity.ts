@@ -22,7 +22,7 @@ export class Item extends Entity {
   @IsString()
   @IsNotEmpty()
   @Prop({ required: true })
-  userId: string;
+  userId: string = "";
 
   @ApiProperty({
     description: 'Name of the item',
@@ -32,7 +32,7 @@ export class Item extends Entity {
   @IsString()
   @IsNotEmpty()
   @Prop({ required: true })
-  itemName:string
+  itemName:string = ""
   
   @ApiProperty({
     description: 'Type of the item',
@@ -41,8 +41,8 @@ export class Item extends Entity {
   })
   @IsEnum(['file', 'folder', 'password', 'group'])
   @Prop({ required: true, enum: ['file', 'folder', 'password', 'group'] })
-  type: 'file' | 'folder' | 'password' | 'group';
-  
+  type: 'file' | 'folder' | 'password' | 'group' = 'file';
+
   @ApiProperty({
     description: 'ID of the parent item (if any)',
     type: String,
@@ -52,7 +52,7 @@ export class Item extends Entity {
   @IsOptional()
   @IsString()
   @Prop()
-  parentId?: string;
+  parentId?: string = "";
 
 
   @ApiProperty({
@@ -63,7 +63,7 @@ export class Item extends Entity {
   @IsString()
   @IsNotEmpty()
   @Prop({ required: true })
-  encryptedMetadata: string;
+  encryptedMetadata: string = "";
   
   @ApiProperty({
     description: 'Encryption data for the item',
@@ -77,8 +77,8 @@ export class Item extends Entity {
   @ValidateNested()
   @Type(() => Encryption)
   @Prop({ required: true, type: Object })
-  encryption: Encryption;
-  
+  encryption: Encryption = new Encryption();
+
   @ApiProperty({
     description: 'List of users the item is shared with',
     type: [SharedConfig],
@@ -103,11 +103,11 @@ export class Item extends Entity {
   @ValidateNested({ each: true })
   @Type(() => SharedConfig)
   @Prop({ type: Array })
-  sharedWith?: SharedConfig[];
+  sharedWith?: SharedConfig[] = [];
 
 
 
-  size : number;
+  size: number = 0;
 
 }
 

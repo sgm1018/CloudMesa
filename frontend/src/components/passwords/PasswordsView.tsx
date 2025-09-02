@@ -9,6 +9,8 @@ import PasswordDetailsModal from './PasswordDetailsModal';
 import { FolderPlus, KeyIcon, Plus, Loader2, Filter, ChevronLeft, ChevronRight, Folder, Key, Lock } from 'lucide-react';
 import { PaginationParams } from '../../services/BaseService';
 import { useToast } from '../../context/ToastContext';
+import FileNewFolder from '../files/FileNewFolder';
+import { itemService } from '../../services/ItemService';
 
 const PasswordsView: React.FC = () => {
   const { currentPasswordFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
@@ -24,6 +26,7 @@ const PasswordsView: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [items4Page, setItems4Page] = useState(20);
+  const [isNewGroup, setIsNewGroup] = useState(false);
 
   const handlePage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -142,6 +145,24 @@ const PasswordsView: React.FC = () => {
     const itemsArray = Array.isArray(item) ? item : [item];
     console.log('Delete:', itemsArray.map(i => i.itemName));
     showToast('Delete functionality not implemented yet', 'error');
+  };
+
+  // Group management functions
+  const handleNewGroup = () => {
+    setIsNewGroup(true);
+  };
+
+  const createNewGroup = async (groupName: string) => {
+    setIsNewGroup(false);
+    try {
+      const item = await itemService.createItemStorage(ItemType.GROUP, groupName, currentFolder || '');
+      await itemService.uploadStorage(item);
+      showToast('Group created successfully!', 'success');
+      await fetchItems();
+    } catch (error) {
+      console.error('Error creating group:', error);
+      showToast('Failed to create group. Please try again.', 'error');
+    }
   };
 
   const renderPagination = () => {
@@ -342,13 +363,22 @@ const PasswordsView: React.FC = () => {
           </div>
         </div>
         
-        <button 
-          className="btn btn-primary"
-          onClick={() => setShowNewPasswordModal(true)}
-        >
-          <Plus className="h-4 w-4" />
-          <span>New Password</span>
-        </button>
+        <div className="flex gap-2">
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowNewPasswordModal(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Password</span>
+          </button>
+          <button 
+            className="btn btn-secondary"
+            onClick={handleNewGroup}
+          >
+            <FolderPlus className="h-4 w-4" />
+            <span>New Group</span>
+          </button>
+        </div>
       </div>
       
       {items.length === 0 ? (
@@ -375,7 +405,7 @@ const PasswordsView: React.FC = () => {
                 <Plus className="h-4 w-4" />
                 <span>New Password</span>
               </button>
-              <button className="btn btn-secondary">
+              <button className="btn btn-secondary" onClick={handleNewGroup}>
                 <FolderPlus className="h-4 w-4" />
                 <span>New Group</span>
               </button>
@@ -429,6 +459,14 @@ const PasswordsView: React.FC = () => {
           onSave={handleUpdatePassword}
         />
       )}
+
+      {/* FileNewFolder Modal for Groups */}
+      <FileNewFolder
+        isOpen={isNewGroup}
+        itemType={ItemType.GROUP}
+        onClose={() => setIsNewGroup(false)}
+        onCreate={createNewGroup}
+      />
     </div>
   );
 };

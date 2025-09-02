@@ -30,6 +30,17 @@ export class ItemsController {
 
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
+  @Post('uploadStorage')
+  async uploadToStorage(@User() user : UserDecoratorClass , @Body() item: any) {
+    const result = await this.itemsService.uploadStorage(user.userId, item);
+    if (!result.isSuccess()) {
+      throw new BadRequestException('Error creating item');
+    }
+    return result.value;
+  }
+
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('user')
   @ApiQuery({ name: 'parentId', description: 'ID del elemento padre', type: String, required: false })
   @ApiQuery({ name: 'page', description: 'Número de página', type: Number, required: false })
   @ApiQuery({ name: 'limit', description: 'Elementos por página', type: Number, required: false })
@@ -113,11 +124,10 @@ export class ItemsController {
   }
 
 
-
-  @Public()
-  @UseGuards(LoginGuard)
+  @UseGuards(LoginGuard, RolesGuard)
+  @Roles('admin')
   @Post('random')
-  async createRandom(@Body() createItem: Item ) {
+  async createRandom(createItem: Item ) {
     const result = await this.itemsService.create(createItem);
     if (!result.isSuccess()) {
       throw new BadRequestException('Error creating item');
@@ -126,6 +136,7 @@ export class ItemsController {
   }
 
   @UseGuards(LoginGuard, RolesGuard)
+  @Roles('admin')
   @Post('create')
   async create(@User() user , @Body() createItem: Item) {
     const result = await this.itemsService.create(createItem);
@@ -135,16 +146,6 @@ export class ItemsController {
     return result.value;
   }
 
-  @UseGuards(LoginGuard, RolesGuard)
-  @Roles('user')
-  @Post('upload')
-  async uploadFile(@User() user : UserDecoratorClass , @Body() createItem: Item, @UploadedFile() encryptedFile: Express.Multer.File) {
-    const result = await this.itemsService.uploadFile(user.userId , createItem, encryptedFile);
-    if (!result.isSuccess()) {
-      throw new BadRequestException('Error creating item');
-    }
-    return result.value;
-  }
 
 
   @UseGuards(LoginGuard, RolesGuard)
