@@ -41,8 +41,8 @@ export class ItemsService extends BaseService<Item> {
     return ApiResponse.item(count);
   }
 
-  async uploadStorage(userId: string, createItem: Item): Promise<ApiResponse<Item>> {
-    const validTypes = ['folder', 'group'];
+  async uploadWithoutFile(userId: string, createItem: Item): Promise<ApiResponse<Item>> {
+    const validTypes = ['folder', 'group', 'file', 'password'];
     if (!userId) {
       return ApiResponse.error(-1, 'User ID is required');
     }

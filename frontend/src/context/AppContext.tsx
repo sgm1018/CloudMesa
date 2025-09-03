@@ -31,6 +31,7 @@ type AppContextType = {
   setBreadcrumbPath: (path: Item[]) => void;
   loadBreadcrumbPath: (itemId: string | null) => Promise<void>;
   navigateToFolder: (folderId: string | null) => Promise<void>;
+  navigateToGroup: (folderId: string | null) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -71,6 +72,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentFolder(folderId);
     setCurrentPage(1);
     await loadBreadcrumbPath(folderId);
+  }, [loadBreadcrumbPath]);
+
+  const navigateToGroup = useCallback(async (groupId: string | null) => {
+    setCurrentPasswordFolder(groupId);
+    setCurrentPage(1);
+    await loadBreadcrumbPath(groupId);
   }, [loadBreadcrumbPath]);
 
   // Update breadcrumbs when current view changes
@@ -127,6 +134,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loadBreadcrumbPath,
         navigateToFolder,
         setCurrentViewWithBreadcrumbs,
+        navigateToGroup,
       }}
     >
       {children}

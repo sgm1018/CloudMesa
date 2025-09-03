@@ -30,9 +30,9 @@ export class ItemsController {
 
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
-  @Post('uploadStorage')
+  @Post('uploadWithoutFile')
   async uploadToStorage(@User() user : UserDecoratorClass , @Body() item: any) {
-    const result = await this.itemsService.uploadStorage(user.userId, item);
+    const result = await this.itemsService.uploadWithoutFile(user.userId, item);
     if (!result.isSuccess()) {
       throw new BadRequestException('Error creating item');
     }

@@ -14,7 +14,7 @@ import { itemService } from '../../services/ItemService';
 import RightClickElementModal from '../shared/RightClickElementModal';
 
 const PasswordsView: React.FC = () => {
-  const { currentPasswordFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems, selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
+  const { currentPasswordFolder, navigateToGroup, viewMode, searchQuery, getItemsByParentId, countItems, selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,11 +42,11 @@ const PasswordsView: React.FC = () => {
   const fetchItems = async () => {
     setIsLoading(true);
 
-    const contItems: number = await countItems([ItemType.PASSWORD, ItemType.GROUP], currentFolder || '');
+    const contItems: number = await countItems([ItemType.PASSWORD, ItemType.GROUP], currentPasswordFolder || '');
     setTotalPages(Math.ceil(contItems / items4Page));
     
     const params: PaginationParams = {
-      parentId: currentFolder || '',
+      parentId: currentPasswordFolder || '',
       itemTypes: [ItemType.PASSWORD, ItemType.GROUP],
       page: currentPage,
       limit: items4Page,
@@ -76,12 +76,12 @@ const PasswordsView: React.FC = () => {
   };
 
   useEffect(() => {
-    if (previousFolder != currentFolder) {
+    if (previousFolder != currentPasswordFolder) {
       setCurrentPage(1);
-      setPreviousFolder(currentFolder);
+      setPreviousFolder(currentPasswordFolder);
     }
     fetchItems();
-  }, [currentFolder, sortBy, sortOrder, filterType, currentPage]);
+  }, [currentPasswordFolder, sortBy, sortOrder, filterType, currentPage]);
 
 
   const getItemIcon = (item: Item, isList: boolean) => {
@@ -164,8 +164,8 @@ const PasswordsView: React.FC = () => {
   const createNewGroup = async (groupName: string) => {
     setIsNewGroup(false);
     try {
-      const item = await itemService.createItemStorage(ItemType.GROUP, groupName, currentFolder || '');
-      await itemService.uploadStorage(item);
+      const item = await itemService.createItemStorage(ItemType.GROUP, groupName, currentPasswordFolder || '');
+      await itemService.uploadWithoutFile(item);
       showToast('Group created successfully!', 'success');
       await fetchItems();
     } catch (error) {
@@ -247,15 +247,16 @@ const PasswordsView: React.FC = () => {
     );
   };
 
-  const handleSavePassword = (data: {
+  const handleSavePassword = async (data: {
     name: string;
     username: string;
     password: string;
     url?: string;
     notes?: string;
   }) => {
-    // Create a new password item
-    // Implementation remains the same
+    const item : Item =await itemService.createItemPassword({name: data.name, username: data.username, password: data.password, url: data.url, notes: data.notes, parentId: currentPasswordFolder || ''});
+    await itemService.uploadWithoutFile(item);
+    await fetchItems();
   };
 
   const handleUpdatePassword = (data: {
@@ -316,7 +317,7 @@ const PasswordsView: React.FC = () => {
     
     // Handle normal left click
     if (item.type === ItemType.GROUP) {
-      navigateToFolder(item._id);
+      navigateToGroup(item._id);
     } else {
       handlePasswordSelect(item);
     }
@@ -461,12 +462,12 @@ const PasswordsView: React.FC = () => {
               <KeyIcon className="h-16 w-16 text-gray-300 dark:text-gray-600" />
             </div>
             <h3 className="text-lg font-medium mb-2">
-              {currentFolder
+              {currentPasswordFolder
                 ? 'This group is empty'
                 : 'You don\'t have any password groups yet'}
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-4">
-              {currentFolder
+              {currentPasswordFolder
                 ? 'Add passwords to this group to keep them organized'
                 : 'Create password groups to organize your credentials'}
             </p>

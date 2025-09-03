@@ -367,12 +367,70 @@ class ItemService extends BaseService {
         return item;
     }
 
-    async uploadStorage(item : Item){
+
+    async createItemPassword(data: {
+        name: string;
+        username?: string;
+        password?: string;
+        url?: string;
+        notes?: string;
+        color?: string;
+        icon?: string;
+        parentId?: string;
+    }): Promise<Item> {
+        const publicKey = sessionStorage.getItem('publicKey') || await encryptService.getPublicKey() || '';
+        const item: Item = {
+            _id: '',
+            itemName: data.name,
+            type: ItemType.PASSWORD,
+            parentId: data.parentId || '',
+            userId: '', // Se asignará en el servidor
+            encryptedMetadata: {
+                name: data.name,
+                description: '',
+                notes: data.notes,
+                username: data.username,
+                password: data.password,
+                url: data.url,
+                color: data.color,
+                icon: data.icon
+            },
+            encryption: {
+                encryptedKey: undefined,
+                ephemeralPublicKey: undefined,
+                keyNonce: undefined,
+                metadataNonce: undefined,
+                fileNonce: undefined,
+            },
+            sharedWith: [],
+            size: undefined, // Las carpetas no tienen tamaño
+            createdAt: new Date(),
+            updatedAt: undefined,
+            userCreator: undefined,
+            userUpdater: undefined
+        };
+        const symmetricKey = await encryptService.generateSymmetricKey();
+        const { encryptedMetadata, nonce: metadataNonce } = await encryptService.cipherItemMetadata(item, symmetricKey);
+        const {  encrypted, nonce: keyNonce, ephemeralPublicKey} = await encryptService.encryptSymmetricKey(symmetricKey,publicKey)
+        item.encryptedMetadata = encryptedMetadata;
+        item.encryption = {
+            encryptedKey: encrypted,
+            ephemeralPublicKey: ephemeralPublicKey,
+            keyNonce: keyNonce,
+            metadataNonce: metadataNonce,
+            fileNonce: ""
+        };
+
+        return item;
+    }
+
+
+    async uploadWithoutFile(item : Item){
         console.log('Sending item:', item);
-        console.log('URL:', `${Enviroment.API_URL}${this.controller}/uploadStorage`);
+        console.log('URL:', `${Enviroment.API_URL}${this.controller}/uploadWithoutFile`);
         console.log('Token:', sessionStorage.getItem('accesToken'));
-        
-        const response = await fetch(`${Enviroment.API_URL}${this.controller}/uploadStorage`, {
+
+        const response = await fetch(`${Enviroment.API_URL}${this.controller}/uploadWithoutFile`, {
             method: 'POST',
             headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('accesToken')}`,

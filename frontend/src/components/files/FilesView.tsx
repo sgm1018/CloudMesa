@@ -241,7 +241,7 @@ const FilesView: React.FC = () => {
     setIsNewFolder(false);
     try {
       const item = await itemService.createItemStorage(ItemType.FOLDER, folderName, currentFolder || '');
-      await itemService.uploadStorage(item);
+      await itemService.uploadWithoutFile(item);
       showToast('Folder created successfully!', 'success');
       setCurrentPage(1);
       await fetchItems(); // Refresh the items list
@@ -351,7 +351,7 @@ const FilesView: React.FC = () => {
       setCurrentPage(1);
     }
     fetchItems();
-  }, [currentFolder, sortBy, sortOrder, filterType, currentPage, privateKey]);
+  }, [currentFolder, sortBy, sortOrder, filterType, currentPage, privateKey, searchQuery]);
 
 
   const handleBulkDelete = async (items: Item[]) => {
