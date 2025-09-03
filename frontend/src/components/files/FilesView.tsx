@@ -12,10 +12,11 @@ import { itemService } from '../../services/ItemService';
 import { useEncryption } from '../../context/EncryptionContext';
 import { log } from 'console';
 import FileNewFolder from './FileNewFolder';
+import RightClickElementModal from '../shared/RightClickElementModal';
 
 const FilesView: React.FC = () => {
   const { privateKey } = useEncryption();
-  const { currentFileFolder: currentFolder, setCurrentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
+  const { currentFileFolder: currentFolder, setCurrentFolder, viewMode, searchQuery, getItemsByParentId, countItems, currentPage, setCurrentPage, selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,10 +24,13 @@ const FilesView: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [filterType, setFilterType] = useState<'all' | 'files' | 'folders'>('all');
   const [showFilters, setShowFilters] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [items4Page, setItems4Page] = useState(20);
   const [isNewFolder, setIsNewFolder] = useState(false);
+  const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
+  const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
+  const [previousFolder, setPreviousFolder] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   
 
@@ -170,6 +174,63 @@ const FilesView: React.FC = () => {
     return cloneElement;
   };
 
+    // Update handleItemClick to handle both left and right clicks
+  const handleItemClick = (item: Item, event: React.MouseEvent) => {
+    // Handle right click to show context menu
+    if (event.button === 2) {
+      rightClickOnElement(event, item._id);
+      return;
+    }
+    
+    // Handle Ctrl+Click for multi-selection
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (selectedItems.includes(item._id)) {
+        setSelectedItems(selectedItems.filter(id => id !== item._id));
+      } else {
+        setSelectedItems([...selectedItems, item._id]);
+      }
+      return;
+    }
+    
+    // Handle normal left click
+    if (item.type === 'folder') {
+      navigateToFolder(item._id);
+    }
+  };
+
+    // Add right-click handler function
+  const rightClickOnElement = (event: React.MouseEvent, itemId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const item = items.find(i => i._id === itemId);
+    if (!item) return;
+
+    const button = event.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    
+    // Calculate available space
+    const spaceBelow = window.innerHeight - (rect.bottom + scrollTop);
+    const menuHeight = 200; // Approximate height of menu
+    
+    // Position menu above or below based on available space
+    const top = spaceBelow < menuHeight ? rect.top + scrollTop - menuHeight : rect.bottom + scrollTop;
+    const left = rect.right - 180; // Menu width is approximately 180px
+
+
+    setMenuPosition({
+      top: top,
+      left: left
+    });
+    
+    setCurrentItem(item);
+    setOpenMenuId(itemId);
+  };
+
 
   const handleNewFolder = () => {
     setIsNewFolder(true);
@@ -182,6 +243,7 @@ const FilesView: React.FC = () => {
       const item = await itemService.createItemStorage(ItemType.FOLDER, folderName, currentFolder || '');
       await itemService.uploadStorage(item);
       showToast('Folder created successfully!', 'success');
+      setCurrentPage(1);
       await fetchItems(); // Refresh the items list
     } catch (error) {
       console.error('Error creating folder:', error);
@@ -238,7 +300,7 @@ const FilesView: React.FC = () => {
   };
 
   const fetchItems = async () => {
-    if (privateKey == null || privateKey == ''){
+    ;if (privateKey == null || privateKey == ''){
       showToast('Private key is not available', 'error');
       return;
     }
@@ -285,6 +347,9 @@ const FilesView: React.FC = () => {
   };
 
   useEffect(() => {
+    if (previousFolder != currentFolder){
+      setCurrentPage(1);
+    }
     fetchItems();
   }, [currentFolder, sortBy, sortOrder, filterType, currentPage, privateKey]);
 
@@ -417,6 +482,12 @@ const FilesView: React.FC = () => {
     const itemsArray = Array.isArray(item) ? item : [item];
     console.log('Delete:', itemsArray.map(i => i.itemName));
     showToast('Delete functionality not implemented yet', 'error');
+  };
+
+  const handleCloseMenu = () => {
+    setOpenMenuId(null);
+    setMenuPosition(null);
+    setCurrentItem(null);
   };
 
   if (isLoading) {
@@ -581,6 +652,8 @@ const FilesView: React.FC = () => {
               onRename={handleRename}
               onDelete={handleDelete}
               onGetIcon={handleExtensionIcon}
+              onItemClick={handleItemClick}
+              onRightClick={rightClickOnElement}
             />
           ) : (
             <FileList
@@ -590,6 +663,8 @@ const FilesView: React.FC = () => {
               onRename={handleRename}
               onDelete={handleDelete}
               onGetIcon={handleExtensionIcon}
+              onItemClick={handleItemClick}
+              onRightClick={rightClickOnElement}
             />
           )}
           
@@ -604,6 +679,22 @@ const FilesView: React.FC = () => {
         onClose={() => setIsNewFolder(false)}
         onCreate={createNewFolder}
       />
+
+      {/* Right Click Context Menu */}
+      {openMenuId && menuPosition && (
+        <RightClickElementModal
+          isOpen={openMenuId !== null}
+          position={menuPosition}
+          item={currentItem}
+          onClose={handleCloseMenu}
+          contextType={currentItem?.type === 'folder' ? 'folder' : 'file'}
+          allItems={items}
+          onShare={handleShare}
+          onDownload={handleDownload}
+          onRename={handleRename}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };

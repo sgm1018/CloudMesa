@@ -11,9 +11,10 @@ import { PaginationParams } from '../../services/BaseService';
 import { useToast } from '../../context/ToastContext';
 import FileNewFolder from '../files/FileNewFolder';
 import { itemService } from '../../services/ItemService';
+import RightClickElementModal from '../shared/RightClickElementModal';
 
 const PasswordsView: React.FC = () => {
-  const { currentPasswordFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems } = useAppContext();
+  const { currentPasswordFolder: currentFolder, viewMode, searchQuery, getItemsByParentId, countItems, selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,6 +28,10 @@ const PasswordsView: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [items4Page, setItems4Page] = useState(20);
   const [isNewGroup, setIsNewGroup] = useState(false);
+  const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
+  const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
+  const [previousFolder, setPreviousFolder] = React.useState<string | null>(null);
 
   const handlePage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -71,6 +76,10 @@ const PasswordsView: React.FC = () => {
   };
 
   useEffect(() => {
+    if (previousFolder != currentFolder) {
+      setCurrentPage(1);
+      setPreviousFolder(currentFolder);
+    }
     fetchItems();
   }, [currentFolder, sortBy, sortOrder, filterType, currentPage]);
 
@@ -284,6 +293,70 @@ const PasswordsView: React.FC = () => {
     }
   };
 
+  // Handle item clicks - centralized logic
+  const handleItemClick = (item: Item, event: React.MouseEvent) => {
+    // Handle right click to show context menu
+    if (event.button === 2) {
+      rightClickOnElement(event, item._id);
+      return;
+    }
+    
+    // Handle Ctrl+Click for multi-selection
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (selectedItems.includes(item._id)) {
+        setSelectedItems(selectedItems.filter(id => id !== item._id));
+      } else {
+        setSelectedItems([...selectedItems, item._id]);
+      }
+      return;
+    }
+    
+    // Handle normal left click
+    if (item.type === ItemType.GROUP) {
+      navigateToFolder(item._id);
+    } else {
+      handlePasswordSelect(item);
+    }
+  };
+
+  // Add right-click handler function
+  const rightClickOnElement = (event: React.MouseEvent, itemId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const item = items.find(i => i._id === itemId);
+    if (!item) return;
+
+    const button = event.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    
+    // Calculate available space
+    const spaceBelow = window.innerHeight - (rect.bottom + scrollTop);
+    const menuHeight = 200; // Approximate height of menu
+    
+    // Position menu above or below based on available space
+    const top = spaceBelow < menuHeight ? rect.top + scrollTop - menuHeight : rect.bottom + scrollTop;
+    const left = rect.right - 180; // Menu width is approximately 180px
+
+    setMenuPosition({
+      top: top,
+      left: left
+    });
+    
+    setCurrentItem(item);
+    setOpenMenuId(itemId);
+  };
+
+  const handleCloseMenu = () => {
+    setOpenMenuId(null);
+    setMenuPosition(null);
+    setCurrentItem(null);
+  };
+
   if (isLoading) {
     return (
       <div className="py-10">
@@ -425,7 +498,8 @@ const PasswordsView: React.FC = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onGetIcon={getItemIcon}
-
+              onItemClick={handleItemClick}
+              onRightClick={rightClickOnElement}
             />
           ) : (
             <PasswordList
@@ -438,6 +512,8 @@ const PasswordsView: React.FC = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onGetIcon={getItemIcon}
+              onItemClick={handleItemClick}
+              onRightClick={rightClickOnElement}
             />
           )}
           
@@ -467,6 +543,22 @@ const PasswordsView: React.FC = () => {
         onClose={() => setIsNewGroup(false)}
         onCreate={createNewGroup}
       />
+
+      {/* Right Click Context Menu */}
+      {openMenuId && menuPosition && (
+        <RightClickElementModal
+          isOpen={openMenuId !== null}
+          position={menuPosition}
+          item={currentItem}
+          onClose={handleCloseMenu}
+          contextType={currentItem?.type === 'group' ? 'folder' : 'password'}
+          allItems={items}
+          onShare={handleShare}
+          onDownload={() => {}} // Passwords don't have download
+          onRename={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };

@@ -13,6 +13,8 @@ type AppContextType = {
   currentFileFolder: string | null;
   currentPasswordFolder: string | null;
   setCurrentFolder: (folderId: string | null) => void;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectedItems: string[];
@@ -36,6 +38,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentView, setCurrentView] = useState<View>('files');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
   const [currentFileFolder, setCurrentFileFolder] = useState<string | null>(null);
   const [currentPasswordFolder, setCurrentPasswordFolder] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,6 +69,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const navigateToFolder = useCallback(async (folderId: string | null) => {
     setCurrentFolder(folderId);
+    setCurrentPage(1);
     await loadBreadcrumbPath(folderId);
   }, [loadBreadcrumbPath]);
 
@@ -83,6 +87,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCurrentPasswordFolder(folderId);
     }
   };
+
 
   const countItems = useCallback(async (type: string[], parentId: string) => {
     return await itemService.countItems(type, parentId);
@@ -103,6 +108,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentFileFolder,
         currentPasswordFolder,
         setCurrentFolder,
+        currentPage,
+        setCurrentPage,
         getItemsByParentId,
         searchQuery,
         setSearchQuery,

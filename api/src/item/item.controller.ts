@@ -52,6 +52,10 @@ export class ItemsController {
     if (paginationParams.limit == 0 || paginationParams.limit == null){
       paginationParams.limit = 10;
     }
+    // Asegurar que parentId tenga un valor por defecto si es undefined
+    if (paginationParams.parentId === undefined || paginationParams.parentId === null) {
+      paginationParams.parentId = '';
+    }
     const typeArray = typeof paginationParams.itemTypes === 'string' ? JSON.parse(paginationParams.itemTypes) : paginationParams.itemTypes;
     const result = await this.itemsService.findPaginated({ userId: user.userId, parentId: paginationParams.parentId, type: { $in : typeArray} }, paginationParams);
     if (!result.isSuccess()){
@@ -65,8 +69,10 @@ export class ItemsController {
   @ApiQuery({ name: 'type', description: 'Tipo de item', type: String, required: true })
   @Get('count')
   async countItems(@User() user: UserDecoratorClass, @Query() query : { parentId?: string, type: string }) {
+    // Asegurar que parentId tenga un valor por defecto si es undefined
+    const parentId = query.parentId === undefined || query.parentId === null ? '' : query.parentId;
     const typeArray = typeof query.type === 'string' ? JSON.parse(query.type) : query.type;
-    const result = await this.itemsService.countItems(user.userId, typeArray, query.parentId);
+    const result = await this.itemsService.countItems(user.userId, typeArray, parentId);
     if (!result.isSuccess()){
       throw new BadRequestException('Error counting items');
     } 

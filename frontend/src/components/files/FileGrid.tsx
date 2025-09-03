@@ -12,11 +12,12 @@ interface FileGridProps {
   onRename: (item: Item | Item[]) => void;
   onDelete: (item: Item | Item[]) => void;
   onGetIcon: (extension: Item, isList: boolean) => React.ReactElement;
-  
+  onItemClick: (item: Item, event: React.MouseEvent) => void;
+  onRightClick: (event: React.MouseEvent, itemId: string) => void;
 }
 
-const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRename, onDelete, onGetIcon }) => {
-  const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
+const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRename, onDelete, onGetIcon, onItemClick, onRightClick }) => {
+  const { selectedItems, setSelectedItems } = useAppContext();
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
@@ -64,29 +65,8 @@ const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRenam
 
   // Update handleItemClick to handle both left and right clicks
   const handleItemClick = (item: Item, event: React.MouseEvent) => {
-    // Handle right click to show context menu
-    if (event.button === 2) {
-      rightClickOnElement(event, item._id);
-      return;
-    }
-    
-    // Handle Ctrl+Click for multi-selection
-    if (event.ctrlKey || event.metaKey) {
-      event.preventDefault();
-      event.stopPropagation();
-      
-      if (selectedItems.includes(item._id)) {
-        setSelectedItems(selectedItems.filter(id => id !== item._id));
-      } else {
-        setSelectedItems([...selectedItems, item._id]);
-      }
-      return;
-    }
-    
-    // Handle normal left click
-    if (item.type === 'folder') {
-      navigateToFolder(item._id);
-    }
+    // Delegate to parent
+    onItemClick(item, event);
   };
 
 

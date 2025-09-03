@@ -15,6 +15,8 @@ interface PasswordGridProps {
   onEdit: (item: Item | Item[]) => void;
   onDelete: (item: Item | Item[]) => void;
   onGetIcon: (extension: Item, isList: boolean) => React.ReactElement;
+  onItemClick: (item: Item, event: React.MouseEvent) => void;
+  onRightClick: (event: React.MouseEvent, itemId: string) => void;
 }
 
 const PasswordGrid: React.FC<PasswordGridProps> = ({
@@ -26,9 +28,11 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({
   onVisitWebsite,
   onEdit,
   onDelete,
-  onGetIcon
+  onGetIcon,
+  onItemClick,
+  onRightClick
 }) => {
-  const { selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
+  const { selectedItems, setSelectedItems } = useAppContext();
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
@@ -87,31 +91,8 @@ const PasswordGrid: React.FC<PasswordGridProps> = ({
 
   // Updated handleItemClick to handle right clicks
   const handleItemClick = (item: Item, event: React.MouseEvent) => {
-    // Handle right click to show context menu
-    if (event.button === 2) {
-      rightClickOnElement(event, item._id);
-      return;
-    }
-    
-    // Handle Ctrl+Click for multi-selection
-    if (event.ctrlKey || event.metaKey) {
-      event.preventDefault();
-      event.stopPropagation();
-      
-      if (selectedItems.includes(item._id)) {
-        setSelectedItems(selectedItems.filter(id => id !== item._id));
-      } else {
-        setSelectedItems([...selectedItems, item._id]);
-      }
-      return;
-    }
-    
-    // Handle normal left click
-    if (item.type === ItemType.GROUP) {
-      navigateToFolder(item._id);
-    } else {
-      setSelectedPasswordId(prevId => prevId === item._id ? null : item._id);
-    }
+    // Delegate to parent
+    onItemClick(item, event);
   };
 
   const handleDoubleClick = (item: Item) => {
