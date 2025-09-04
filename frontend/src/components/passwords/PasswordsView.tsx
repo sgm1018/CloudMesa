@@ -6,14 +6,16 @@ import PasswordList from './PasswordList';
 import Breadcrumb from '../files/Breadcrumb';
 import NewPasswordModal from './NewPasswordModal';
 import PasswordDetailsModal from './PasswordDetailsModal';
-import { FolderPlus, KeyIcon, Plus, Loader2, Filter, ChevronLeft, ChevronRight, Folder, Key, Lock } from 'lucide-react';
+import { FolderPlus, KeyIcon, Plus, Loader2, Filter, ChevronLeft, ChevronRight, Folder, Key, Mail, ShoppingCart, Building, Trello, Globe, Shield, CreditCard, Wifi, Server, Smartphone, Gamepad2, Music, Image, FileText, Heart, Briefcase, Home, Car, Plane, MapPin, Gift, Users } from 'lucide-react';
 import { PaginationParams } from '../../services/BaseService';
 import { useToast } from '../../context/ToastContext';
 import FileNewFolder from '../files/FileNewFolder';
 import { itemService } from '../../services/ItemService';
 import RightClickElementModal from '../shared/RightClickElementModal';
+import { useEncryption } from '../../context/EncryptionContext';
 
 const PasswordsView: React.FC = () => {
+  const { privateKey } = useEncryption();
   const { currentPasswordFolder, navigateToGroup, viewMode, searchQuery, getItemsByParentId, countItems, selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
@@ -33,6 +35,20 @@ const PasswordsView: React.FC = () => {
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
   const [previousFolder, setPreviousFolder] = React.useState<string | null>(null);
 
+  // Password icons map similar to fileIconsMap but for password types
+  const passwordIconsMap : Record<string, React.ReactElement> = {
+    // Email accounts
+    'default': <Key className="insertSizehere text-gray-500" />
+  };
+
+  // Function to get password icon similar to getIconExtension in FilesView
+  const getPasswordIcon = (iconType: string, sizeClass: string) => {
+    const element = passwordIconsMap[iconType] || passwordIconsMap['default'];
+    const newClassName = element.props.className.replace('insertSizehere', sizeClass);
+    const cloneElement = React.cloneElement(element, { className: newClassName });
+    return cloneElement;
+  };
+
   const handlePage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -40,6 +56,10 @@ const PasswordsView: React.FC = () => {
   };
 
   const fetchItems = async () => {
+    if (privateKey == null || privateKey == ''){
+      showToast('Private key is not available', 'error');
+      return;
+    }
     setIsLoading(true);
 
     const contItems: number = await countItems([ItemType.PASSWORD, ItemType.GROUP], currentPasswordFolder || '');
@@ -54,8 +74,16 @@ const PasswordsView: React.FC = () => {
 
     let fetchedItems = await getItemsByParentId(params);
 
+    let listOfDecryptedMetadataPasswords : Item[] = [];
+    for (const item of fetchedItems) {
+      const decryptedItem = await itemService.getDecryptMetadata(item, privateKey);
+      if (decryptedItem == null) continue;
+      listOfDecryptedMetadataPasswords.push(decryptedItem);
+    }
+    if (listOfDecryptedMetadataPasswords == null) return;
+
     // Apply sorting
-    fetchedItems.sort((a, b) => {
+    listOfDecryptedMetadataPasswords.sort((a, b) => {
       let comparison = 0;
       
       switch (sortBy) {
@@ -71,7 +99,7 @@ const PasswordsView: React.FC = () => {
       return sortOrder === 'asc' ? comparison : -comparison;
     });
     
-    setItems(fetchedItems);
+    setItems(listOfDecryptedMetadataPasswords);
     setIsLoading(false);
   };
 
@@ -81,25 +109,19 @@ const PasswordsView: React.FC = () => {
       setPreviousFolder(currentPasswordFolder);
     }
     fetchItems();
-  }, [currentPasswordFolder, sortBy, sortOrder, filterType, currentPage]);
+  }, [currentPasswordFolder, sortBy, sortOrder, filterType, currentPage, privateKey]);
 
 
   const getItemIcon = (item: Item, isList: boolean) => {
-    if (item.type === ItemType.GROUP) return <Folder className="h-5 w-5 text-primary-500" />;
-    const iconSizeClass = isList ? 'h-5 w-5' : 'h-10 w-10';
-    const icon = item.encryptedMetadata.icon;
-    switch(icon) {
-      case 'mail':
-        return <Key className={`${iconSizeClass} text-red-500`} />;
-      case 'shopping-cart':
-        return <Key className={`${iconSizeClass} text-orange-500"`} />;
-      case 'building':
-        return <Key className={`${iconSizeClass} text-blue-500"`} />;
-      case 'trello':
-        return <Key className={`${iconSizeClass} text-indigo-500"`} />;
-      default:
-        return <Lock className={`${iconSizeClass} text-gray-500"`} />;
+    const sizeClass = isList ? 'h-5 w-5' : 'h-5 w-5 md:h-7 md:w-7 lg:h-10 lg:w-10';
+    
+    if (item.type === ItemType.GROUP) {
+      return <Folder className={`${sizeClass} text-yellow-500`} />;
     }
+    
+    // For passwords, use the icon from metadata or default to 'other'
+    const iconType = item.encryptedMetadata?.icon || 'other';
+    return getPasswordIcon(iconType, sizeClass);
   };
   // Shared handlers for both grid and list views
   const handleShare = (item: Item | Item[]) => {

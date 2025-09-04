@@ -32,6 +32,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
     currentFileFolder, 
     currentPasswordFolder, 
     navigateToFolder,
+    navigateToGroup,
     breadcrumbPath,
     loadBreadcrumbPath,
     selectedItems
@@ -71,6 +72,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
 
   const handleNavigateToFolder = (folderId: string | null) => {
     navigateToFolder(folderId);
+    navigateToGroup(folderId); 
     setShowFullPath(false);
     setMenuPosition(null);
   };
