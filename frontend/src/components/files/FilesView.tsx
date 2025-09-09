@@ -13,6 +13,8 @@ import { useEncryption } from '../../context/EncryptionContext';
 import { log } from 'console';
 import FileNewFolder from './FileNewFolder';
 import RightClickElementModal from '../shared/RightClickElementModal';
+import { mediaService } from '../../services/MediaService';
+import { MediaViewer } from '../media/MediaViewerManager';
 
 const FilesView: React.FC = () => {
   const { privateKey } = useEncryption();
@@ -198,6 +200,9 @@ const FilesView: React.FC = () => {
     // Handle normal left click
     if (item.type === 'folder') {
       navigateToFolder(item._id);
+    } else {
+      // For files, use MediaService to show content
+      mediaService.showContent(item);
     }
   };
 
@@ -349,6 +354,7 @@ const FilesView: React.FC = () => {
   useEffect(() => {
     if (previousFolder != currentFolder){
       setCurrentPage(1);
+      setPreviousFolder(currentFolder);
     }
     fetchItems();
   }, [currentFolder, sortBy, sortOrder, filterType, currentPage, privateKey, searchQuery]);
@@ -695,6 +701,9 @@ const FilesView: React.FC = () => {
           onDelete={handleDelete}
         />
       )}
+
+      {/* Media Viewer Manager */}
+      <MediaViewer />
     </div>
   );
 };

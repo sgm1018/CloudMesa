@@ -115,6 +115,135 @@ class ItemService extends BaseService {
         return createdItem;
     }
 
+    /**
+     * Descarga un item y lo devuelve como Blob sin descargarlo al disco
+     */
+    async getItemAsBlob(item: Item, privateKey: string): Promise<Blob> {
+        if (item.encryption == null || item.encryption.encryptedKey == null 
+            || item.encryption.encryptedKey =='' 
+            || item.encryption.ephemeralPublicKey == null 
+            || item.encryption.ephemeralPublicKey == ''
+            || item.encryption.fileNonce == null
+            || item.encryption.fileNonce == ''
+            || item.encryption.keyNonce == null
+            || item.encryption.keyNonce == ''
+            || item.encryption.metadataNonce == null
+            || item.encryption.metadataNonce == ''
+        ) {
+            throw new Error('Missing encryption data in item');
+        }
+
+        try {
+            // Descargar el archivo encriptado
+            const encryptedBlob = await streamingDownloadService.downloadFileAsBlob(item._id, {
+                onError: (error) => {
+                    console.error(`Download error: ${error.message}`);
+                }
+            });
+
+            // Convertir el blob a Uint8Array para el descifrado
+            const arrayBuffer = await encryptedBlob.arrayBuffer();
+            const encryptedFile = new Uint8Array(arrayBuffer);
+
+            // Descifrar la clave simétrica
+            const decryptedSymetricKey = await encryptService.decryptsymmetricKey(
+                item.encryption.encryptedKey, 
+                item.encryption.keyNonce, 
+                item.encryption.ephemeralPublicKey, 
+                privateKey
+            );
+            
+            if (decryptedSymetricKey == null || decryptedSymetricKey == '') {
+                throw new Error('Failed to decrypt symmetric key');
+            }
+
+            // Descifrar el archivo
+            const decryptedFileBuffer = await encryptService.decipherFullFile(
+                encryptedFile, 
+                decryptedSymetricKey, 
+                item.encryption.fileNonce
+            );
+            
+            if (decryptedFileBuffer == null) {
+                throw new Error('Failed to decrypt file');
+            }
+
+            // Crear blob con el archivo descifrado
+            const fileUint8 = (decryptedFileBuffer instanceof Uint8Array)
+                ? new Uint8Array(decryptedFileBuffer)
+                : new Uint8Array(decryptedFileBuffer as any);
+
+            // Determinar el tipo MIME basado en la extensión
+            const extension = item.encryptedMetadata?.extension?.toLowerCase() || '';
+            const mimeType = this.getMimeType(extension);
+
+            const blob = new Blob([fileUint8], { type: mimeType });
+            return blob;
+
+        } catch (error) {
+            console.error(`Error getting file as blob: ${error}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Obtiene el tipo MIME basado en la extensión del archivo
+     */
+    private getMimeType(extension: string): string {
+        const mimeTypes: Record<string, string> = {
+            // Images
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'bmp': 'image/bmp',
+            'webp': 'image/webp',
+            'svg': 'image/svg+xml',
+            'ico': 'image/x-icon',
+            'tiff': 'image/tiff',
+            
+            // Videos
+            'mp4': 'video/mp4',
+            'avi': 'video/x-msvideo',
+            'mkv': 'video/x-matroska',
+            'mov': 'video/quicktime',
+            'wmv': 'video/x-ms-wmv',
+            'flv': 'video/x-flv',
+            'webm': 'video/webm',
+            '3gp': 'video/3gpp',
+            
+            // Audio
+            'mp3': 'audio/mpeg',
+            'wav': 'audio/wav',
+            'flac': 'audio/flac',
+            'aac': 'audio/aac',
+            'ogg': 'audio/ogg',
+            'wma': 'audio/x-ms-wma',
+            'm4a': 'audio/mp4',
+            
+            // Documents
+            'pdf': 'application/pdf',
+            'txt': 'text/plain',
+            'md': 'text/markdown',
+            'json': 'application/json',
+            'xml': 'application/xml',
+            'html': 'text/html',
+            'css': 'text/css',
+            'js': 'application/javascript',
+            'ts': 'application/typescript',
+            
+            // Office
+            'doc': 'application/msword',
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls': 'application/vnd.ms-excel',
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'ppt': 'application/vnd.ms-powerpoint',
+            'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        };
+
+        return mimeTypes[extension] || 'application/octet-stream';
+    }
+
     async downloadItem(item: Item, privateKey: string, onProgress?: (progress: DownloadProgress) => void): Promise<void> {
 
         if (item.encryption == null || item.encryption.encryptedKey == null 

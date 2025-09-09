@@ -2,14 +2,9 @@
 
 ## Features
 
-[ X ] - Pensar si poner el name en los items para poder hacer busquedas de objetos de nombres
-[  ] - Crear Carpetas/Grupos
-[ ] - Crear Contraseñas
-[ ] - Modificar contraseñas
+Crear tambien un viewer de codigo para archivos con extensiones de codigo => utiliza la libreria react-syntax-highlighter para visualizar el codigo en su formato de colores correspondiente.
 
-## Fix:
-[ ] - Fixear al hacer click al boton de opciones 
-[ ] - Fixear context menu en modo lista al seleccionar varios elementos. 
+Crea
 
 
 
