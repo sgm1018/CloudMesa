@@ -24,8 +24,18 @@ export class ItemsService extends BaseService<Item> {
   }
 
 
-  async findContainName(userid: string, itemName: string): Promise<ApiResponse<Item>> {
-    const result = await this.ItemModel.find({ userId: userid, itemName: { $regex: itemName, $options: 'i' } }).limit(8);
+  async findContainName(userid: string, itemName: string, searchType: string = 'normal', itemTypes: string[] = ['file', 'folder', 'password', 'group']): Promise<ApiResponse<Item>> {
+    const filter = { 
+      userId: userid, 
+      itemName: { $regex: itemName, $options: 'i' },
+      type: { $in: itemTypes }
+    };
+    
+    // For normal search, limit results for dropdown
+    // For direct search, return more results for in-place viewing
+    const limit = searchType === 'normal' ? 8 : 50;
+    
+    const result = await this.ItemModel.find(filter).limit(limit).sort({ updatedAt: -1 });
     if (!result || result.length === 0) {
       return ApiResponse.empty();
     }

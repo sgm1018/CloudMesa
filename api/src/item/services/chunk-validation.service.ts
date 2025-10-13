@@ -24,16 +24,16 @@ export class ChunkValidationService {
       throw new BadRequestException(`Chunk size exceeds maximum allowed size of ${maxChunkSize} bytes`);
     }
 
-    // Para el último chunk, puede ser más pequeño
-    const expectedMaxSize = this.calculateExpectedChunkSize(
-      chunkData.chunkNumber, 
-      chunkData.totalChunks, 
-      chunkData.totalSize
-    );
+    // // Para el último chunk, puede ser más pequeño
+    // const expectedMaxSize = this.calculateExpectedChunkSize(
+    //   chunkData.chunkNumber, 
+    //   chunkData.totalChunks, 
+    //   chunkData.totalSize
+    // );
 
-    if (file.size > expectedMaxSize) {
-      throw new BadRequestException(`Chunk ${chunkData.chunkNumber} size (${file.size}) exceeds expected size (${expectedMaxSize})`);
-    }
+    // if (file.size > expectedMaxSize) {
+    //   throw new BadRequestException(`Chunk ${chunkData.chunkNumber} size (${file.size}) exceeds expected size (${expectedMaxSize})`);
+    // }
   }
 
   /**

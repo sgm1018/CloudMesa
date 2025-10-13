@@ -37,9 +37,14 @@ class ItemService extends BaseService {
         return items;
     }
 
-    async findSearchItems(search: string): Promise<Item[]> {
+    async findSearchItems(search: string, searchType: 'normal' | 'direct' = 'normal', itemTypes?: string[]): Promise<Item[]> {
         const url = new URL(`${this.baseUrl}${this.controller}/search`);
         url.searchParams.append('itemName', search);
+        url.searchParams.append('searchType', searchType);
+        
+        if (itemTypes && itemTypes.length > 0) {
+            url.searchParams.append('itemTypes', JSON.stringify(itemTypes));
+        }
         
         const response = await fetch(url.toString(), {
             method: 'GET',

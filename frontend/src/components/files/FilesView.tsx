@@ -5,7 +5,7 @@ import FileGrid from './FileGrid';
 import FileList from './FileList';
 import Breadcrumb from './Breadcrumb';
 import { useDropzone } from 'react-dropzone';
-import { Folder, File, Upload, Plus, FolderPlus, Image, Loader2, Filter, ChevronLeft, ChevronRight, Archive, Code, Database, Download, FileText, FileType, Globe, HardDrive, Music, Palette, Presentation, Settings, Sheet, Terminal, Video, Zap } from 'lucide-react';
+import { Folder, File, Upload, Plus, FolderPlus, Image, Loader2, ChevronLeft, ChevronRight, Archive, Code, Database, Download, FileText, FileType, Globe, HardDrive, Music, Palette, Presentation, Settings, Sheet, Terminal, Video, Zap } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { PaginationParams } from '../../services/BaseService';
 import { itemService } from '../../services/ItemService';
@@ -15,17 +15,35 @@ import FileNewFolder from './FileNewFolder';
 import RightClickElementModal from '../shared/RightClickElementModal';
 import { mediaService } from '../../services/MediaService';
 import { MediaViewer } from '../media/MediaViewerManager';
+import AdvancedFilters, { FilterConfig } from '../shared/AdvancedFilters';
 
 const FilesView: React.FC = () => {
   const { privateKey } = useEncryption();
-  const { currentFileFolder: currentFolder, setCurrentFolder, viewMode, searchQuery, getItemsByParentId, countItems, currentPage, setCurrentPage, selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
+  const { 
+    currentFileFolder: currentFolder, 
+    setCurrentFolder, 
+    viewMode, 
+    searchQuery, 
+    searchMode,
+    isDirectSearchActive,
+    getItemsByParentId, 
+    countItems, 
+    currentPage, 
+    setCurrentPage, 
+    selectedItems, 
+    setSelectedItems, 
+    navigateToFolder 
+  } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [filterType, setFilterType] = useState<'all' | 'files' | 'folders'>('all');
-  const [showFilters, setShowFilters] = useState(false);
+  const [filterConfig, setFilterConfig] = useState<FilterConfig>({
+    searchTerm: '',
+    sortBy: 'name',
+    sortOrder: 'asc',
+    itemType: 'all',
+  });
   const [totalPages, setTotalPages] = useState(1);
   const [items4Page, setItems4Page] = useState(20);
   const [isNewFolder, setIsNewFolder] = useState(false);
@@ -211,7 +229,7 @@ const FilesView: React.FC = () => {
     event.preventDefault();
     event.stopPropagation();
 
-    const item = items.find(i => i._id === itemId);
+    const item = filteredItems.find(i => i._id === itemId);
     if (!item) return;
 
     const button = event.currentTarget as HTMLElement;
@@ -305,22 +323,43 @@ const FilesView: React.FC = () => {
   };
 
   const fetchItems = async () => {
-    ;if (privateKey == null || privateKey == ''){
+    if (privateKey == null || privateKey == ''){
       showToast('Private key is not available', 'error');
       return;
     }
     setIsLoading(true);
 
-    const contItems : number = await countItems([ItemType.FILE, ItemType.FOLDER], currentFolder || '');
-    setTotalPages(Math.ceil(contItems / items4Page));
+    let fetchedItems: Item[] = [];
+    
+    // If direct search is active, get search results instead of folder contents
+    if (searchMode === 'direct' && isDirectSearchActive && searchQuery.length >= 2) {
+      try {
+        fetchedItems = await itemService.findSearchItems(
+          searchQuery, 
+          'direct', 
+          [ItemType.FILE, ItemType.FOLDER]
+        );
+        // For search results, we don't need pagination
+        setTotalPages(1);
+      } catch (error) {
+        console.error('Error fetching search results:', error);
+        setItems([]);
+        setIsLoading(false);
+        return;
+      }
+    } else {
+      // Normal folder browsing
+      const contItems: number = await countItems([ItemType.FILE, ItemType.FOLDER], currentFolder || '');
+      setTotalPages(Math.ceil(contItems / items4Page));
 
-    const params : PaginationParams = {
-      parentId: currentFolder || '',
-      itemTypes: [ItemType.FILE, ItemType.FOLDER],
-      page: currentPage,
-      limit: items4Page,
+      const params: PaginationParams = {
+        parentId: currentFolder || '',
+        itemTypes: [ItemType.FILE, ItemType.FOLDER],
+        page: currentPage,
+        limit: items4Page,
+      };
+      fetchedItems = await getItemsByParentId(params);
     }
-    let fetchedItems = await getItemsByParentId(params);
 
     let listOfDecryptedMetadataFiles : Item[] = [];
     for (const item of fetchedItems) {
@@ -328,28 +367,88 @@ const FilesView: React.FC = () => {
       if (decryptedItem == null) continue;
       listOfDecryptedMetadataFiles.push(decryptedItem);
     }
-    if (listOfDecryptedMetadataFiles == null) return
-    listOfDecryptedMetadataFiles.sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortBy) {
-        case 'name':
-          comparison = a.itemName!.localeCompare(b.itemName!);
-          break;
-          case 'date':
-            if (!a.updatedAt || !b.updatedAt) return 0;
-            comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-            break;
-            case 'size':
-              comparison = (b.size || 0) - (a.size || 0);
-              break;
-            }
-            return sortOrder === 'asc' ? comparison : -comparison;
-          });
+    if (listOfDecryptedMetadataFiles == null) return;
+    
     setItems(listOfDecryptedMetadataFiles);
     console.log(listOfDecryptedMetadataFiles);
     setIsLoading(false);
   };
+
+  // Apply filters and sorting
+  useEffect(() => {
+    let result = [...items];
+
+    // Apply search filter
+    if (filterConfig.searchTerm) {
+      const searchLower = filterConfig.searchTerm.toLowerCase();
+      result = result.filter(item => 
+        item.itemName?.toLowerCase().includes(searchLower) ||
+        item.encryptedMetadata?.name?.toLowerCase().includes(searchLower) ||
+        item.encryptedMetadata?.description?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply item type filter
+    if (filterConfig.itemType !== 'all') {
+      if (filterConfig.itemType === 'files') {
+        result = result.filter(item => item.type === ItemType.FILE);
+      } else if (filterConfig.itemType === 'folders') {
+        result = result.filter(item => item.type === ItemType.FOLDER);
+      }
+    }
+
+    // Apply date range filter
+    if (filterConfig.dateFrom) {
+      result = result.filter(item => {
+        const itemDate = new Date(item.updatedAt || item.createdAt);
+        return itemDate >= filterConfig.dateFrom!;
+      });
+    }
+    if (filterConfig.dateTo) {
+      result = result.filter(item => {
+        const itemDate = new Date(item.updatedAt || item.createdAt);
+        return itemDate <= filterConfig.dateTo!;
+      });
+    }
+
+    // Apply size range filter
+    if (filterConfig.sizeMin !== undefined) {
+      const minBytes = filterConfig.sizeMin * 1024 * 1024; // Convert MB to bytes
+      result = result.filter(item => (item.size || 0) >= minBytes);
+    }
+    if (filterConfig.sizeMax !== undefined) {
+      const maxBytes = filterConfig.sizeMax * 1024 * 1024; // Convert MB to bytes
+      result = result.filter(item => (item.size || 0) <= maxBytes);
+    }
+
+    // Apply extension filter
+    if (filterConfig.extension) {
+      result = result.filter(item => 
+        item.encryptedMetadata?.extension === filterConfig.extension
+      );
+    }
+
+    // Apply sorting
+    result.sort((a, b) => {
+      let comparison = 0;
+
+      switch (filterConfig.sortBy) {
+        case 'name':
+          comparison = a.itemName!.localeCompare(b.itemName!);
+          break;
+        case 'date':
+          if (!a.updatedAt || !b.updatedAt) return 0;
+          comparison = new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+          break;
+        case 'size':
+          comparison = (b.size || 0) - (a.size || 0);
+          break;
+      }
+      return filterConfig.sortOrder === 'asc' ? comparison : -comparison;
+    });
+
+    setFilteredItems(result);
+  }, [items, filterConfig]);
 
   useEffect(() => {
     if (previousFolder != currentFolder){
@@ -357,7 +456,7 @@ const FilesView: React.FC = () => {
       setPreviousFolder(currentFolder);
     }
     fetchItems();
-  }, [currentFolder, sortBy, sortOrder, filterType, currentPage, privateKey, searchQuery]);
+  }, [currentFolder, currentPage, privateKey, searchQuery, searchMode, isDirectSearchActive]);
 
 
   const handleBulkDelete = async (items: Item[]) => {
@@ -525,67 +624,17 @@ const FilesView: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-4">
           <Breadcrumb 
-            allItems={items}
+            allItems={filteredItems}
             onDownload={handleDownload}
             onDelete={handleBulkDelete}
             onShare={handleBulkShare}
           />
           
-          <div className="flex items-center ">
-            <div className="relative flex items-center justify-center">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg space-x-1"
-              >
-                <Filter className="h-4 w-4" />
-                <span className="text-sm">Filters</span>
-              </button>
-              
-              {showFilters && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-10">
-                  <div className="space-y-2">
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Sort by</label>
-                      <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as 'name' | 'date' | 'size')}
-                        className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-                      >
-                        <option value="name">Name</option>
-                        <option value="date">Date modified</option>
-                        <option value="size">Size</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Order</label>
-                      <select
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                        className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-                      >
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Type</label>
-                      <select
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value as 'all' | 'files' | 'folders')}
-                        className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-                      >
-                        <option value="all">All items</option>
-                        <option value="files">Files only</option>
-                        <option value="folders">Folders only</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <AdvancedFilters
+            items={items}
+            onFilterChange={setFilterConfig}
+            viewType="files"
+          />
         </div>
         
         <div>
@@ -652,7 +701,7 @@ const FilesView: React.FC = () => {
         <div className="mt-4">
           {viewMode === 'grid' ? (
             <FileGrid
-              items={items}
+              items={filteredItems}
               onShare={handleShare}
               onDownload={handleDownload}
               onRename={handleRename}
@@ -663,7 +712,7 @@ const FilesView: React.FC = () => {
             />
           ) : (
             <FileList
-              items={items}
+              items={filteredItems}
               onShare={handleShare}
               onDownload={handleDownload}
               onRename={handleRename}

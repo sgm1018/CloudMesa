@@ -3,6 +3,7 @@ import { Item, ViewMode } from '../types';
 import { itemService } from '../services/ItemService';
 import { PaginationParams } from '../services/BaseService';
 type View = 'files' | 'passwords' | 'settings';
+type SearchMode = 'normal' | 'direct';
 
 type AppContextType = {
   currentView: View;
@@ -17,6 +18,12 @@ type AppContextType = {
   setCurrentPage: (page: number) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  searchMode: SearchMode;
+  setSearchMode: (mode: SearchMode) => void;
+  isDirectSearchActive: boolean;
+  setIsDirectSearchActive: (active: boolean) => void;
+  originalFolder: string | null;
+  setOriginalFolder: (folderId: string | null) => void;
   selectedItems: string[];
   setSelectedItems: (items: string[]) => void;
   isAddingNewItem: boolean;
@@ -43,6 +50,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentFileFolder, setCurrentFileFolder] = useState<string | null>(null);
   const [currentPasswordFolder, setCurrentPasswordFolder] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchMode, setSearchMode] = useState<SearchMode>('normal');
+  const [isDirectSearchActive, setIsDirectSearchActive] = useState(false);
+  const [originalFolder, setOriginalFolder] = useState<string | null>(null);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isAddingNewItem, setIsAddingNewItem] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -120,6 +130,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         getItemsByParentId,
         searchQuery,
         setSearchQuery,
+        searchMode,
+        setSearchMode,
+        isDirectSearchActive,
+        setIsDirectSearchActive,
+        originalFolder,
+        setOriginalFolder,
         selectedItems,
         setSelectedItems,
         isAddingNewItem,

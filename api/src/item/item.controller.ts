@@ -83,10 +83,14 @@ export class ItemsController {
   @UseGuards(LoginGuard, RolesGuard)
   @Roles('user')
   @ApiQuery({ name: 'itemName', description: 'Nombre del item', type: String, required: true })
+  @ApiQuery({ name: 'searchType', description: 'Tipo de búsqueda: normal o direct', type: String, required: false })
+  @ApiQuery({ name: 'itemTypes', description: 'Tipos de items a buscar', type: String, required: false })
   @Get('search')
-  async findSearchItems(@User() user: UserDecoratorClass, @Query() query: { itemName: string }) {
-
-    const result = await this.itemsService.findContainName(user.userId, query.itemName);
+  async findSearchItems(@User() user: UserDecoratorClass, @Query() query: { itemName: string; searchType?: string; itemTypes?: string }) {
+    const searchType = query.searchType || 'normal';
+    const itemTypes = query.itemTypes ? JSON.parse(query.itemTypes) : ['file', 'folder', 'password', 'group'];
+    
+    const result = await this.itemsService.findContainName(user.userId, query.itemName, searchType, itemTypes);
     if (!result.isSuccess()){
       throw new BadRequestException('Error getting items');
     } 

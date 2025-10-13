@@ -6,26 +6,42 @@ import PasswordList from './PasswordList';
 import Breadcrumb from '../files/Breadcrumb';
 import NewPasswordModal from './NewPasswordModal';
 import PasswordDetailsModal from './PasswordDetailsModal';
-import { FolderPlus, KeyIcon, Plus, Loader2, Filter, ChevronLeft, ChevronRight, Folder, Key, Mail, ShoppingCart, Building, Trello, Globe, Shield, CreditCard, Wifi, Server, Smartphone, Gamepad2, Music, Image, FileText, Heart, Briefcase, Home, Car, Plane, MapPin, Gift, Users } from 'lucide-react';
+import { FolderPlus, KeyIcon, Plus, Loader2, ChevronLeft, ChevronRight, Folder, Key, Mail, ShoppingCart, Building, Trello, Globe, Shield, CreditCard, Wifi, Server, Smartphone, Gamepad2, Music, Image, FileText, Heart, Briefcase, Home, Car, Plane, MapPin, Gift, Users } from 'lucide-react';
 import { PaginationParams } from '../../services/BaseService';
 import { useToast } from '../../context/ToastContext';
 import FileNewFolder from '../files/FileNewFolder';
 import { itemService } from '../../services/ItemService';
 import RightClickElementModal from '../shared/RightClickElementModal';
 import { useEncryption } from '../../context/EncryptionContext';
+import AdvancedFilters, { FilterConfig } from '../shared/AdvancedFilters';
 
 const PasswordsView: React.FC = () => {
   const { privateKey } = useEncryption();
-  const { currentPasswordFolder, navigateToGroup, viewMode, searchQuery, getItemsByParentId, countItems, selectedItems, setSelectedItems, navigateToFolder } = useAppContext();
+  const { 
+    currentPasswordFolder, 
+    navigateToGroup, 
+    viewMode, 
+    searchQuery, 
+    searchMode,
+    isDirectSearchActive,
+    getItemsByParentId, 
+    countItems, 
+    selectedItems, 
+    setSelectedItems, 
+    navigateToFolder 
+  } = useAppContext();
   const { showToast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
   const [selectedPassword, setSelectedPassword] = useState<Item | null>(null);
-  const [sortBy, setSortBy] = useState<'name' | 'date'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [filterType, setFilterType] = useState<'all' | 'passwords' | 'groups'>('all');
-  const [showFilters, setShowFilters] = useState(false);
+  const [filterConfig, setFilterConfig] = useState<FilterConfig>({
+    searchTerm: '',
+    sortBy: 'name',
+    sortOrder: 'asc',
+    itemType: 'all',
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [items4Page, setItems4Page] = useState(20);
@@ -62,17 +78,38 @@ const PasswordsView: React.FC = () => {
     }
     setIsLoading(true);
 
-    const contItems: number = await countItems([ItemType.PASSWORD, ItemType.GROUP], currentPasswordFolder || '');
-    setTotalPages(Math.ceil(contItems / items4Page));
+    let fetchedItems: Item[] = [];
     
-    const params: PaginationParams = {
-      parentId: currentPasswordFolder || '',
-      itemTypes: [ItemType.PASSWORD, ItemType.GROUP],
-      page: currentPage,
-      limit: items4Page,
-    };
+    // If direct search is active, get search results instead of folder contents
+    if (searchMode === 'direct' && isDirectSearchActive && searchQuery.length >= 2) {
+      try {
+        fetchedItems = await itemService.findSearchItems(
+          searchQuery, 
+          'direct', 
+          [ItemType.PASSWORD, ItemType.GROUP]
+        );
+        // For search results, we don't need pagination
+        setTotalPages(1);
+      } catch (error) {
+        console.error('Error fetching search results:', error);
+        setItems([]);
+        setIsLoading(false);
+        return;
+      }
+    } else {
+      // Normal folder browsing
+      const contItems: number = await countItems([ItemType.PASSWORD, ItemType.GROUP], currentPasswordFolder || '');
+      setTotalPages(Math.ceil(contItems / items4Page));
+      
+      const params: PaginationParams = {
+        parentId: currentPasswordFolder || '',
+        itemTypes: [ItemType.PASSWORD, ItemType.GROUP],
+        page: currentPage,
+        limit: items4Page,
+      };
 
-    let fetchedItems = await getItemsByParentId(params);
+      fetchedItems = await getItemsByParentId(params);
+    }
 
     let listOfDecryptedMetadataPasswords : Item[] = [];
     for (const item of fetchedItems) {
@@ -81,12 +118,55 @@ const PasswordsView: React.FC = () => {
       listOfDecryptedMetadataPasswords.push(decryptedItem);
     }
     if (listOfDecryptedMetadataPasswords == null) return;
+    
+    setItems(listOfDecryptedMetadataPasswords);
+    setIsLoading(false);
+  };
+
+  // Apply filters and sorting
+  useEffect(() => {
+    let result = [...items];
+
+    // Apply search filter
+    if (filterConfig.searchTerm) {
+      const searchLower = filterConfig.searchTerm.toLowerCase();
+      result = result.filter(item => 
+        item.itemName?.toLowerCase().includes(searchLower) ||
+        item.encryptedMetadata?.name?.toLowerCase().includes(searchLower) ||
+        item.encryptedMetadata?.username?.toLowerCase().includes(searchLower) ||
+        item.encryptedMetadata?.url?.toLowerCase().includes(searchLower) ||
+        item.encryptedMetadata?.notes?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply item type filter
+    if (filterConfig.itemType !== 'all') {
+      if (filterConfig.itemType === 'passwords') {
+        result = result.filter(item => item.type === ItemType.PASSWORD);
+      } else if (filterConfig.itemType === 'groups') {
+        result = result.filter(item => item.type === ItemType.GROUP);
+      }
+    }
+
+    // Apply date range filter
+    if (filterConfig.dateFrom) {
+      result = result.filter(item => {
+        const itemDate = new Date(item.updatedAt || item.createdAt);
+        return itemDate >= filterConfig.dateFrom!;
+      });
+    }
+    if (filterConfig.dateTo) {
+      result = result.filter(item => {
+        const itemDate = new Date(item.updatedAt || item.createdAt);
+        return itemDate <= filterConfig.dateTo!;
+      });
+    }
 
     // Apply sorting
-    listOfDecryptedMetadataPasswords.sort((a, b) => {
+    result.sort((a, b) => {
       let comparison = 0;
       
-      switch (sortBy) {
+      switch (filterConfig.sortBy) {
         case 'name':
           comparison = a.itemName!.localeCompare(b.itemName!);
           break;
@@ -96,12 +176,11 @@ const PasswordsView: React.FC = () => {
           break;
       }
       
-      return sortOrder === 'asc' ? comparison : -comparison;
+      return filterConfig.sortOrder === 'asc' ? comparison : -comparison;
     });
-    
-    setItems(listOfDecryptedMetadataPasswords);
-    setIsLoading(false);
-  };
+
+    setFilteredItems(result);
+  }, [items, filterConfig]);
 
   useEffect(() => {
     if (previousFolder != currentPasswordFolder) {
@@ -109,7 +188,7 @@ const PasswordsView: React.FC = () => {
       setPreviousFolder(currentPasswordFolder);
     }
     fetchItems();
-  }, [currentPasswordFolder, sortBy, sortOrder, filterType, currentPage, privateKey]);
+  }, [currentPasswordFolder, currentPage, privateKey, searchQuery, searchMode, isDirectSearchActive]);
 
 
   const getItemIcon = (item: Item, isList: boolean) => {
@@ -350,7 +429,7 @@ const PasswordsView: React.FC = () => {
     event.preventDefault();
     event.stopPropagation();
 
-    const item = items.find(i => i._id === itemId);
+    const item = filteredItems.find(i => i._id === itemId);
     if (!item) return;
 
     const button = event.currentTarget as HTMLElement;
@@ -396,67 +475,18 @@ const PasswordsView: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-4">
           <Breadcrumb 
-            allItems={items}
+            allItems={filteredItems}
             onDelete={handleDelete}
             onCopyUsername={handleCopyUsername}
             onCopyPassword={handleCopyPassword}
             onVisitWebsite={handleVisitWebsite}
           />
           
-          <div className="flex items-center space-x-2">
-            <div className="relative">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center space-x-1"
-              >
-                <Filter className="h-4 w-4" />
-                <span className="text-sm">Filters</span>
-              </button>
-              
-              {showFilters && (
-                <div className="absolute z-10 top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2">
-                  <div className="space-y-2">
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Sort by</label>
-                      <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as 'name' | 'date')}
-                        className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-                      >
-                        <option value="name">Name</option>
-                        <option value="date">Date modified</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Order</label>
-                      <select
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                        className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-                      >
-                        <option value="asc">Ascending</option>
-                        <option value="desc">Descending</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Type</label>
-                      <select
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value as 'all' | 'passwords' | 'groups')}
-                        className="w-full text-sm rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-                      >
-                        <option value="all">All items</option>
-                        <option value="passwords">Passwords only</option>
-                        <option value="groups">Groups only</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <AdvancedFilters
+            items={items}
+            onFilterChange={setFilterConfig}
+            viewType="passwords"
+          />
         </div>
         
         <div className="flex gap-2">
@@ -512,7 +542,7 @@ const PasswordsView: React.FC = () => {
         <div className="mt-4">
           {viewMode === 'grid' ? (
             <PasswordGrid
-              items={items}
+              items={filteredItems}
               onPasswordSelect={handlePasswordSelect}
               onShare={handleShare}
               onCopyUsername={handleCopyUsername}
@@ -526,7 +556,7 @@ const PasswordsView: React.FC = () => {
             />
           ) : (
             <PasswordList
-              items={items}
+              items={filteredItems}
               onPasswordSelect={handlePasswordSelect}
               onShare={handleShare}
               onCopyUsername={handleCopyUsername}
@@ -575,7 +605,7 @@ const PasswordsView: React.FC = () => {
           item={currentItem}
           onClose={handleCloseMenu}
           contextType={currentItem?.type === 'group' ? 'folder' : 'password'}
-          allItems={items}
+          allItems={filteredItems}
           onShare={handleShare}
           onDownload={() => {}} // Passwords don't have download
           onRename={handleEdit}

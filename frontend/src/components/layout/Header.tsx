@@ -1,67 +1,31 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { Item, ItemType } from '../../types';
 import { 
-  Search,
-  X,
   Grid,
   List,
-  Upload,
-  Plus,
   ChevronDown,
   Settings,
-  FileIcon,
-  KeyIcon,
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { itemService } from '../../services/ItemService';
+import SearchBar from '../search/SearchBar';
+
 const Header: React.FC = () => {
   const {
     viewMode,
     setViewMode,
-    searchQuery,
-    setSearchQuery,
-    isSearching,
-    setIsSearching,
     currentView,
     setCurrentView,
-    navigateToFolder,
   } = useAppContext();
   
   const { user, logout } = useAuth();
   const { showToast } = useToast();
-  const [searchResults, setSearchResults] = useState<Item[]>([]);
-  const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
-
-  const performSearch = async () => {
-    if (searchQuery.length > 0) {
-      // TODO: Implementar búsqueda real aquí
-      const results = await itemService.findSearchItems(searchQuery);
-      setSearchResults(results);
-      setSelectedResultIndex(-1);
-    } else {
-      setSearchResults([]);
-    }
-  };
-  useEffect(() => {
-    performSearch();
-  }, [searchQuery]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchContainerRef.current &&
-        !searchContainerRef.current.contains(event.target as Node)
-      ) {
-        setIsSearching(false);
-      }
-      
       if (
         userMenuRef.current &&
         !userMenuRef.current.contains(event.target as Node)
@@ -74,68 +38,7 @@ const Header: React.FC = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [setIsSearching]);
-
-  const handleSearchFocus = () => {
-    setIsSearching(true);
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  };
-
-  const clearSearch = () => {
-    setSearchQuery('');
-    setIsSearching(false);
-    setSelectedResultIndex(-1);
-    if (searchInputRef.current) {
-      searchInputRef.current.blur();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isSearching || searchResults.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedResultIndex(prev => 
-          prev < searchResults.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedResultIndex(prev => prev > 0 ? prev - 1 : -1);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedResultIndex >= 0) {
-          handleResultClick(searchResults[selectedResultIndex]);
-        }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        clearSearch();
-        break;
-    }
-  };
-
-  const handleResultClick = (item: Item) => {
-    // Switch view based on item type
-    if (item.type === ItemType.PASSWORD || item.type === ItemType.GROUP) {
-      setCurrentView('passwords');
-    } else {
-      setCurrentView('files');
-    }
-
-    // Navigate to the parent folder if it exists
-    if (item.parentId) {
-      navigateToFolder(item.parentId);
-    } else {
-      navigateToFolder(null);
-    }
-
-    clearSearch();
-  };
+  }, []);
 
   const handleSettingsClick = () => {
     setCurrentView('settings');
@@ -153,79 +56,12 @@ const Header: React.FC = () => {
 
   return (
     <header className="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 bg-white dark:bg-background-primary sticky top-0 z-10 shadow-sm">
-      <div
-        ref={searchContainerRef}
-        className="relative mx-auto w-full max-w-2xl"
-      >
-        {currentView !== 'settings' && (
-          <div
-            className={`flex items-center bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-2 transition-all ${
-              isSearching ? 'ring-2 ring-primary-400' : ''
-            }`}
-            onClick={handleSearchFocus}
-          >
-            <Search className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search files and passwords..."
-              className="ml-2 bg-transparent border-none outline-none w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            {searchQuery && (
-              <button onClick={clearSearch} className="p-1">
-                <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              </button>
-            )}
-          </div>
-        )}
-
-        {isSearching && searchResults.length > 0 && (
-          <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto animate-fade-in">
-            <div className="p-2">
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 px-3 py-1">
-                SEARCH RESULTS
-              </div>
-              {searchResults.map((item, index) => (
-                <div
-                  key={item._id}
-                  className={`flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer ${
-                    index === selectedResultIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
-                  }`}
-                  onClick={() => handleResultClick(item)}
-                >
-                  {item.type === ItemType.FILE && (
-                    <FileIcon className="h-5 w-5 text-primary-500" />
-                  )}
-                  {item.type === ItemType.FOLDER && (
-                    <FileIcon className="h-5 w-5 text-yellow-500" />
-                  )}
-                  {item.type === ItemType.PASSWORD && (
-                    <KeyIcon className="h-5 w-5 text-success-500" />
-                  )}
-                  {item.type === ItemType.GROUP && (
-                    <KeyIcon className="h-5 w-5 text-secondary-500" />
-                  )}
-                  <div className="ml-3">
-                    <div className="text-sm font-medium">{item.itemName}</div>
-                    {/* <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {item.path && item.path.length > 0
-                        ? item.path.join(' > ')
-                        : 'Root'}
-                    </div> */}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="border-t border-gray-200 dark:border-gray-700 p-2 text-xs text-center text-gray-500 dark:text-gray-400">
-              Press ESC to close or ↑↓ to navigate
-            </div>
-          </div>
-        )}
-      </div>
-
+      {/* Search Bar */}
+      {currentView !== 'settings' && (
+        <SearchBar className="mx-auto w-full max-w-2xl" />
+      )}
+      
+      {/* Right Side Controls */}
       <div className="flex items-center space-x-4">
         {currentView !== 'settings' && (
           <div className="border-r border-gray-200 dark:border-gray-700 pr-4 flex items-center space-x-1">
@@ -252,6 +88,7 @@ const Header: React.FC = () => {
           </div>
         )}
 
+        {/* User Menu */}
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={() => setShowUserDropdown(!showUserDropdown)}
