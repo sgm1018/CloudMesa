@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Item, ViewMode } from '../types';
 import { itemService } from '../services/ItemService';
 import { PaginationParams } from '../services/BaseService';
-type View = 'files' | 'passwords' | 'settings';
+type View = 'files' | 'passwords' | 'boards' | 'settings';
 type SearchMode = 'normal' | 'direct';
 
 type AppContextType = {

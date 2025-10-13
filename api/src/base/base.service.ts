@@ -15,6 +15,10 @@ export class BaseService<T extends Entity> {
 
   async create(entity: T): Promise<ApiResponse<T>> {
     try {
+      // Asegurarse de que el entity tenga un _id si no lo tiene
+      if (!entity._id) {
+        entity._id = new Types.ObjectId();
+      }
       const creado = await this.model.create(entity);
       return ApiResponse.item(creado);
     } catch (error) {

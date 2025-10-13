@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   FileIcon,
   KeyIcon,
+  LayoutDashboardIcon,
   LockIcon,
   SunIcon,
   MoonIcon,
@@ -22,9 +23,11 @@ const Sidebar: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { logout } = useAuth();
 
-  const handleViewChange = (view: 'files' | 'passwords') => {
+  const handleViewChange = (view: 'files' | 'passwords' | 'boards') => {
     setCurrentView(view);
-    navigateToFolder(null);
+    if (view !== 'boards') {
+      navigateToFolder(null);
+    }
   };
 
   const handleLogout = () => {
@@ -128,6 +131,26 @@ const Sidebar: React.FC = () => {
             {!isSidebarCollapsed && (
               <div className="ml-3">
                 <span className="font-medium text-sm">Passwords</span>
+              </div>
+            )}
+          </button>
+
+          <button
+            onClick={() => handleViewChange('boards')}
+            className={`group flex items-center w-full px-3 py-2.5 rounded-lg transition-colors duration-200 ${
+              currentView === 'boards'
+                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+            }`}
+          >
+            <LayoutDashboardIcon className={`h-5 w-5 ${
+              currentView === 'boards' 
+                ? 'text-blue-600 dark:text-blue-400' 
+                : 'text-gray-500 dark:text-gray-400'
+            }`} />
+            {!isSidebarCollapsed && (
+              <div className="ml-3">
+                <span className="font-medium text-sm">Boards</span>
               </div>
             )}
           </button>

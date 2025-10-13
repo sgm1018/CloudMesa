@@ -6,6 +6,7 @@ import AuthPage from './components/auth/AuthPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 import { EncryptionProvider } from './context/EncryptionContext';
+import { BoardView } from './pages/BoardView';
 
 
 
@@ -51,8 +52,12 @@ function AppRoutes() {
         element={!isAuthenticated() ? <AuthPage /> : <Navigate to="/dashboard" replace />} 
       />
       <Route 
-        path="/dashboard/*" 
+        path="/dashboard" 
         element={isAuthenticated() ? <MainLayout /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/boards/:boardId" 
+        element={isAuthenticated() ? <BoardView /> : <Navigate to="/login" replace />} 
       />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

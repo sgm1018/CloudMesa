@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { FilesModule } from './item/item.module';
+import { BoardModule } from './board/board.module';
+import { AiModule } from './ai/ai.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RolesGuard } from './auth/guards/roles.guard';
@@ -33,6 +35,8 @@ import { config } from 'process';
     AuthModule,
     UsersModule,
     FilesModule,
+    BoardModule,
+    AiModule,
   ],
   providers: [
     {

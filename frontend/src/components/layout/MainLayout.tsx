@@ -5,6 +5,7 @@ import { useAppContext } from '../../context/AppContext';
 import FilesView from '../files/FilesView';
 import PasswordsView from '../passwords/PasswordsView';
 import SettingsView from '../settings/SettingsView';
+import { BoardsView } from '../../pages';
 import { useAuth } from '../../context/AuthContext';
 import AuthPage from '../auth/AuthPage';
 import PrivateKeyModal from '../shared/PrivateKeyModal';
@@ -30,6 +31,7 @@ const MainLayout: React.FC = () => {
         <main className="p-6">
           {currentView === 'files' && <FilesView />}
           {currentView === 'passwords' && <PasswordsView />}
+          {currentView === 'boards' && <BoardsView />}
           {currentView === 'settings' && <SettingsView />}
         </main>
       </div>
