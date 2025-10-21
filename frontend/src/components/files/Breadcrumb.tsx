@@ -5,7 +5,6 @@ import MultiSelectActionButton from '../shared/MultiSelectActionButton';
 import { Item } from '../../types';
 
 interface BreadcrumbProps {
-  // All items available for multi-selection context
   allItems?: Item[];
   // Action handlers for multi-selection
   onShare?: (items: Item[]) => void;

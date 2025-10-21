@@ -118,13 +118,13 @@ const PrivateKeyImportModal: React.FC<PrivateKeyImportModalProps> = ({ isOpen, o
                             </p>
                         </div>
                     </div>
-                    <button
+                    {/* <button
                         onClick={handleClose}
                         className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 group"
                         title="Close"
                     >
                         <X className="h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200" />
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Content */}

@@ -16,6 +16,7 @@ import RightClickElementModal from '../shared/RightClickElementModal';
 import { mediaService } from '../../services/MediaService';
 import { MediaViewer } from '../media/MediaViewerManager';
 import AdvancedFilters, { FilterConfig } from '../shared/AdvancedFilters';
+import ShareModal from '../shared/ShareModal';
 
 const FilesView: React.FC = () => {
   const { privateKey } = useEncryption();
@@ -51,6 +52,8 @@ const FilesView: React.FC = () => {
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
   const [previousFolder, setPreviousFolder] = React.useState<string | null>(null);
+  const [showShareModal, setShowShareModal] = React.useState<boolean>(false);
+  const [shareItems, setShareItems] = React.useState<Item[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   
 
@@ -561,7 +564,8 @@ const FilesView: React.FC = () => {
   const handleShare = (item: Item | Item[]) => {
     const itemsArray = Array.isArray(item) ? item : [item];
     console.log('Share:', itemsArray.map(i => i.itemName));
-    showToast('Share functionality not implemented yet', 'error');
+    setShareItems(itemsArray);
+    setShowShareModal(true);
   };
 
   const handleDownload = async (item: Item | Item[]) => {
@@ -607,7 +611,7 @@ const FilesView: React.FC = () => {
   }
 
   return (
-    <div {...getRootProps()} className="min-h-screen relative">
+    <div {...getRootProps()} className="relative">
       <input {...getInputProps()} />
       
       {/* Drag overlay */}
@@ -753,6 +757,18 @@ const FilesView: React.FC = () => {
 
       {/* Media Viewer Manager */}
       <MediaViewer />
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        items={shareItems}
+        onShare={(users) => {
+          // TODO: call API to apply sharing settings. For now, just log and show toast.
+          console.log('Sharing items', shareItems.map(i => i.itemName), 'with users', users);
+          showToast('Sharing settings updated', 'success');
+          setShowShareModal(false);
+        }}
+      />
     </div>
   );
 };

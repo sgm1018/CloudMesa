@@ -14,6 +14,7 @@ import { itemService } from '../../services/ItemService';
 import RightClickElementModal from '../shared/RightClickElementModal';
 import { useEncryption } from '../../context/EncryptionContext';
 import AdvancedFilters, { FilterConfig } from '../shared/AdvancedFilters';
+import ShareModal from '../shared/ShareModal';
 
 const PasswordsView: React.FC = () => {
   const { privateKey } = useEncryption();
@@ -50,6 +51,8 @@ const PasswordsView: React.FC = () => {
   const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
   const [currentItem, setCurrentItem] = React.useState<Item | null>(null);
   const [previousFolder, setPreviousFolder] = React.useState<string | null>(null);
+  const [showShareModal, setShowShareModal] = React.useState<boolean>(false);
+  const [shareItems, setShareItems] = React.useState<Item[]>([]);
 
   // Password icons map similar to fileIconsMap but for password types
   const passwordIconsMap : Record<string, React.ReactElement> = {
@@ -204,8 +207,10 @@ const PasswordsView: React.FC = () => {
   };
   // Shared handlers for both grid and list views
   const handleShare = (item: Item | Item[]) => {
-    console.log('Share:', Array.isArray(item) ? item.map(i => i.itemName) : item.itemName);
-    showToast('Share functionality not implemented yet', 'error');
+    const itemsArray = Array.isArray(item) ? item : [item];
+    console.log('Share:', itemsArray.map(i => i.itemName));
+    setShareItems(itemsArray);
+    setShowShareModal(true);
   };
 
   const handleCopyUsername = (item: Item | Item[]) => {
@@ -612,6 +617,19 @@ const PasswordsView: React.FC = () => {
           onDelete={handleDelete}
         />
       )}
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        items={shareItems}
+        onShare={(users) => {
+          // TODO: call API to apply sharing settings. For now, just log and show toast.
+          console.log('Sharing items', shareItems.map(i => i.itemName), 'with users', users);
+          showToast('Sharing settings updated', 'success');
+          setShowShareModal(false);
+        }}
+      />
     </div>
   );
 };

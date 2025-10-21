@@ -103,18 +103,14 @@ El `MediaService` es un servicio singleton que gestiona la visualización de dif
 import { mediaService } from '../../services/MediaService';
 import MediaViewerManager from '../media/MediaViewerManager';
 
-// En el handleItemClick
 if (item.type === 'folder') {
   navigateToFolder(item._id);
 } else {
-  // Para archivos, usar MediaService
   mediaService.showContent(item);
 }
 
-// En el render
 return (
   <div>
-    {/* Contenido normal */}
     <MediaViewerManager />
   </div>
 );

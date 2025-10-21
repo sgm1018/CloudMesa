@@ -31,7 +31,6 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
   const [url, setUrl] = useState(password.encryptedMetadata.url || '');
   const [notes, setNotes] = useState(password.encryptedMetadata.notes || '');
   const [showPassword, setShowPassword] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
   
   // Password generator settings
   const [showGenerator, setShowGenerator] = useState(false);
@@ -116,7 +115,7 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
   };
 
   const handleShare = () => {
-    setShowShareModal(true);
+    showToast('Share dialog not implemented yet');
   };
 
   if (!isOpen) return null;
@@ -255,10 +254,10 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
 
                       {/* Password Generator */}
                       {showGenerator && (
-                        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 space-y-6">
+                        <div className="bg-background-secondary p-6 rounded-xl border border-DEFAULT space-y-6">
                           <div className="space-y-3">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Password Length: <span className="text-blue-600 dark:text-blue-400 font-mono">{length}</span>
+                              Password Length: <span className="text-text-primary font-mono">{length}</span>
                             </label>
                             <input
                               type="range"
@@ -266,7 +265,7 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
                               max="64"
                               value={length}
                               onChange={(e) => setLength(parseInt(e.target.value))}
-                              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                              className="w-full h-2 bg-background-secondary rounded-lg appearance-none cursor-pointer slider"
                             />
                             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                               <span>8</span>
@@ -280,9 +279,9 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
                                 type="checkbox"
                                 checked={includeLowercase}
                                 onChange={(e) => setIncludeLowercase(e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                className="w-4 h-4 text-primary-600 bg-background-secondary border-DEFAULT rounded focus:ring-primary-500 dark:focus:ring-primary-600 focus:ring-2 dark:bg-background-secondary dark:border-DEFAULT"
                               />
-                              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                              <span className="text-sm text-text-primary group-hover:text-text-primary transition-colors">
                                 Lowercase (a-z)
                               </span>
                             </label>
@@ -292,9 +291,9 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
                                 type="checkbox"
                                 checked={includeUppercase}
                                 onChange={(e) => setIncludeUppercase(e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                className="w-4 h-4 text-primary-600 bg-background-secondary border-DEFAULT rounded focus:ring-primary-500 dark:focus:ring-primary-600 focus:ring-2 dark:bg-background-secondary dark:border-DEFAULT"
                               />
-                              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                              <span className="text-sm text-text-primary group-hover:text-text-primary transition-colors">
                                 Uppercase (A-Z)
                               </span>
                             </label>
@@ -304,9 +303,9 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
                                 type="checkbox"
                                 checked={includeNumbers}
                                 onChange={(e) => setIncludeNumbers(e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                className="w-4 h-4 text-primary-600 bg-background-secondary border-DEFAULT rounded focus:ring-primary-500 dark:focus:ring-primary-600 focus:ring-2 dark:bg-background-secondary dark:border-DEFAULT"
                               />
-                              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                              <span className="text-sm text-text-primary group-hover:text-text-primary transition-colors">
                                 Numbers (0-9)
                               </span>
                             </label>
@@ -316,20 +315,20 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
                                 type="checkbox"
                                 checked={includeSymbols}
                                 onChange={(e) => setIncludeSymbols(e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                className="w-4 h-4 text-primary-600 bg-background-secondary border-DEFAULT rounded focus:ring-primary-500 dark:focus:ring-primary-600 focus:ring-2 dark:bg-background-secondary dark:border-DEFAULT"
                               />
-                              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                              <span className="text-sm text-text-primary group-hover:text-text-primary transition-colors">
                                 Symbols (!@#$%^&*)
                               </span>
                             </label>
                           </div>
 
-                          <div className="flex gap-3">
-                            <button
-                              type="button"
-                              onClick={generatePassword}
-                              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 rounded-xl transition-all duration-200 font-medium text-sm group"
-                            >
+                            <div className="flex gap-3">
+                              <button
+                                type="button"
+                                onClick={generatePassword}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 text-primary-600 dark:text-primary-300 rounded-xl transition-all duration-200 font-medium text-sm group"
+                              >
                               <RefreshCw className="h-4 w-4 group-hover:rotate-180 transition-transform duration-300" />
                               Generate Password
                             </button>
@@ -337,7 +336,7 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
                               <button
                                 type="button"
                                 onClick={copyGeneratedPassword}
-                                className="p-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-xl transition-all duration-200 group"
+                                  className="p-3 bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 text-primary-600 dark:text-primary-300 rounded-xl transition-all duration-200 group"
                                 title="Copy password"
                               >
                                 {copied ? (
@@ -407,7 +406,7 @@ const PasswordDetailsModal: React.FC<PasswordDetailsModalProps> = ({
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-3 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 rounded-xl transition-all duration-200 group"
+                          className="p-3 bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 text-primary-600 dark:text-primary-300 rounded-xl transition-all duration-200 group"
                           title="Open website"
                         >
                           <ExternalLink className="h-4 w-4 group-hover:scale-110 transition-transform" />

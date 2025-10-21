@@ -103,7 +103,7 @@ const FileGrid: React.FC<FileGridProps> = ({ items, onShare, onDownload, onRenam
         {items.map((item) => (
           <div
             key={item._id}
-            className={`group relative bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden cursor-pointer border border-transparent hover:border-primary-300 dark:hover:border-primary-700 transition-all ${
+            className={`group relative bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden cursor-pointer border border-transparent hover:border-primary-300 dark:hover:border-primary-700 ${
               selectedItems.includes(item._id) ? 'ring-2 ring-primary-500' : ''
             }`}
             onClick={(event) => handleItemClick(item, event)}

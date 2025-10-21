@@ -165,6 +165,49 @@ h1, h2, h3, h4, h5, h6 {
   @apply bg-neutral-400 dark:bg-neutral-500;
 }
 
+/* WebKit number input spinners: style background, border and arrow color
+   so they match light/dark theme variables. We avoid @apply here to keep
+   these pseudo elements consistent across browsers. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  width: 26px;
+  height: calc(100% - 6px);
+  margin: 3px 6px 3px 0;
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  opacity: 0.95;
+  display: inline-block;
+}
+
+/* Dark-mode specific adjustments (uses the same CSS variable system) */
+.dark input[type="number"]::-webkit-inner-spin-button,
+.dark input[type="number"]::-webkit-outer-spin-button {
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  opacity: 1;
+}
+
+/* Hover/focus states to make the steppers more visible when interacting */
+input[type="number"]:hover::-webkit-inner-spin-button,
+input[type="number"]:hover::-webkit-outer-spin-button,
+input[type="number"]:focus::-webkit-inner-spin-button,
+input[type="number"]:focus::-webkit-outer-spin-button {
+  background: var(--background-primary);
+  opacity: 1;
+}
+
+/* Firefox: it's not possible to reliably style the native arrows across versions,
+   so hide them and fall back to the textfield appearance. If you want custom
+   buttons in Firefox, we can add inline buttons inside the input wrapper. */
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium;

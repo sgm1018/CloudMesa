@@ -40,7 +40,6 @@ const ImageViewer: React.FC<ImageViewerProps> = ({ item, isOpen, onClose }) => {
                 throw new Error('Private key not available');
             }
             
-            // Download and decrypt the image as blob
             const blob = await itemService.getItemAsBlob(item, privateKey);
             const url = URL.createObjectURL(blob);
             setImageUrl(url);

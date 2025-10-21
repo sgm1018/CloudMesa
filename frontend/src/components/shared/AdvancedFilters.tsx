@@ -98,7 +98,6 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         className={`
           flex items-center gap-2 px-4 py-2 rounded-lg
-          transition-all duration-200
           ${isOpen 
             ? 'bg-primary-500 text-white shadow-elevation-2' 
             : 'bg-background-secondary text-text-primary hover:bg-neutral-100 dark:hover:bg-neutral-800'
@@ -319,7 +318,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                           value={activeFilters.sizeMin || ''}
                           onChange={(e) => handleFilterChange('sizeMin', e.target.value ? parseFloat(e.target.value) : undefined)}
                           placeholder="0"
-                          className="w-full px-2 py-1.5 bg-background-secondary border border-DEFAULT rounded-lg text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          className="w-full px-2 py-1.5 bg-background-secondary border-DEFAULT  rounded-lg text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
                       <div>

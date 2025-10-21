@@ -33,7 +33,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside
-    className={`h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out flex flex-col overflow-hidden
+    className={`h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out flex flex-col overflow-hidden
       ${isSidebarCollapsed ? 'w-16' : 'w-64'} fixed left-0 top-0 z-20`}
       >
       <style dangerouslySetInnerHTML={{
@@ -59,7 +59,7 @@ const Sidebar: React.FC = () => {
             </>
           ) : (
         <button
-          className="w-8 h-8 flex items-center justify-center rounded transition-colors duration-200"
+          className="w-8 h-8 flex items-center justify-center rounded duration-200"
           title="Expand Sidebar"
         >
           <AnimatedLogo 
@@ -74,7 +74,7 @@ const Sidebar: React.FC = () => {
         {!isSidebarCollapsed && (
           <button
         onClick={toggleSidebar}
-        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors duration-200"
+        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
           >
         <ChevronLeftIcon className="h-4 w-4" />
           </button>
@@ -94,7 +94,7 @@ const Sidebar: React.FC = () => {
           
           <button
             onClick={() => handleViewChange('files')}
-            className={`group flex items-center w-full px-3 py-2.5 rounded-lg transition-colors duration-200 ${
+            className={`group flex items-center w-full px-3 py-2.5 rounded-lg ${
               currentView === 'files'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -114,7 +114,7 @@ const Sidebar: React.FC = () => {
 
           <button
             onClick={() => handleViewChange('passwords')}
-            className={`group flex items-center w-full px-3 py-2.5 rounded-lg transition-colors duration-200 ${
+            className={`group flex items-center w-full px-3 py-2.5 rounded-lg ${
               currentView === 'passwords'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
@@ -139,7 +139,7 @@ const Sidebar: React.FC = () => {
         <div className="space-y-1">
           <button
             onClick={toggleTheme}
-            className="group flex items-center w-full px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+            className="group flex items-center w-full px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 "
             title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
             {isDarkMode ? (
@@ -156,7 +156,7 @@ const Sidebar: React.FC = () => {
 
           <button
             onClick={handleLogout}
-            className="group flex items-center w-full px-3 py-2.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
+            className="group flex items-center w-full px-3 py-2.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
             title="Logout"
           >
             <LogOutIcon className="h-5 w-5" />

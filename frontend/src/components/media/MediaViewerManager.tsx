@@ -63,9 +63,7 @@ const MediaViewerManager: React.FC = () => {
         };
 
         const handleDownloadFallback = (event: CustomEvent) => {
-            // For now, we'll just log this - could show a download dialog
             console.log('Download fallback for:', event.detail.item.itemName);
-            // Could implement a download confirmation dialog here
         };
 
         // Add event listeners

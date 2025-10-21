@@ -22,7 +22,6 @@ export const StreamingDownloadComponent: React.FC<StreamingDownloadComponentProp
     const [error, setError] = useState<string | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    // Obtener capacidades del navegador
     const capabilities = itemService.getDownloadCapabilities();
 
     const handleSimpleDownload = async () => {
@@ -52,7 +51,6 @@ export const StreamingDownloadComponent: React.FC<StreamingDownloadComponentProp
         setDownloadProgress(null);
         setDecryptionStage('');
 
-        // Crear AbortController para cancelación
         abortControllerRef.current = new AbortController();
 
         try {

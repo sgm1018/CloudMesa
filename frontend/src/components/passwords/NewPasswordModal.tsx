@@ -98,7 +98,7 @@ const NewPasswordModal: React.FC<NewPasswordModalProps> = ({ isOpen, onClose, on
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
               <Plus className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -253,7 +253,7 @@ const NewPasswordModal: React.FC<NewPasswordModalProps> = ({ isOpen, onClose, on
                     <button
                       type="button"
                       onClick={generatePassword}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-600 dark:text-green-400 rounded-xl transition-all duration-200 font-medium text-sm group"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 text-primary-600 dark:text-primary-400 rounded-xl transition-all duration-200 font-medium text-sm group"
                     >
                       <RefreshCw className="h-4 w-4 group-hover:rotate-180 transition-transform duration-300" />
                       Generate Password

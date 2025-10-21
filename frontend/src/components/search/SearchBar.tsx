@@ -323,7 +323,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ className = '' }) => {
   return (
     <div ref={searchContainerRef} className={`relative ${className}`}>
       <div
-        className={`flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg transition-all duration-200 ${
+        className={`flex w-full items-center bg-gray-100 dark:bg-gray-800 rounded-lg ${
           isSearching ? 'ring-2 ring-primary-400 shadow-lg' : 'shadow-sm'
         }`}
       >
@@ -331,7 +331,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ className = '' }) => {
         <div className="relative" ref={modeSelectorRef}>
           <button
             onClick={() => setShowModeSelector(!showModeSelector)}
-            className={`flex items-center px-3 py-2 rounded-l-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+            className={`flex items-center px-3 py-2 rounded-l-lg hover:bg-gray-200 dark:hover:bg-gray-700 ${
               searchMode === 'direct' ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300' : ''
             }`}
             title={searchMode === 'normal' ? 'Normal Search Mode' : 'Direct Search Mode'}
